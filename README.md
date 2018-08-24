@@ -11,6 +11,6 @@ It uses 2 dll files EEPlus.dll (some Excel stuff) and Auxiliares.dll (the co aut
 
 In this directory there are another 3 files used by the FME to generate the fedeers.dss files:
 Alim_gdis_OpenDSS.txt -> just a txt.file with the feeders names to be generated.
-recursos\curvasDeCargaAccess.xlsx -> external data from curves to consuption/demand transformation.
+recursos\curvasDeCargaAccess.xlsx -> external data from curves used in consumption to demand transformation.
 recursos\geracaoDistribuidaMT_Diaria_01_2016.xlsx -> external data from generation units.
 
