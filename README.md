@@ -1,5 +1,5 @@
 # ExecutorOpenDss
-This project is a C# OpenDSS customization to batch calculate the power flow of brazilian eletric distribution feeders. The project main objective is calculate energy and power losses. The feeder *.dss files (see feeder example directory) are very similar to the ones created by the brazilian regulatory agency (http://aneel.gov.br/) program (GeoPerdas.exe).
+This project is a C# OpenDSS (http://smartgrid.epri.com/SimulationTool.aspx) customization to batch calculate the power flow of brazilian eletric distribution feeders. The project main objective is calculate energy and power losses. The feeder *.dss files (see feeder example directory) are very similar to the ones created by the brazilian regulatory agency (http://aneel.gov.br/) program (GeoPerdas.exe).
 
 There are 3 directories in this project:
 1. ExecutorOpenDssBr: the C# project. 
