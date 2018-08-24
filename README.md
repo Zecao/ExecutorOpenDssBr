@@ -7,4 +7,4 @@ It uses 2 dll files EEPlus.dll (some Excel stuff) and Auxiliares.dll (the co aut
 
 2. FeederExample: a 13.8kV feeder example. 
 
-3. FME: A FME (check https://www.safe.com) project able to generate *.dss files, when connected to GeoPerdas SQLServer database (it mighty be useful for people who work for the eletric utilies).
+3. FME: A FME (check https://www.safe.com) project able to generate *.dss files, when connected to GeoPerdas SQLServer database (it mighty be useful for people who work for the any brazilian eletric utilies).
