@@ -14,9 +14,9 @@ The project also uses 2 dll files: EEPlus.dll (some Excel stuff) and Auxiliares.
 3. **FME**: A [FME](https://www.safe.com) project able to generate *.dss files, when connected to GeoPerdas SQLServer database (it mighty be useful for people who work for the any brazilian eletric utilies).
 
 In this directory there are another 3 files used by the FME to generate the fedeers.dss files:
-*Alim_gdis_OpenDSS.txt* -> just a txt.file with the feeders names to be generated.
-*recursos\curvasDeCargaAccess.xlsx* -> external data from curves used in consumption to demand transformation.
-*recursos\geracaoDistribuidaMT_Diaria_01_2016.xlsx* -> external data from generation units.
+\n*Alim_gdis_OpenDSS.txt* -> just a txt.file with the feeders names to be generated.
+\n*recursos\curvasDeCargaAccess.xlsx* -> external data from curves used in consumption to demand transformation.
+\n*recursos\geracaoDistribuidaMT_Diaria_01_2016.xlsx* -> external data from generation units.
 
 A lot of code optimization can be done in this project, so any help is welcome. The code comments are in portuguese (sorry for non-portuguese natives).
 
