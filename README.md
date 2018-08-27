@@ -4,8 +4,8 @@ This project is a C# [OpenDSS](http://smartgrid.epri.com/SimulationTool.aspx) cu
 There are 3 directories in this project:
 1. **ExecutorOpenDssBr**: the C# project. As it is a complete Visual Studio project, there wont be any dificult to compile it.
 You'll have to only set up the local path of 2 resources directories:
-"Caminho dos arquivos dos alimentadores \*.dss", thats is the FeederExample path.
-"Caminho dos recursos permanentes", thats is the "global" resources files.
+"*Caminho dos arquivos dos alimentadores \*.dss*", thats is the FeederExample path.
+"*Caminho dos recursos permanentes*", thats is the "global" resources files.
 
 The project also uses 2 dll files: EEPlus.dll (some Excel stuff) and Auxiliares.dll (the co author Daniel Rocha routines) already included in the project.    
 
