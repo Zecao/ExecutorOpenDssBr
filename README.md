@@ -12,6 +12,6 @@ The project also uses 2 dll files: EEPlus.dll (that allows Excel files to be rea
 2. **FeederExample**: a 13.8kV feeder *.dss files. This is the directory where one the fedeer .DSS files (created by the DB export [ExportadorGeoPerdasDSS](https://github.com/Zecao/ExportadorGeoPerdasDSS) must be, one sub-directory per feeder. 
 There are also a "global" subdirectory named "recursos" with some .xlsx and .txt files with external information necessary to the "ExecutorOpenDssBr" run *.dss files, as the "linecode" and the "load profiles" files. As I use those files for all feeders, I've included them in a separated sub-directory.
 
-Some code optimization can be done in this project, so any help is welcome. The code comments are in portuguese (sorry for non-portuguese natives).
+Some code optimization can be done in this project, so any help is welcome. The code comments are in portuguese, so I apologize to the non-portuguese speaking people.
 
 Ezequiel C. Pereira
