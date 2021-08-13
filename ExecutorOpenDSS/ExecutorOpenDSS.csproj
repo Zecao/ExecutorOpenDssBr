@@ -68,12 +68,29 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Auxiliares">
-      <HintPath>Bibliotecas\Auxiliares.dll</HintPath>
+      <HintPath>Lib\Auxiliares.dll</HintPath>
+    </Reference>
+    <Reference Include="dss_sharp, Version=0.10.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Lib\dss_sharp.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus">
-      <HintPath>Bibliotecas\EPPlus.dll</HintPath>
+      <HintPath>Lib\EPPlus.dll</HintPath>
     </Reference>
     <Reference Include="PresentationFramework.Aero" />
+    <Reference Include="QuickGraph, Version=3.6.61114.0, Culture=neutral, PublicKeyToken=f3fb40175eec2af3, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Lib\QuickGraph.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph.Data">
+      <HintPath>Lib\QuickGraph.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph.Graphviz">
+      <HintPath>Lib\QuickGraph.Graphviz.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph.Serialization">
+      <HintPath>Lib\QuickGraph.Serialization.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Windows.Forms" />
@@ -94,11 +111,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="Interfaces\OpcoesAvancadas.xaml">
+    <Page Include="Interfaces\Options.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Interfaces\FeriadosWindow.xaml">
+    <Page Include="Interfaces\HolidaysWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -106,33 +123,47 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="Classes Auxiliares\ArqXML.cs" />
-    <Compile Include="Classes Auxiliares\EnergiaMes.cs" />
-    <Compile Include="Classes Auxiliares\LoadMultMes.cs" />
-    <Compile Include="Classes Auxiliares\MyEnergyMeter.cs" />
-    <Compile Include="Classes Auxiliares\ParamAvancados.cs" />
-    <Compile Include="Classes Auxiliares\TipoDiasMes.cs" />
-    <Compile Include="Classes Auxiliares\ParamConexoesSE.cs" />
-    <Compile Include="Classes Principais\AlimentadoresCemig.cs" />
+    <Compile Include="AuxClasses\XMLFile.cs" />
+    <Compile Include="AuxClasses\FeederMetering.cs" />
+    <Compile Include="AuxClasses\MonthlyEnergy.cs" />
+    <Compile Include="AuxClasses\MonthLoadMult.cs" />
+    <Compile Include="MainClasses\MyEnergyMeter.cs" />
+    <Compile Include="MainClasses\AdvancedParameters.cs" />
+    <Compile Include="AuxClasses\Calendar.cs" />
+    <Compile Include="UnderConstruction\SEConnectionsParameters.cs" />
+    <Compile Include="MainClasses\CemigFeeders.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Classes Auxiliares\ArqManip.cs" />
-    <Compile Include="Classes Auxiliares\ConexoesSE.cs" />
-    <Compile Include="Classes Principais\OperacoesDSS.cs" />
-    <Compile Include="Classes Principais\ParametrosGUI.cs" />
-    <Compile Include="Classes Principais\ResultadoFluxo.cs" />
-    <Compile Include="Interfaces\Configuracoes.cs" />
-    <Compile Include="Classes Principais\ParamGeraisDSS.cs" />
-    <Compile Include="Classes Principais\ExecutaFluxo.cs" />
-    <Compile Include="Classes Auxiliares\LeXLSX.cs" />
-    <Compile Include="Classes Auxiliares\ListasOp.cs" />
-    <Compile Include="Interfaces\OpcoesAvancadas.xaml.cs">
-      <DependentUpon>OpcoesAvancadas.xaml</DependentUpon>
+    <Compile Include="AuxClasses\TxtFile.cs" />
+    <Compile Include="MainClasses\IsolatedLoads.cs" />
+    <Compile Include="MainClasses\TransformerVoltageLevelAnalysis.cs" />
+    <Compile Include="MainClasses\VoltageLevelAnalysis.cs" />
+    <Compile Include="UnderConstruction\SEConnections.cs" />
+    <Compile Include="MainClasses\LoopAnalysis.cs" />
+    <Compile Include="MainClasses\VoltageReguladorAnalysis.cs" />
+    <Compile Include="MainClasses\ObjDSS.cs" />
+    <Compile Include="Reconfiguration\NOSwitchAnalysis.cs" />
+    <Compile Include="Reconfiguration\Switch.cs" />
+    <Compile Include="MainClasses\DailyPowerFlow.cs" />
+    <Compile Include="MainClasses\MonthlyPowerFlow.cs" />
+    <Compile Include="UnderConstruction\ComparacaoManobras.cs" />
+    <Compile Include="Reconfiguration\DicNomeBranchs.cs" />
+    <Compile Include="Reconfiguration\FeederGraph.cs" />
+    <Compile Include="MainClasses\DSSAuxFunction.cs" />
+    <Compile Include="MainClasses\GUIParameters.cs" />
+    <Compile Include="MainClasses\PFResults.cs" />
+    <Compile Include="AuxClasses\XMLConfigurationFile.cs" />
+    <Compile Include="MainClasses\GeneralParameters.cs" />
+    <Compile Include="MainClasses\RunPowerFlow.cs" />
+    <Compile Include="AuxClasses\XLSXFile.cs" />
+    <Compile Include="AuxClasses\ListOperation.cs" />
+    <Compile Include="Interfaces\Options.xaml.cs">
+      <DependentUpon>Options.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Interfaces\FeriadosWindow.xaml.cs">
-      <DependentUpon>FeriadosWindow.xaml</DependentUpon>
+    <Compile Include="Interfaces\HolidaysWindow.xaml.cs">
+      <DependentUpon>HolidaysWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -140,7 +171,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes Principais\MatrizDadosPU.cs" />
+    <Compile Include="MainClasses\LoadProfilePU.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -158,6 +189,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -165,20 +199,13 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <COMReference Include="OpenDSSengine">
-      <Guid>{8BFDE413-245A-4514-B151-B16DCC243796}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">
       <Visible>False</Visible>
