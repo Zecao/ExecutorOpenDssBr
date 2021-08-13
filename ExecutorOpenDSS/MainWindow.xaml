@@ -53,8 +53,8 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="1" Content="Mês" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,5,0,0" Height="26" Width="32"/>
-        <ComboBox Grid.Row="2" x:Name="mesComboBox" HorizontalAlignment="Left" Height="22" Width="120" Margin="10,7,0,2" >
+        <Label Grid.Row="1" Content="Mês" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="10,5,0,0" Height="26" Width="32"/>
+        <ComboBox Grid.Row="2" x:Name="mesComboBox" HorizontalAlignment="Center" Height="22" Width="90" Margin="10,7,0,2" SelectionChanged="MesComboBox_SelectionChanged" >
             <ComboBoxItem IsSelected="True">Janeiro</ComboBoxItem>
             <ComboBoxItem>Fevereiro</ComboBoxItem>
             <ComboBoxItem>Março</ComboBoxItem>
@@ -69,11 +69,11 @@
             <ComboBoxItem>Dezembro</ComboBoxItem>
         </ComboBox>
 
-        <Label Grid.Row="1" Grid.Column="1" Content="Ano" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,5,0,0" Height="26" Width="32"/>
-        <TextBox Grid.Row="2" Grid.Column="1" x:Name="anoTextBox" HorizontalAlignment="Left" Height="24" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="120" LostFocus="anoTB_LostFocus" Margin="10,0,0,2" Text="2017"/>
+        <Label Grid.Row="1" Grid.Column="1" Content="Ano" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="10,5,0,0" Height="26" Width="32"/>
+        <TextBox Grid.Row="2" Grid.Column="1" x:Name="anoTextBox" HorizontalAlignment="Center" Height="24" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" LostFocus="AnoTB_LostFocus" Margin="10,0,0,2" Text="2020"/>
 
-        <Label Grid.Row="4" Grid.Column="0" Content="Tipo de fluxo" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Margin="10,5,0,0" Width="79"  />
-        <ComboBox Grid.Row="5" Grid.Column="0" x:Name="tipoFluxoComboBox" HorizontalAlignment="Left" Height="24" Width="120" LostFocus="tipoFluxoCB_LostFocus" KeyUp="tipoFluxoCB_LostFocus" Margin="10,6,0,10" >
+        <Label Grid.Row="4" Grid.Column="0" Content="Tipo de fluxo" HorizontalAlignment="Center" VerticalAlignment="Top" Height="26" Margin="10,5,0,0" Width="79"  />
+        <ComboBox Grid.Row="5" Grid.Column="0" x:Name="tipoFluxoComboBox" HorizontalAlignment="Center" Height="24" Width="90" LostFocus="TipoFluxoCB_LostFocus" KeyUp="TipoFluxoCB_LostFocus" Margin="10,6,0,10" >
             <ComboBoxItem IsSelected="True">Snap</ComboBoxItem>
             <ComboBoxItem>Hourly</ComboBoxItem>
             <ComboBoxItem>Daily</ComboBoxItem>
@@ -81,52 +81,51 @@
             <ComboBoxItem>Yearly</ComboBoxItem>
         </ComboBox>
 
-        <Label Grid.Row="4" Grid.Column="1" Content="Tipo de dia" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Margin="10,5,0,0" Width="69"/>
-        <ComboBox Grid.Row="5" Grid.Column="1" x:Name="tipoDiaComboBox" HorizontalAlignment="Left" Height="24" Width="120" IsEnabled="False" Margin="10,6,0,10" >
+        <Label Grid.Row="4" Grid.Column="1" Content="Tipo de dia" HorizontalAlignment="Center" VerticalAlignment="Top" Height="26" Margin="10,5,0,0" Width="69"/>
+        <ComboBox Grid.Row="5" Grid.Column="1" x:Name="tipoDiaComboBox" HorizontalAlignment="Center" Height="24" Width="90" IsEnabled="False" Margin="10,6,0,10" >
             <ComboBoxItem IsSelected="True">Dia Útil</ComboBoxItem>
             <ComboBoxItem>Sábado</ComboBoxItem>
             <ComboBoxItem>Domingo</ComboBoxItem>
         </ComboBox>
-        <CheckBox Grid.Row="5" Grid.ColumnSpan="2" x:Name="fluxoDiarioNativoCheckBox" Content="Fluxo Diário OpenDSS" HorizontalAlignment="Left" VerticalAlignment="Top" Height="16" Margin="10,10,0,0" Width="140" Grid.Column="3" />
 
-        <Label Grid.Row="4" Grid.Column="2" Content="Hora (0 a 23)" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Margin="10,5,0,0" Width="90"/>
-        <TextBox Grid.Row="5" Grid.Column="2" x:Name="horaTextBox" HorizontalAlignment="Left" Height="24" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="90" LostFocus="horaTextBox_LostFocus" Margin="10,0,0,10" Text="18"/>
+        <Label Grid.Row="4" Grid.Column="2" Content="Hora (0 a 23)" HorizontalAlignment="Center" VerticalAlignment="Top" Height="26" Margin="10,5,0,0" Width="90"/>
+        <TextBox Grid.Row="5" Grid.Column="2" x:Name="horaTextBox" HorizontalAlignment="Center" Height="24" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" LostFocus="HoraTextBox_LostFocus" Margin="10,0,0,10" Text="18"/>
 
 
         <Label Grid.Row="6" Grid.ColumnSpan="2" Content="Caminho dos arquivos dos alimentadores *.dss" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="264" />
 
-        <TextBox Grid.Row="7" Grid.ColumnSpan="4" x:Name="caminhoDSSTextBox" HorizontalAlignment="Stretch" Height="23" VerticalAlignment="Top" LostFocus="caminhoDSSTB_LostFocus" MouseDoubleClick="TextBox_MouseDoubleClick" Text="..\FeederExample\"/>
-        <Button Grid.Row="7" Grid.Column="3" x:Name="caminhoDSSBrowserButton" HorizontalAlignment="Right" VerticalAlignment="Top" Width="20" Height="23" Margin="0,0,55,0" Content="..." Click="caminhoDSSBrowse_Click" Grid.ColumnSpan="2"/>
+        <TextBox Grid.Row="7" Grid.ColumnSpan="4" x:Name="caminhoDSSTextBox" HorizontalAlignment="Stretch" Height="23" VerticalAlignment="Top" LostFocus="CaminhoDSSTB_LostFocus" MouseDoubleClick="TextBox_MouseDoubleClick" />
+        <Button Grid.Row="7" Grid.Column="3" x:Name="caminhoDSSBrowserButton" HorizontalAlignment="Right" VerticalAlignment="Top" Width="20" Height="23" Margin="0,0,55,0" Content="..." Click="CaminhoDSSBrowse_Click" Grid.ColumnSpan="2"/>
 
         <Label Grid.Row="8" Grid.ColumnSpan="2" Content="Caminho dos recursos permanentes" HorizontalAlignment="Left" VerticalAlignment="Top"/>
 
-        <TextBox Grid.Row="9" Grid.ColumnSpan="4" x:Name="caminhoPermTextBox" HorizontalAlignment="Stretch" Height="23" VerticalAlignment="Top" LostFocus="caminhoTB_LostFocus" MouseDoubleClick="TextBox_MouseDoubleClick" Text="..\FeederExample\ArquivosDssMTBT\Recursos\"/>
-        <Button Grid.Row="9" Grid.Column="3" x:Name="caminhoPermBrowserButton" HorizontalAlignment="Right" VerticalAlignment="Top" Width="20" Height="23" Margin="0,0,55,0" Content="..." Click="caminhoPermBrowse_Click" Grid.ColumnSpan="2"/>
+        <TextBox Grid.Row="9" Grid.ColumnSpan="4" x:Name="caminhoPermTextBox" HorizontalAlignment="Stretch" Height="23" VerticalAlignment="Top" LostFocus="CaminhoTB_LostFocus" MouseDoubleClick="TextBox_MouseDoubleClick" Text=""/>
+        <Button Grid.Row="9" Grid.Column="3" x:Name="caminhoPermBrowserButton" HorizontalAlignment="Right" VerticalAlignment="Top" Width="20" Height="23" Margin="0,0,55,0" Content="..." Click="CaminhoPermBrowse_Click" Grid.ColumnSpan="2"/>
 
-        <CheckBox Grid.Row="10" Grid.ColumnSpan="2" x:Name="AllowFormsCheckBox" Content="Exibir mensagens do OpenDSS" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="True" ToolTip="Por limitação do OpenDSS, uma vez desabilitadas, as mensagens só podem ser reabilitadas fechando o programa e reabrindo-o" Height="16" Margin="10,5,0,0" Width="180" />
+        <CheckBox Grid.Row="10" Grid.ColumnSpan="2" x:Name="AllowFormsCheckBox" Content="Exibir mensagens do OpenDSS" HorizontalAlignment="Left" IsChecked="True" Height="16" Margin="10,5,0,0" Width="180" />
 
-        <CheckBox Grid.Row="11" x:Name="otimizaCheckBox" Content="Otimiza LoadMult" HorizontalAlignment="Left" VerticalAlignment="Top" Height="16" Margin="10,6,0,0" Width="111" Checked="otimizaCheckBox_Checked" Unchecked="otimizaCheckBox_Unchecked" IsEnabled="False"/>
+        <CheckBox Grid.Row="11" x:Name="otimizaCheckBox" Content="Otimiza LoadMult" HorizontalAlignment="Left" VerticalAlignment="Top" Height="16" Margin="10,5,0,0" Width="111" Checked="OtimizaCheckBox_Checked" Unchecked="OtimizaCheckBox_Unchecked" IsEnabled="False"/>
 
         <Label Grid.Row="12" Grid.Column="3" Content="Incremento %:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0" Height="26" Width="110"/>
-        <TextBox Grid.Row="12" Grid.Column="4" x:Name="incrementoAjusteTextBox" HorizontalAlignment="Left" Height="23" Width="60" VerticalAlignment="Top" LostFocus="floatTextBox_LostFocus" MouseDoubleClick="TextBox_MouseDoubleClick" Text="5" Margin="10,0,0,0" IsEnabled="False"/>
-        <CheckBox Grid.Row="12" x:Name="simplificaMesComDUCheckBox" Content="Fluxo Mensal por DU" HorizontalAlignment="Left" VerticalAlignment="Top" Height="16" Margin="47,7,0,0" Width="162" Grid.ColumnSpan="2" IsEnabled="False" Grid.Column="1" />
-        <CheckBox Grid.Row="12" x:Name="otimizaEnergiaCheckBox" Content="Otimiza LoadMult Energia" HorizontalAlignment="Left" VerticalAlignment="Top" Height="16" Margin="10,6,0,0" Width="162" Checked="otimizaEnergiaCheckBox_Checked" Unchecked="otimizaEnergiaCheckBox_Unchecked" Grid.ColumnSpan="2" />
+        <TextBox Grid.Row="12" Grid.Column="4" x:Name="incrementoAjusteTextBox" HorizontalAlignment="Left" Height="23" Width="60" VerticalAlignment="Top" LostFocus="FloatTextBox_LostFocus" MouseDoubleClick="TextBox_MouseDoubleClick" Text="5" Margin="10,0,0,0" IsEnabled="False"/>
+        <CheckBox Grid.Row="12" x:Name="simplificaMesComDUCheckBox" Content="Fluxo Mensal por DU" HorizontalAlignment="Left" Margin="47,5,0,0" Width="140" Grid.ColumnSpan="2" IsEnabled="False" Grid.Column="1" Height="16" />
+        <CheckBox Grid.Row="12" x:Name="otimizaEnergiaCheckBox" Content="Otimiza LoadMult Energia" HorizontalAlignment="Left" Margin="10,5,0,4" Width="162" Checked="OtimizaEnergiaCheckBox_Checked" Unchecked="OtimizaEnergiaCheckBox_Unchecked" Grid.ColumnSpan="2" />
 
-        <CheckBox Grid.Row="13" Grid.ColumnSpan="2" x:Name="usarTensoesBarramentoCheckBox" Content="Usar Arquivo de Tensão de Saída da SE ou (pu):" HorizontalAlignment="Left" VerticalAlignment="Top" Height="23" Margin="10,8,0,0" Width="270" Checked="usarTensoesBarramentoCheckBox_Checked" Unchecked="usarTensoesBarramentoCheckBox_Unchecked"/>
-        <TextBox Grid.Row="13" Grid.Column="2" x:Name="tensaoSaidaBarTextBox" HorizontalAlignment="Center" Height="23" VerticalAlignment="Top" Text="1.0362" Margin="0,5,41,0" Width="60"  />
+        <CheckBox Grid.Row="13" Grid.ColumnSpan="2" x:Name="usarTensoesBarramentoCheckBox" Content="Setar Tensão de Saída da SE em  (pu):" HorizontalAlignment="Left" Height="23" Margin="10,5,0,0" Width="270" Checked="UsarTensoesBarramentoCheckBox_Checked" Unchecked="UsarTensoesBarramentoCheckBox_Unchecked"/>
+        <TextBox Grid.Row="13" Grid.Column="1" x:Name="tensaoSaidaBarTextBox" HorizontalAlignment="Right" Height="23" VerticalAlignment="Top" Text="1.0362" Margin="5,5,5,0" Width="60" Grid.RowSpan="1"  />
 
         <!--
         <Button Grid.Row="13" Grid.Column="2" x:Name="AddButton" Content="Add" Height="23" Width="30" HorizontalAlignment="Left" Margin="74,5,0,3" Click="AddButton_Click"/>
 -->
-        <Label Grid.Row="13" Grid.Column="3" Content="LoadMult Alt.:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,3,0,0" Height="26" Width="110" Grid.ColumnSpan="2"/>
-        <TextBox Grid.Row="13" Grid.Column="4" x:Name="loadMultAltTextBox" HorizontalAlignment="Left" Height="23" Width="60" VerticalAlignment="Top" Text="0.5" Margin="10,4,0,0" IsEnabled="False" />
+        <Label Grid.Row="13" Grid.Column="3" Content="LoadMult Alt.:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,5,0,0" Height="26" Width="110" Grid.ColumnSpan="2"/>
+        <TextBox Grid.Row="13" Grid.Column="4" x:Name="loadMultAltTextBox" HorizontalAlignment="Left" Height="23" Width="60" VerticalAlignment="Top" Text="0.5" Margin="10,5,0,0" IsEnabled="False" />
 
-        <Button Grid.Row="17" Grid.Column="1" x:Name="ExecutaButton" Content="Executar" Height="23" Width="100" HorizontalAlignment="Left" Click="ExecutaButton_Click" Margin="10,10,0,10"/>
-        <Button Grid.Row="17" Grid.Column="2" x:Name="CancelaButton" Content="Cancelar" Height="23" Width="100" HorizontalAlignment="Left" Click="CancelaButton_Click" IsCancel="True" IsEnabled="False" Margin="10,10,0,10"/>
+        <Button Grid.Row="17" Grid.Column="0" x:Name="ExecutaButton" Content="Executar" Height="23" Width="100" HorizontalAlignment="Center" Click="ExecutaButton_Click" Margin="10,10,0,10"/>
+        <Button Grid.Row="17" Grid.Column="1" x:Name="CancelaButton" Content="Cancelar" Height="23" Width="100" HorizontalAlignment="Center" Click="CancelaButton_Click" IsCancel="True" IsEnabled="False" Margin="10,10,0,10"/>
 
         <TextBox Grid.Row="18" Grid.ColumnSpan ="6" x:Name="display"  HorizontalAlignment="Stretch" TextWrapping="Wrap" IsReadOnly="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto" Margin="0,0,0,0"/>
-        <Button Grid.Row="17" Grid.Column="3" Visibility="Hidden"  x:Name="opcoesButton" Content="Avançado..." Height="23" Width="100" HorizontalAlignment="Center" Click="OpcoesAvancadasButton_Click" Grid.ColumnSpan="2" Margin="10,0,40,10" RenderTransformOrigin="0.65,12.087" VerticalAlignment="Bottom"/>
-        <Label Grid.Row="10" Grid.Column="3" Content="Ajuste Diferença 500KWh" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Margin="0,17,0,0" Width="150" Grid.ColumnSpan="2" Grid.RowSpan="2"/>
+        <Button Grid.Row="17" Grid.Column="2" x:Name="opcoesButton" Content="Avançado..." Height="23" Width="100" HorizontalAlignment="Center" Click="OpcoesAvancadasButton_Click" Grid.ColumnSpan="2" Margin="10,0,40,10" RenderTransformOrigin="0.65,12.087" VerticalAlignment="Bottom"/>
+        <Label Grid.Row="10" Grid.Column="3" Content="Ajuste Diferença 500KWh" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Margin="0,5,0,0" Width="150" Grid.ColumnSpan="2" Grid.RowSpan="2"/>
 
     </Grid>
 </Window>
