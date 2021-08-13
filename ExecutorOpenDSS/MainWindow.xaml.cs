@@ -3,21 +3,15 @@ using ExecutorOpenDSS.Classes_Auxiliares;
 using ExecutorOpenDSS.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+
 
 namespace ExecutorOpenDSS
 {
@@ -34,47 +28,76 @@ namespace ExecutorOpenDSS
         public System.Windows.Threading.Dispatcher _ebDispatcher;
 
         // variaveis da GUI
-        public ParametrosGUI _parGUI = new ParametrosGUI();
-        public ParamAvancados _parAvan = new ParamAvancados();
+        public GUIParameters _parGUI = new GUIParameters();
+        public AdvancedParameters _parAvan = new AdvancedParameters();
+        public GeneralParameters _paramGerais;
 
         // variaveis classe 
         public bool _cancelarExecucao;
-        public string _textoDisplay;
         public bool _fimExecucao = false;
         public string _logName;
-
         public DateTime _inicio;
-
         public int _indiceArq;
 
-        /*
-        public void Close()
-        {
-            //Finalização do processo
-            FinalizaProcesso();
-
-            this.Close();
-        }*/
+        // gerencia dados de medicao 
+        public FeederMetering _medAlim;
 
         //Função principal
         public MainWindow()
         {
+            // tem q ser inicializado antes dos componentes
             InitializeComponent();
 
             //Inicializa os valores da interface
             InicializaValores();
+
+            // copia variaveis MainWindow
+            _parGUI.CopiaVariaveis(this);
+
+            //
+            _parGUI.PreencheTipoDia();
+
+            //
+            _paramGerais = new GeneralParameters(this);
+
+            //
+            _medAlim = new FeederMetering(this,_paramGerais);
         }
 
         //Função que exibe as mensagens na TextBox e as grava em um arquivo de log
-        public void Disp(string mensagem, string log = "")
+        public void ExibeMsgDisplayMW(string mensagem, string log = "")
         {            
             //Pega o texto do display. Como a interface roda em outro processo, é necessária a utilização
             //de função delegada, dispatcher e invoke
             MainWindow.GetDisplayDelegate getDisplay = new MainWindow.GetDisplayDelegate(this.GetDisplay);
 
             //
-            string str = this._tbdDispatcher.Invoke(getDisplay).ToString(); 
+            string str = this._tbdDispatcher.Invoke(getDisplay).ToString();
 
+            // chama DispPvt
+            str = DispPvt(str, mensagem);
+
+            //Escreve no display da tela.Como a interface roda em outro processo, é necessária a utilização
+            //de função delegada, dispatcher e invoke
+            MainWindow.UpdateDisplayDelegate update = new MainWindow.UpdateDisplayDelegate(this.UpdateDisplay);
+            this._tbdDispatcher.BeginInvoke(update, str);
+        }
+
+        //Função que exibe as mensagens na TextBox e as grava em um arquivo de log
+        public void ExibeMsgDisplay(string mensagem, string log = "")
+        {
+            //
+            string str = GetDisplay();
+
+            // chama DispPvt
+            str = DispPvt(str, mensagem);
+
+            UpdateDisplay(str);
+        }
+
+        //
+        public string DispPvt(string str, string mensagem)
+        {
             //Verifica se o display está em branco.
             if (str.Equals(""))
             {
@@ -86,11 +109,7 @@ namespace ExecutorOpenDSS
                 //Caso o display não esteja em branco, pula uma linha e adiciona a mensagem
                 str = str + "\n" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ": " + mensagem;
             }
-
-            //Escreve no display da tela.Como a interface roda em outro processo, é necessária a utilização
-            //de função delegada, dispatcher e invoke
-            MainWindow.UpdateDisplayDelegate update = new MainWindow.UpdateDisplayDelegate(this.UpdateDisplay);
-            this._tbdDispatcher.BeginInvoke(update, str);
+            return str;
         }
 
         //Função chamada quando o botão "Executar" é clicado
@@ -99,93 +118,77 @@ namespace ExecutorOpenDSS
             //Desabilita a interface
             StatusUI(false);
 
-            //Inicializa o log
-            InicializaLog();
-            
             //TODO 
             _indiceArq = 0;
            
             //limpa display
             display.Text = "";
-            
-            // preenche variaveis da GUI antes da exeucao
-            _parGUI.preencheVariaveis(this);
 
-            // Inicializa um novo processo em background.
-            // O código é executado em um novo processo para manter a interface responsiva durante a execução
+            // preenche variaveis da GUI antes da exeucao
+            _parGUI.CopiaVariaveis(this);
+            
+            // 
             _tbdDispatcher = display.Dispatcher;
             _ebDispatcher = this.Dispatcher;
 
-            // cria obj worker para execucao do fluxo em background
-            BackgroundWorker worker = new BackgroundWorker();
-
-            //
-            worker.DoWork += worker_ExecutaFluxo;
-
             // Roda worker_ExecutaFluxo em background
-            worker.RunWorkerAsync();
+            Task.Run((Action)Worker_ExecutaFluxo);           
 
             //
             GravaConfig();
         }
 
-        // get arquivo lista Alimentadores 
-        private string getArqLstAlimentadores()
-        { 
-            return _parGUI._pathRaizGUI + "Recursos\\lstAlimentadores.m"; 
-        }
-
         // Executa Fluxo potencia
-        void worker_ExecutaFluxo(object sender, DoWorkEventArgs e)
+        void Worker_ExecutaFluxo()
         {
             //
             _inicio = DateTime.Now;
 
             //Mensagem de Início
-            Disp("Início");
+            ExibeMsgDisplayMW("Início");
 
             //Lê os alimentadores e armazena a lista de alimentadores 
-            List<string> alimentadores = AlimentadoresCemig.getTodos( getArqLstAlimentadores() );
-          
-            // instancia classe de parametros Gerais
-            ParamGeraisDSS paramGerais = new ParamGeraisDSS(this);
+            List<string> alimentadores = CemigFeeders.GetTodos( _parGUI.GetArqLstAlimentadores() );
+
+            // carrega dados de medicoes
+            _medAlim.CarregaDados();
 
             // instancia classe ExecutaFluxo
-            ExecutaFluxo executaFluxoObj = new ExecutaFluxo(this, paramGerais);
+            RunPowerFlow executaFluxoObj = new RunPowerFlow(this, _paramGerais);
 
-            switch (_parGUI._modoFluxo)
+            switch (_parGUI._tipoFluxo)
             {             
                 //Executa o Fluxo Snap
                 case "Snap":
 
-                    executaFluxoObj.executaSnap(alimentadores);
+                    executaFluxoObj.ExecutaSnap(alimentadores);
 
                     break;
 
                 //Executa o fluxo diário
                 case "Daily":
                      
-                    executaFluxoObj.executaDiario(alimentadores);
+                    executaFluxoObj.ExecutaDiario(alimentadores);
 
                     break;
 
                 //Executa o fluxo diário
                 case "Hourly":
 
-                    executaFluxoObj.executaDiario(alimentadores);
+                    executaFluxoObj.ExecutaDiario(alimentadores);
                     break;
 
                 //Executa o fluxo mensal
                 case "Monthly":
 
-                    executaFluxoObj.executaMensal(alimentadores);
+                    executaFluxoObj.ExecutaMensal(alimentadores);
                     
                     break;
 
                 //Executa o fluxo mensal
                 case "Yearly":
 
-                    executaFluxoObj.executaAnual(alimentadores);
+                    executaFluxoObj.ExecutaAnual(alimentadores);
 
                     break;
 
@@ -194,7 +197,12 @@ namespace ExecutorOpenDSS
             }
 
             //Finalização do processo
-            FinalizaProcesso();
+            FinalizaProcesso(false);
+
+            //Reabilita a interface. 
+            //Como a interface está em outro processo, é necessário utilizar um Dispatcher
+            SetButtonDelegate setar = new SetButtonDelegate(SetButton);
+            _ebDispatcher.BeginInvoke(setar);
         }
 
         //Botão para cancelar a execução 
@@ -205,7 +213,7 @@ namespace ExecutorOpenDSS
         }
 
         // Se o Fluxo for Snap ou Monthly, desabilita a combobox do tipo de dia
-        private void tipoFluxoCB_LostFocus(object sender, RoutedEventArgs e)
+        private void TipoFluxoCB_LostFocus(object sender, RoutedEventArgs e)
         {
             switch (tipoFluxoComboBox.Text)
             {
@@ -220,21 +228,21 @@ namespace ExecutorOpenDSS
                     simplificaMesComDUCheckBox.IsEnabled = false;
                     simplificaMesComDUCheckBox.IsChecked = false;
 
-                    //3. desabilita checkBox de escolha entre o fluxo diario nativo ou 24vezes snap
-                    fluxoDiarioNativoCheckBox.IsEnabled = false;
-
-                    //4. desabilita checkBox de relatorios
+                    //4. desabilita textBox hora
                     horaTextBox.IsEnabled = false;
 
                     //5. habilita combo box do tipo dia
-                    tipoDiaComboBox.IsEnabled = false;
+                    tipoDiaComboBox.IsEnabled = true;
+
+                    //5. habilita combo box do mes
+                    mesComboBox.IsEnabled = true;
 
                     //6. desabilita otimiza energia
                     otimizaEnergiaCheckBox.IsEnabled = false;
 
                     //8. desabilita otimiza Snap 
                     otimizaCheckBox.IsEnabled = true;
-                    
+
                     break;
 
                 case "Hourly":
@@ -245,20 +253,19 @@ namespace ExecutorOpenDSS
                     simplificaMesComDUCheckBox.IsEnabled = false;
                     simplificaMesComDUCheckBox.IsChecked = false;
 
-                    //3. desabilita checkBox de escolha entre o fluxo diario nativo ou 24vezes snap
-                    fluxoDiarioNativoCheckBox.IsEnabled = false;
-
-                    //4. habilita o textBox da hora
-                    horaTextBox.IsEnabled = true;
-
-                    //5. habilita combo box do tipo dia
-                    tipoDiaComboBox.IsEnabled = true;
+                    //5. habilita combo box do mes
+                    mesComboBox.IsEnabled = true;
 
                     //6. desabilita otimiza energia
                     otimizaEnergiaCheckBox.IsEnabled = false;
 
                     //8. desabilita otimiza Snap 
                     otimizaCheckBox.IsEnabled = false;
+
+                    // Habilitacao Interface 
+                    horaTextBox.IsEnabled = true; //4. habilita o textBox da hora
+                    tipoDiaComboBox.IsEnabled = true; //5. habilita combo box do tipo dia                   
+                    horaTextBox.IsEnabled = true; // textBox hora
 
                     break;
 
@@ -270,8 +277,11 @@ namespace ExecutorOpenDSS
                     simplificaMesComDUCheckBox.IsEnabled = false;
                     simplificaMesComDUCheckBox.IsChecked = false;
 
-                    //4. desabilita checkBox de relatorios
+                    //4. desabilita textBox hora
                     horaTextBox.IsEnabled = false;
+
+                    //5. habilita combo box do mes
+                    mesComboBox.IsEnabled = true;
 
                     //6. habilita combo box do tipo dia
                     tipoDiaComboBox.IsEnabled = true;
@@ -281,6 +291,9 @@ namespace ExecutorOpenDSS
 
                     //8. desabilita otimiza Snap 
                     otimizaCheckBox.IsEnabled = false;
+
+                    //9. desabilita modo horario
+                    _parGUI._modoHorario = false;
 
                     break;
 
@@ -293,14 +306,10 @@ namespace ExecutorOpenDSS
                     otimizaCheckBox.IsEnabled = false;
                     otimizaCheckBox.IsChecked = false;
 
-                    //3. desabilita checkBox de escolha entre o fluxo diario nativo ou 24vezes snap
-                    fluxoDiarioNativoCheckBox.IsEnabled = false;
-
-                    //4. desabilita checkBox de relatorios
+                    //4. desabilita textBox hora
                     horaTextBox.IsEnabled = false;
 
                     //5. habilita combo box do mes
-                    //mesComboBox.Text = "Janeiro";
                     mesComboBox.IsEnabled = true;
 
                     //6. desabilita combo box do tipo dia
@@ -313,6 +322,9 @@ namespace ExecutorOpenDSS
                     //7. habilita otimiza energia
                     otimizaEnergiaCheckBox.IsEnabled = true;
 
+                    //9. desabilita modo horario
+                    _parGUI._modoHorario = false;
+
                     break;
 
                 case "Yearly":
@@ -324,14 +336,11 @@ namespace ExecutorOpenDSS
                     otimizaCheckBox.IsEnabled = false;
                     otimizaCheckBox.IsChecked = false;
 
-                    //3. desabilita checkBox de escolha entre o fluxo diario nativo ou 24vezes snap
-                    fluxoDiarioNativoCheckBox.IsEnabled = false;
-
-                    //4. desabilita checkBox de relatorios
+                    //4. desabilita textBox hora
                     horaTextBox.IsEnabled = false;
 
                     //5. ajusta combo box do mes
-                    mesComboBox.Text = "Janeiro"; // TODO
+                    mesComboBox.Text = "Janeiro";
                     mesComboBox.IsEnabled = false;
 
                     //6. ajusta combo box do tipo dia
@@ -346,6 +355,9 @@ namespace ExecutorOpenDSS
                     //7. habilita otimiza energia
                     otimizaEnergiaCheckBox.IsEnabled = true;
 
+                    //9. desabilita modo horario
+                    _parGUI._modoHorario = false;
+
                     break;
 
                 //Caso contrário, habilita a combobox do tipo de dia
@@ -354,17 +366,9 @@ namespace ExecutorOpenDSS
                     break;
             }
         }
-
-        /*
-        //TODO 
-        private void HabilitaInterface()
-        {
-            //habilita checkBox de escolha entre o fluxo diario nativo ou 24vezes snap
-            fluxoDiarioNativoCheckBox.IsEnabled = true;
-        }*/
-        
+               
         //Verifica se o ano é válido
-        private void anoTB_LostFocus(object sender, RoutedEventArgs e)
+        private void AnoTB_LostFocus(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -394,7 +398,7 @@ namespace ExecutorOpenDSS
               
         //Função executada quando a TextBox caminhoDSS perde o foco.
         //Valida o caminho.
-        private void caminhoDSSTB_LostFocus(object sender, RoutedEventArgs e)
+        private void CaminhoDSSTB_LostFocus(object sender, RoutedEventArgs e)
         {
             if (!caminhoDSSTextBox.Text.Equals(""))
             {
@@ -421,7 +425,7 @@ namespace ExecutorOpenDSS
         }
 
         //Abre caixa de dialogo para seleção do caminho dos arquivos DSS
-        private void caminhoDSSBrowse_Click(object sender, RoutedEventArgs e)
+        private void CaminhoDSSBrowse_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new System.Windows.Forms.FolderBrowserDialog();
 
@@ -430,7 +434,7 @@ namespace ExecutorOpenDSS
             if (result == System.Windows.Forms.DialogResult.OK)
             {
                 caminhoDSSTextBox.Text = dialog.SelectedPath;
-                caminhoDSSTB_LostFocus(caminhoDSSTextBox, new RoutedEventArgs());
+                CaminhoDSSTB_LostFocus(caminhoDSSTextBox, new RoutedEventArgs());
             }
         }
 
@@ -441,7 +445,7 @@ namespace ExecutorOpenDSS
         }
 
         //Valida valores de caixas de texto cujo tipo é ponto flutuante
-        private void floatTextBox_LostFocus(object sender, RoutedEventArgs e)
+        private void FloatTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             TextBox sendert = (sender as TextBox);
 
@@ -482,44 +486,40 @@ namespace ExecutorOpenDSS
             usarTensoesBarramentoCheckBox.IsEnabled = status;
             tensaoSaidaBarTextBox.IsEnabled = status;
             otimizaEnergiaCheckBox.IsEnabled = status;
-            fluxoDiarioNativoCheckBox.IsEnabled = status;
             simplificaMesComDUCheckBox.IsEnabled = status;
             incrementoAjusteTextBox.IsEnabled = status;
             loadMultAltTextBox.IsEnabled = status;
+            horaTextBox.IsEnabled = status;
+            opcoesButton.IsEnabled = status;
+            AllowFormsCheckBox.IsEnabled = status;
 
-            // TODO ?
-            if (status)
-            {
-                tipoFluxoCB_LostFocus(tipoFluxoComboBox,new RoutedEventArgs());
-            }
+            //
             CancelaButton.IsEnabled = !status;
         }        
         
         //Finalização do processo
-        public void FinalizaProcesso()
+        public void FinalizaProcesso(bool cancelamento)
         {
-            if (_cancelarExecucao)
+            if (cancelamento)
             {   
-                Disp("Execução abortada.");
+                ExibeMsgDisplayMW("Execução abortada.");
             }
             else
             {
-                Disp("Fim da execução.");
+                ExibeMsgDisplayMW("Fim da execução.");
             }
 
             _fimExecucao = true;
             _cancelarExecucao = false;
-            GravaLog();
 
             // data final para calculo do tempo de execucao
             DateTime fim = DateTime.Now;
 
-            Disp("Tempo total de execução: " + (fim - _inicio).ToString());
+            ExibeMsgDisplayMW("Tempo total de execução: " + (fim - _inicio).ToString());
 
-            //Reabilita a interface. 
-            //Como a interface está em outro processo, é necessário utilizar um Dispatcher
-            SetButtonDelegate setar = new SetButtonDelegate(SetButton);
-            _ebDispatcher.BeginInvoke(setar);
+            // TODO erro 2020
+            // Grava Log
+            // GravaLog();
         }
         
         //Inicializa valores da interface
@@ -528,23 +528,25 @@ namespace ExecutorOpenDSS
             _cancelarExecucao = false;
 
             string arqConfig = AppDomain.CurrentDomain.BaseDirectory + "Configuracoes.xml";
-            Configuracoes.GetConfiguracoes(this, arqConfig);
-            
-            // TODO ?
-            tipoFluxoCB_LostFocus(tipoFluxoComboBox, new RoutedEventArgs());
+            XMLConfigurationFile.GetConfiguracoes(this, arqConfig);           
         }
         
         //Grava configurações
-        private void GravaConfig()
+        public void GravaConfig()
         {
             string arqConfig = AppDomain.CurrentDomain.BaseDirectory + "Configuracoes.xml";
-            Configuracoes.SetConfiguracoes(this, arqConfig);
+            XMLConfigurationFile.SetConfiguracoes(this, arqConfig);
         }
 
         //Grava o conteúdo da caixa de texto "display" em um arquivo de log nomeado com a data e hora atuais
-        private void GravaLog()
+        public void GravaLog()
         {
+            //preenche _logName
+            InicializaLog();
+
             GetDisplayDelegate getDisplay = new GetDisplayDelegate(GetDisplay);
+            
+            // TODO fix me: erro se Log.txt nao existir
             using (StreamWriter file = new StreamWriter(_logName, true))
             {
                 string str = _tbdDispatcher.Invoke(getDisplay).ToString();
@@ -559,7 +561,7 @@ namespace ExecutorOpenDSS
             _logName = AppDomain.CurrentDomain.BaseDirectory + "Log.txt";
             
             //Apaga o arquivo de log existente
-            ArqManip.SafeDelete(_logName);            
+            TxtFile.SafeDelete(_logName);            
         }     
                 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -611,7 +613,7 @@ namespace ExecutorOpenDSS
         }
 
         //
-        private void otimizaCheckBox_Checked(object sender, RoutedEventArgs e)
+        private void OtimizaCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             // desabilita outro otimiza
             otimizaEnergiaCheckBox.IsChecked = false;
@@ -622,34 +624,34 @@ namespace ExecutorOpenDSS
         }
 
         //
-        private void otimizaCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        private void OtimizaCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             // habilita Interfaces
             incrementoAjusteTextBox.IsEnabled = false;
             loadMultAltTextBox.IsEnabled = false;
+
+            otimizaCheckBox.IsChecked = false;         
         }
 
-        private void otimizaEnergiaCheckBox_Checked(object sender, RoutedEventArgs e)
+        private void OtimizaEnergiaCheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            // desabilita outro otimiza
-            otimizaCheckBox.IsChecked = false;            
-
             // habilita Interfaces
             incrementoAjusteTextBox.IsEnabled = true;
             simplificaMesComDUCheckBox.IsEnabled = true;
             loadMultAltTextBox.IsEnabled = true;
         }
 
-        private void otimizaEnergiaCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        private void OtimizaEnergiaCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             // desabilita Interfaces
             incrementoAjusteTextBox.IsEnabled = false;
             simplificaMesComDUCheckBox.IsEnabled = false;
+            simplificaMesComDUCheckBox.IsChecked = false;
             loadMultAltTextBox.IsEnabled = false;
         }
 
         // Caminho
-        private void caminhoTB_LostFocus(object sender, RoutedEventArgs e)
+        private void CaminhoTB_LostFocus(object sender, RoutedEventArgs e)
         {
             if (!caminhoPermTextBox.Text.Equals(""))
             {
@@ -676,14 +678,14 @@ namespace ExecutorOpenDSS
         }
 
         // seleciona caminho path recursos permanentes
-        private void caminhoPermBrowse_Click(object sender, RoutedEventArgs e)
+        private void CaminhoPermBrowse_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new System.Windows.Forms.FolderBrowserDialog();
             System.Windows.Forms.DialogResult result = dialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
                 caminhoPermTextBox.Text = dialog.SelectedPath;
-                caminhoDSSTB_LostFocus(caminhoPermTextBox, new RoutedEventArgs());
+                CaminhoDSSTB_LostFocus(caminhoPermTextBox, new RoutedEventArgs());
             }
         }
 
@@ -702,57 +704,67 @@ namespace ExecutorOpenDSS
         }
 
         // habilita Text, caso conformo 
-        private void usarTensoesBarramentoCheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            // desabilita TextBox valor default pu
-            tensaoSaidaBarTextBox.IsEnabled = false;
-        }
-
-        private void usarTensoesBarramentoCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        private void UsarTensoesBarramentoCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             // habilita TextBox valor default pu
             tensaoSaidaBarTextBox.IsEnabled = true;
         }
 
-        private void calculaPUotm_Checked(object sender, RoutedEventArgs e)
+        private void UsarTensoesBarramentoCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            // desahabilita TextBox valor default pu
+            tensaoSaidaBarTextBox.IsEnabled = false;
+        }
+
+        private void CalculaPUotm_Checked(object sender, RoutedEventArgs e)
         {
             //desabilita PUSaidaSE arquivo
             usarTensoesBarramentoCheckBox.IsChecked = false;
         }
 
-        private void horaTextBox_LostFocus(object sender, RoutedEventArgs e)
+        // perda de foco TexBox hora do modo diario
+        private void HoraTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             double horaInt = Int32.Parse(horaTextBox.Text);
 
             // verifica se hora eh valida
             if (horaInt < 0 || horaInt > 23)
             {
-                //TODO
-                //UpdateDisplay("Entre com uma hora válida!");
-                Disp("Entre com uma hora válida!");
+                ExibeMsgDisplay("Entre com uma hora válida, entre 0-23hrs!");
+
+                _parGUI._hora = "0";
+                horaTextBox.Text = "0";
             }
             else
             {
-                //TODO nao dar update no display
                 _parGUI._hora = horaTextBox.Text;
-                //UpdateDisplay("Nova hora definida");
-                Disp("Nova hora definida");
+
+                ExibeMsgDisplay("Nova hora definida");
             }
         }
 
+        //
         private void OpcoesAvancadasButton_Click(object sender, RoutedEventArgs e)
         {
             // preenche variaveis da GUI antes da exeucao
-            _parGUI.preencheVariaveis(this);
+            _parGUI.CopiaVariaveis(this);
+
+            // preenche dispatcher do display que sera usado em funcoes avancadas
+            _tbdDispatcher = display.Dispatcher;
 
             // janela OpcoesAvancadas
-            OpcoesAvancadas opcoes = new OpcoesAvancadas(this, _parGUI, _parAvan);
+            Options opcoes = new Options(this);
 
-            //
-            if (opcoes.ShowDialog() == true)
-            {
-                _parAvan = opcoes._parAvan;
-            }
+            opcoes.ShowDialog();
+
+        }
+        
+        // Atualiza classe com mes escolhido
+        private void MesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            _parGUI._mes = mesComboBox.SelectedItem.ToString();
+            _parGUI.SetMes( mesComboBox.SelectedIndex + 1 );
+            _parGUI._mesAbrv3letras = _parGUI._mes.Substring(0, 3);
         }
     }
 }
