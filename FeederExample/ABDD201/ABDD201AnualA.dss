@@ -1,0 +1,17 @@
+! clear
+
+! new circuit.alimABDD201 bus1=BMT158195370,basekv=13.8,pu=1.036
+
+! Arquivo de curvas de carga normalizadas
+! Redirect "..\Recursos\CurvasTxt\CurvasDeCargaDU.dss"
+
+! Arquivo de condutores
+Redirect "..\Recursos\Condutores.dss"
+
+Redirect ABDD201Transformadores.dss
+Redirect ABDD201Reguladores.dss
+Redirect ABDD201Ramais.dss
+Redirect ABDD201ChavesMT.dss
+Redirect ABDD201SegmentosBT.dss
+Redirect ABDD201SegmentosMT.dss
+
