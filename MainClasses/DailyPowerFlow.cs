@@ -651,7 +651,9 @@ namespace ExecutorOpenDSS.Classes_Principais
                 default: // "daily"
                     _oDSS._DSSText.Command = "Set mode=daily  hour=0 number=24 stepsize=1h";
                     break;
-             }  
+             }
+            //DSSSolution.Algorithm = 1;
+            //DSSSolution.MaxIterations = 150;
 
             // resolve circuito 
             DSSSolution.Solve();
