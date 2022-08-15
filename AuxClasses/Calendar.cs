@@ -171,6 +171,8 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
             }
             else
             {
+                // TODO FIX ME
+                // da erro qnd arquivo de feriado nao existe. 
                 janela.ExibeMsgDisplay("Arquivo " + arquivo + " não encontrado");
 
                 MainWindow.MensagemDelegate mensagem = new MainWindow.MensagemDelegate(janela.Mensagem);
