@@ -79,6 +79,8 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
             BTEnergy = _geracaoPerdasPotEPerdasEnergia[12];
             MTLineLosses34KV = _geracaoPerdasPotEPerdasEnergia[13];
             TransformerAllLosses34KV = _geracaoPerdasPotEPerdasEnergia[14];
+            // TODO implementar
+            //KWhGD = injecaoEPerdasEnergia[15];
         }
 
         // operador soma  de energia 
@@ -116,6 +118,8 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
             BTEnergy = injecaoEPerdasEnergia[10];
             MTLineLosses34KV = injecaoEPerdasEnergia[11];
             TransformerAllLosses34KV = injecaoEPerdasEnergia[12];
+            // TODO implementar
+            //KWhGD = injecaoEPerdasEnergia[13];
         }
 
         internal void MultiplicaEnergia(int numDias)
@@ -133,7 +137,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
             BTEnergy = BTEnergy * numDias;
             MTLineLosses34KV = MTLineLosses34KV * numDias;
             TransformerAllLosses34KV = TransformerAllLosses34KV * numDias;
-            KWhGD = TransformerAllLosses34KV * numDias;
+            KWhGD = KWhGD * numDias;
         }
 
         public string FormataResultado(string nomeAlim)
