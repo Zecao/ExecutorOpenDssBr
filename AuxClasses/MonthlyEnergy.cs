@@ -14,7 +14,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
             _paramGeraisDSS = par;
         }
 
-        //Tradução da função carregaMapDemandaMaxAlim
+        // Load map from Excel file with month energy measurements 
         public void CarregaMapEnergiaMesAlim()
         {
             string nomeArqEnergiaCompl = _paramGeraisDSS._parGUI._pathRecursosPerm + _paramGeraisDSS._arqEnergia;
