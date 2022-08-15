@@ -293,7 +293,7 @@ namespace ExecutorOpenDSS.Classes_Principais
 
                 if (_mapIndVertices2Aresta.ContainsKey(lstVertices2)) 
                 {
-                    _janela.ExibeMsgDisplayMW("detectada inversao de lista de Vertices");
+                    _janela.ExibeMsgDisplay("detectada inversao de lista de Vertices");
                 }
 
             }
