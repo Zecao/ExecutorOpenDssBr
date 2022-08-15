@@ -40,11 +40,11 @@ namespace ExecutorOpenDSS.Classes_Principais
         public FeederGraph _grafo;
 
         public NOSwitchAnalysis(MainWindow janela, GeneralParameters par, List<string> lstAlimentadores, ObjDSS oDSS)
-        {
+        {           
             // inicializa variaveis de classe
             _janela = janela;
             _paramGerais = par;
-            _oDSS = oDSS;
+            _oDSS = oDSS;            
 
             // analisa chave NA de cada alimentador
             foreach (string nomeAlim in lstAlimentadores)
@@ -69,13 +69,19 @@ namespace ExecutorOpenDSS.Classes_Principais
 
             if (!ret)
             {
-                _janela.ExibeMsgDisplayMW("Problema ao executar fluxo só MT!");
+                _janela.ExibeMsgDisplay("Problema ao executar fluxo só MT!");
                 return;
             }
 
             // executa fluxo snap
             ret = _fluxoSoMT.ExecutaFluxoSnap();
-
+            
+            // Open the monophases lines, as it can contain a path to substation
+            _fluxoSoMT.RemoveMonophaseLineSegments();
+            
+            // executa fluxo snap
+            ret = _fluxoSoMT.ExecutaFluxoSnapSemRecarga();
+            
             // se exibeConvergencia 
             if (ret)
             {
@@ -127,7 +133,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                     _fluxoMensal._nFP++;
 
                     // plota numero de FPs
-                    _janela.ExibeMsgDisplayMW("Número de FPs: " + _fluxoMensal._nFP.ToString());
+                    _janela.ExibeMsgDisplay("Número de FPs: " + _fluxoMensal._nFP.ToString());
 
                     // plota pares otimizados
                     PlotaChavesOtimizadas();
@@ -140,7 +146,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         {
             foreach (string parChaves in _lstParDeChavesOtm)
             {
-                _janela.ExibeMsgDisplayMW(parChaves);
+                _janela.ExibeMsgDisplay(parChaves);
             }
         }
 
@@ -175,7 +181,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             _lstChavesNA = novaLstChavesNA;
 
             // plota numero chaves NA (filtradas)
-            _janela.ExibeMsgDisplayMW("\n N. chaves NA: " + _lstChavesNA.Count.ToString() );
+            _janela.ExibeMsgDisplay("\n N. chaves NA: " + _lstChavesNA.Count.ToString() );
         }
 
         // faz permutacao de ramos 
@@ -204,7 +210,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                     _lstParDeChavesOtm.Add(plot);
                     // DEBUG
                     // Informa manobra ao usuario
-                    //_janela.ExibeMsgDisplayMW("\n Fechar chaveNA: " + chaveNA.nome + " Abrir chaveNF: " + novaChaveNA);
+                    //_janela.ExibeMsgDisplay("\n Fechar chaveNA: " + chaveNA.nome + " Abrir chaveNF: " + novaChaveNA);
                 }
             }
         }
@@ -242,7 +248,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             DesfazManobra(novaChaveNA, chaveNA);
 
             // Informa manobra ao usuario
-            //_janela.ExibeMsgDisplayMW("\n Tensão antes: " + tensaoAntes.ToString("0.##") + " kV Tensão depois: " + tensaoDepois.ToString("0.##") + "kV \t");
+            //_janela.ExibeMsgDisplay("\n Tensão antes: " + tensaoAntes.ToString("0.##") + " kV Tensão depois: " + tensaoDepois.ToString("0.##") + "kV \t");
 
             return ("\t" + tensaoAntes.ToString("0.##") + "\t" + tensaoDepois.ToString("0.##") + "\t" + variacao.ToString("0.##") );
         }
@@ -252,7 +258,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         {
             /* // DEBUG
             // mensagem ao usuario
-            _janela.ExibeMsgDisplayMW("Análise ChaveNA: " + chaveNAinicial.nome);
+            _janela.ExibeMsgDisplay("Análise ChaveNA: " + chaveNAinicial.nome);
              * */
 
             // obtem lstChaves no ciclo da chaveNA analisada
@@ -300,9 +306,14 @@ namespace ExecutorOpenDSS.Classes_Principais
                     return null;
                 }
 
+                // DEBUG 
+                if (nomeChaveNF.Equals("ctr853573"))
+                {
+                    int debug = 0;
+                }
                 /* // DEBUG
                 // mensagem ao usuario
-                _janela.ExibeMsgDisplayMW("Análise ChaveNF: " + nomeChaveNF);
+                _janela.ExibeMsgDisplay("Análise ChaveNF: " + nomeChaveNF);
                  * */
 
                 // analisa 1 chave NF por vez
@@ -313,7 +324,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                     nomeNovaChaveNA = nomeChaveNF;
 
                     // DEBUG
-                    //_janela.ExibeMsgDisplayMW("Possível redução de perdas com abertura ChaveNF: " + nomeChaveNF + "->" + chaveNA.perdaPercentual.ToString("0.##") + "%" );
+                    //_janela.ExibeMsgDisplay("Possível redução de perdas com abertura ChaveNF: " + nomeChaveNF + "->" + chaveNA.perdaPercentual.ToString("0.##") + "%" );
                 }
                 else // se retorno igual a false (chave NF aumentou as perdas) interrompe a analise
                 { 
@@ -338,7 +349,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             // verifica se chave NF eh trifasica
             if (GetNumFases(nomeChaveNF) != 3) 
             {
-                _janela.ExibeMsgDisplayMW("Tentativa de reconfigurar chave 1# " + nomeChaveNF);
+                _janela.ExibeMsgDisplay("Tentativa de reconfigurar chave 1# " + nomeChaveNF);
                 return ret;
             }
 
@@ -475,7 +486,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             // verifica se isolou cargas
             if (_fluxoMensal.GetNumCargasIsoladas() != _numCargasIsoladas)
             {
-                _janela.ExibeMsgDisplayMW("Problema Isolamento de cargas!");
+                _janela.ExibeMsgDisplay("Problema Isolamento de cargas!");
             }
 
             // se alcancou valor menor de perdas & variacao da energia fornecida nao pode ser maior que 5%
@@ -561,7 +572,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                 linha += chave.nome + "\t";
             }
 
-            _janela.ExibeMsgDisplayMW(linha);
+            _janela.ExibeMsgDisplay(linha);
         }       
     }
 }
