@@ -14,7 +14,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
         public bool _verifTapsRTs = false;
         public string _strBatchEdit = ""; //batchEdit opendDss style string
 
-        public AdvancedParameters(Interfaces.Options jan )
+        public AdvancedParameters(MainWindow jan)
         {
             // parametros avancados
             _otimizaPUSaidaSE = jan.calculaPUOtm.IsChecked.Value;
