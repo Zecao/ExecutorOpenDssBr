@@ -17,7 +17,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         private DailyFlow _fluxoSA;
         private DailyFlow _fluxoDO;
 
-        private GeneralParameters _paramGerais; //TODO refactory uma vez que esta variavel ja e armazena na classe _FluxoDiario (de maneira semelhante do getObjDSS
+        private GeneralParameters _paramGerais;
         private MainWindow _janela;
         public PFResults _resFluxoMensal;
 
@@ -47,7 +47,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             LoadFeederDSSFiles_weekDay();
 
             // 
-            _janela.ExibeMsgDisplayMW("Configuração Inicial");
+            _janela.ExibeMsgDisplay("Configuração Inicial");
 
             bool ret = ExecutaFluxoMensalSimples();
 
@@ -198,7 +198,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             string nivelTensaoPU = _fluxoDU._oDSS.GetActiveCircuit().Vsources.pu.ToString("0.###");
 
             //Plota perdas na tela //TODO fix me
-            _janela.ExibeMsgDisplayMW(_resFluxoMensal.GetResultadoFluxoToConsole(
+            _janela.ExibeMsgDisplay(_resFluxoMensal.GetResultadoFluxoToConsole(
                 nivelTensaoPU, _paramGerais.GetNomeAlimAtual()));
 
             return true;
@@ -225,7 +225,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                 string nivelTensaoPU = _fluxoDU._oDSS.GetActiveCircuit().Vsources.pu.ToString("0.###");
 
                 //Plota perdas na tela // TODO fix me
-                _janela.ExibeMsgDisplayMW(_resFluxoMensal.GetResultadoFluxoToConsole(nivelTensaoPU
+                _janela.ExibeMsgDisplay(_resFluxoMensal.GetResultadoFluxoToConsole(nivelTensaoPU
                     , _paramGerais.GetNomeAlimAtual()));
             }
             return ret;
