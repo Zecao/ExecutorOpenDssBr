@@ -24,7 +24,7 @@ namespace ExecutorOpenDSS
             }
             catch
             {
-                janela.ExibeMsgDisplayMW("Não foi possível escrever no arquivo " + fid, "E");
+                janela.ExibeMsgDisplay("Não foi possível escrever no arquivo " + fid, "E");
             }
         }
 
@@ -43,7 +43,7 @@ namespace ExecutorOpenDSS
                 //Caso não consiga, exibe mensagem de erro
                 catch
                 {
-                    janela.ExibeMsgDisplayMW("Não foi possível escrever no arquivo " + arquivo, "E");
+                    janela.ExibeMsgDisplay("Não foi possível escrever no arquivo " + arquivo, "E");
                 }
             }
         }
@@ -67,12 +67,12 @@ namespace ExecutorOpenDSS
                 }
                 catch
                 {
-                    _janela.ExibeMsgDisplayMW("Arquivo " + fid + " bloqueado. Tentando outro nome de arquivo");
+                    _janela.ExibeMsgDisplay("Arquivo " + fid + " bloqueado. Tentando outro nome de arquivo");
                     _janela._indiceArq++;
                 }
                 if (_janela._indiceArq > 10)
                 {
-                    _janela.ExibeMsgDisplayMW("Não foi possível escrever o arquivo " + fid + ". Verifique se possui permissão de escrita no local");
+                    _janela.ExibeMsgDisplay("Não foi possível escrever o arquivo " + fid + ". Verifique se possui permissão de escrita no local");
                     break;
                 }
             }
@@ -97,12 +97,12 @@ namespace ExecutorOpenDSS
                 }
                 catch 
                 {
-                        _janela.ExibeMsgDisplayMW("Arquivo " + fid + " bloqueado. Tentando outro nome de arquivo");
+                        _janela.ExibeMsgDisplay("Arquivo " + fid + " bloqueado. Tentando outro nome de arquivo");
                         _janela._indiceArq++;
                 }
                 if (_janela._indiceArq > 10)
                 {
-                    _janela.ExibeMsgDisplayMW("Não foi possível escrever o arquivo " + fid + ". Verifique se possui permissão de escrita no local");
+                    _janela.ExibeMsgDisplay("Não foi possível escrever o arquivo " + fid + ". Verifique se possui permissão de escrita no local");
                     break;
                 }
             }       
@@ -138,7 +138,7 @@ namespace ExecutorOpenDSS
                 }
                 catch
                 {
-                    _janela.ExibeMsgDisplayMW("Arquivo dos alimentadores não convergentes bloqueado!");
+                    _janela.ExibeMsgDisplay("Arquivo dos alimentadores não convergentes bloqueado!");
                 }
             }       
         }
