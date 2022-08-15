@@ -14,7 +14,6 @@ namespace ExecutorOpenDSS.Classes_Principais
 {
     class DailyFlow
     {
-        // TODO mover para outra classe
         private GeneralParameters _paramGerais;
         private MainWindow _janela;
         public ObjDSS _oDSS;
@@ -47,7 +46,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             // seta variavel
             _soMT = soMT;
 
-            // TODO 
+            // Sets day type (week day, saturday, sunday) 
             SetTipoDia(paramGerais._parGUI);
         }
 
@@ -69,6 +68,30 @@ namespace ExecutorOpenDSS.Classes_Principais
                         break;
                 }
             }
+        }
+
+        /*
+        Reduce {All | MeterName}
+        Default is "All". Reduce the circuit according to circuit reduction options. See "Set ReduceOptions" and 
+        "Set Keeplist" options The Energymeter objects actually perform the reduction. "All" causes all meters to reduce their
+        zones.
+        
+        ReduceOption = { Default or [null] | Stubs [Zmag=nnn] | MergeParallel | BreakLoops | Switches | Laterals | Ends} Strategy for reducing feeders.
+        Default is to eliminate all dangling end buses and buses without load, caps, or taps.
+        "Stubs [Zmag=0.02]" merges short branches with impedance less than Zmag (default = 0.02 ohms
+        "MergeParallel" merges lines that have been found to be in parallel
+        "Breakloops" disables one of the lines at the head of a loop.
+        "Ends" eliminates dangling ends only.
+        "Switches" merges switches with downline lines and eliminates dangling switches.
+        “Laterals [Keepload=YesNo]" uses the Remove command to eliminate all 1-phase laterals and optionally lump the load back to the parent 
+        2- or 3-phase feeder bus (the default behavior).
+        Marking buses with "Keeplist" will prevent their elimination.
+        */
+        public void RemoveMonophaseLineSegments()
+        {
+            _oDSS._DSSText.Command = "Set ReduceOption=Laterals KeepLoad=No";
+            _oDSS._DSSText.Command = "Reduce";
+            _oDSS._DSSText.Command = "BuildY"; 
         }
 
         //
@@ -108,17 +131,17 @@ namespace ExecutorOpenDSS.Classes_Principais
             // cria arquivo
             if (_soMT)
             {
-                ret = CarregaArquivoDSS_SoMT();
+                ret = LoadDSSCommandStringList_MVFeeder();
             }
             else
             {
-                ret = CarregaArquivoDSSemMemoria();
+                ret = LoadDSSCommandStringList_CompleteFeeder();
             }
             return ret;
         }
 
-        // Cria string com o arquivo DSS na memoria
-        private bool CarregaArquivoDSSemMemoria()
+        // Load DSS Comands string list
+        private bool LoadDSSCommandStringList_CompleteFeeder()
         {
             _lstCommandsDSS = new List<string>
             {
@@ -139,7 +162,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
             else
             {
-                _janela.ExibeMsgDisplayMW(_nomeAlim + ": Arquivos *.dss não encontrados");
+                _janela.ExibeMsgDisplay(_nomeAlim + ": Arquivos *.dss não encontrados");
 
                 return false;
             }
@@ -275,7 +298,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
             else 
             {
-                _janela.ExibeMsgDisplayMW("Arquivo " + nomeArqBcomp + " não encontrado");
+                _janela.ExibeMsgDisplay("Arquivo " + nomeArqBcomp + " não encontrado");
                 return false;
             }
 
@@ -290,7 +313,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         }
 
         // Cria string com o arquivo DSS na memoria
-        private bool CarregaArquivoDSS_SoMT()
+        private bool LoadDSSCommandStringList_MVFeeder()
         {
             _lstCommandsDSS = new List<string>
             {
@@ -313,7 +336,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
             else
             {
-                _janela.ExibeMsgDisplayMW(_nomeAlim + ": Arquivos *.dss não encontrados");
+                _janela.ExibeMsgDisplay(_nomeAlim + ": Arquivos *.dss não encontrados");
 
                 return false;            
             }
@@ -418,13 +441,13 @@ namespace ExecutorOpenDSS.Classes_Principais
             //informa usuario convergencia
             if (ret)
             {
-                _janela.ExibeMsgDisplayMW(GetMsgConvergencia(null, _nomeAlim));
+                _janela.ExibeMsgDisplay(GetMsgConvergencia(null, _nomeAlim));
             }
             return ret;
         }
 
         // Executa fluxo diario OU horario caso seja passado string hora
-        public bool ExecutaFluxoDiario(string hora=null)
+        public bool ExecutaFluxoDiario()
         {
             //Verifica se foi solicitado o cancelamento.
             if (_janela._cancelarExecucao)
@@ -439,7 +462,8 @@ namespace ExecutorOpenDSS.Classes_Principais
             bool ret = false;
 
             // _modoFluxo
-            // TODO : SE modo _calcDRPDRC ou _calcTensaoBarTrafo necessario passar a hora 
+            // TODO refatorar
+            // : SE modo _calcDRPDRC ou _calcTensaoBarTrafo necessario passar a hora 
             if (_paramGerais._parGUI._tipoFluxo.Equals("Hourly"))
             {
                 ret = ExecutaFluxoDiarioOpenDSSPvt(_paramGerais._parGUI._hora);
@@ -452,7 +476,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             //informa usuario convergencia
             if (ret)
             {
-                _janela.ExibeMsgDisplayMW(GetMsgConvergencia(null, _nomeAlim));
+                _janela.ExibeMsgDisplay(GetMsgConvergencia(null, _nomeAlim));
             }
             return ret;
         }
@@ -475,30 +499,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             //informa usuario convergencia
             if (ret)
             {
-                _janela.ExibeMsgDisplayMW(GetMsgConvergencia(null, _nomeAlim));
-            }
-            return ret;
-        }
-
-        // Executa fluxo horario caso seja passado string hora
-        public bool ExecutaFluxoMaximaDiaria()
-        {
-            //Verifica se foi solicitado o cancelamento.
-            if (_janela._cancelarExecucao)
-            {
-                return false;
-            }
-
-            // carrega objeto OpenDSS
-            CarregaDSS();
-
-            // variavel de retorno;
-            bool ret = ExecutaFluxoDiarioOpenDSSPvt(null);
-
-            //informa usuario convergencia
-            if (ret)
-            {
-                _janela.ExibeMsgDisplayMW(GetMsgConvergencia(null, _nomeAlim));
+                _janela.ExibeMsgDisplay(GetMsgConvergencia(null, _nomeAlim));
             }
             return ret;
         }
@@ -507,7 +508,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         internal void CarregaDSS()
         {
             // se esta no modo otimiza && aproximacao diario, carrega alimenador somente 1 vez
-            if (_paramGerais._parGUI._otmPorEnergia && _paramGerais._parGUI.GetAproximaFluxoMensalPorDU()) //_paramGerais._parGUI._otmPorDemMax)
+            if (_paramGerais._parGUI._otmPorEnergia && _paramGerais._parGUI.GetAproximaFluxoMensalPorDU())
             {
                 CarregaDSSOtm();
             }
@@ -541,26 +542,32 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
         }
 
-        // Executa fluxo Snap
         public bool ExecutaFluxoSnap()
         {
             // carrega alimentador no objDSS
             CarregaDSS();
 
+            //
+            return (ExecutaFluxoSnapSemRecarga());
+        }
+
+        // Executa fluxo Snap
+        public bool ExecutaFluxoSnapSemRecarga()
+        {
             // Executa fluxo Snap PVT
             bool ret = ExecutaFluxoSnapPvt();
 
             //informa usuario convergencia
             if (ret)
             {
-                _janela.ExibeMsgDisplayMW(GetMsgConvergencia(null, _nomeAlim));
+                _janela.ExibeMsgDisplay(GetMsgConvergencia(null, _nomeAlim));
             }
 
             //nivel pu
             string nivelTensaoPU = _oDSS.GetActiveCircuit().Vsources.pu.ToString("0.###");
 
             //Plota perdas na tela
-            _janela.ExibeMsgDisplayMW(_resFluxo.GetResultadoFluxoToConsole(
+            _janela.ExibeMsgDisplay(_resFluxo.GetResultadoFluxoToConsole(
                 nivelTensaoPU, _paramGerais.GetNomeAlimAtual()));
 
             return ret;
@@ -578,7 +585,7 @@ namespace ExecutorOpenDSS.Classes_Principais
 
             if (loadMult == 0 )
             {
-                _janela.ExibeMsgDisplayMW("LoadMult igual a 0");
+                _janela.ExibeMsgDisplay("LoadMult igual a 0");
                 return false;
             }
 
@@ -590,7 +597,6 @@ namespace ExecutorOpenDSS.Classes_Principais
                 DSSCircuit.Vsources.pu = double.Parse(_paramGerais._parGUI._tensaoSaidaBarUsuario);
             }
 
-            // TODO erro em reconfiguracao
             // seta algorithm Normal ou Newton
             _oDSS._DSSText.Command = "Set Algorithm = " + _paramGerais._AlgoritmoFluxo;
 
@@ -616,7 +622,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             return false;
         }
 
-        //Tradução da função executaFluxoDiarioOpenDSSNativoOpenDSS
+        // Run daily PowerFlow (pvt)
         private bool ExecutaFluxoDiarioOpenDSSPvt(string hora)
         {
             //% Interfaces
@@ -628,7 +634,7 @@ namespace ExecutorOpenDSS.Classes_Principais
 
             if (loadMult == 0)
             {
-                _janela.ExibeMsgDisplayMW("LoadMult igual a 0");
+                _janela.ExibeMsgDisplay("LoadMult igual a 0");
                 return false;
             }
 
@@ -641,7 +647,6 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
 
             // TODO da erro no modulo reconfiguracao
-            // TODO da erro caso tente rodar em alim inexistente.
             switch (_paramGerais._parGUI._tipoFluxo)
             {
                 case "Hourly":
@@ -649,11 +654,9 @@ namespace ExecutorOpenDSS.Classes_Principais
                     break;
 
                 default: // "daily"
-                    _oDSS._DSSText.Command = "Set mode=daily  hour=0 number=24 stepsize=1h";
+                    _oDSS._DSSText.Command = "Set mode=daily hour=0 number=24 stepsize=1h";
                     break;
              }
-            //DSSSolution.Algorithm = 1;
-            //DSSSolution.MaxIterations = 150;
 
             // resolve circuito 
             DSSSolution.Solve();
@@ -731,6 +734,7 @@ namespace ExecutorOpenDSS.Classes_Principais
 
         }
 
+        // TODO criar interface
         private void IteraSobreLine(Circuit dSSCircuit)
         {
             //DEBUG
@@ -873,18 +877,20 @@ namespace ExecutorOpenDSS.Classes_Principais
 
         Use this Option to turn sampling on or off.
           */
-        // Tradução da Função gravaValoresEnergyMeter
+        // Get EnergyMeter values
         public bool GetValoresEnergyMeter()
         {
             // preenche saida com as perdas do alimentador e verifica se dados estao corretos (ie. convergencia)
             bool ret = _resFluxo.GetPerdasAlim(_oDSS._DSSObj.ActiveCircuit);
-
+            
+            /* // TODO verificar se precisa desta funcao
             // verifica geracao das usinas (i.e. se estao conectadas)
             VerifGerUsinasGDMT();
-
+            */
             return ret;
         }
 
+        // TODO verificar se estou usando esta funcao
         // verifica se usina do alimentador gerou energia, informando no display da tela.
         private void VerifGerUsinasGDMT()
         {
@@ -904,7 +910,7 @@ namespace ExecutorOpenDSS.Classes_Principais
 
                     if (genRegisterValues == null)
                     {
-                        _janela.ExibeMsgDisplayMW("Usina desconectada!");
+                        _janela.ExibeMsgDisplay("Usina desconectada!");
                     }
 
                 } while (_oDSS.GetActiveCircuit().Generators.Next != 0);
