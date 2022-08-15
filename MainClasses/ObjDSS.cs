@@ -43,8 +43,10 @@ namespace ExecutorOpenDSS.Classes_Principais
             // Inicializa servidor COM
             _DSSObj.Start(0);
 
+            /* TODO dss_sharp.DSSException: 'Cannot activate output with no console available! If you want to use a message output callback, register it before enabling AllowForms.'
             // configuracoes gerais OpenDSS
             _DSSObj.AllowForms = _paramGerais._parGUI._allowForms;
+            */
 
             // interface texto
             _DSSText = _DSSObj.Text;
