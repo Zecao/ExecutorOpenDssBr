@@ -149,9 +149,9 @@ namespace ExecutorOpenDSS.Classes_Principais
         private void ImprimeNumClientesDRPDRC(MainWindow janela)
         {
             // numero clientes DRP
-            janela.ExibeMsgDisplayMW("Clientes com DRP: " + _numClientesDRP.ToString() );
-            janela.ExibeMsgDisplayMW("Clientes com DRC: " + _numClientesDRC.ToString() );
-            janela.ExibeMsgDisplayMW("Clientes totais: " + _numClientesTotal.ToString() );
+            janela.ExibeMsgDisplay("Clientes com DRP: " + _numClientesDRP.ToString() );
+            janela.ExibeMsgDisplay("Clientes com DRC: " + _numClientesDRC.ToString() );
+            janela.ExibeMsgDisplay("Clientes totais: " + _numClientesTotal.ToString() );
         }
 
         // grava numero clientes com DRP e DRC no arquivo
