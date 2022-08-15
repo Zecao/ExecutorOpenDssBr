@@ -22,7 +22,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
             else
             {
                 //Exibe mensagem de erro
-                janela.ExibeMsgDisplayMW("Arquivo " + arquivo + " não encontrado.");
+                janela.ExibeMsgDisplay("Arquivo " + arquivo + " não encontrado.");
 
                 //Retorna null
                 return null;
