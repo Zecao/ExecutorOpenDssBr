@@ -35,17 +35,28 @@ namespace ExecutorOpenDSS.Classes
         // formata resultado do fluco para console
         public string GetResultadoFluxoToConsole(string tensao, string nomeAlim)
         {
+            double totalKWh = _energyMeter.KWh;
+            string gd = "";
+
+            // verifies Distributed Genaration 
+            if (_energyMeter.KWhGD != 0)
+            {
+                // adds DG genarator to totalkWH
+                totalKWh += _energyMeter.KWhGD;
+                gd = " (GD)";
+            }
+
             string tmp = "Alim\\PU SaidaSE:\\Energia(KWh)\\Perdas(KWh)\\Perdas(%)" +
                 "\n" + nomeAlim +
                 " \t" + tensao +
-                " \t" + _energyMeter.KWh.ToString("0.00") +
-                " \t" + _energyMeter.LossesKWh.ToString("0.00") +
+                " \t" + totalKWh.ToString("0.0") + gd +
+                " \t" + _energyMeter.LossesKWh.ToString("0.0") +
                 " \t" + CalcPercentualPerdas() + "%";
             return tmp;
         }
 
-        //Tradução da função calculaResultadoFluxoMensal
-        //O resultado no fluxo mensal eh armazenado na variavel da classe
+        // Calculates monthly Power flow results from 3 daily Power Flow (Sunday, Saturday and common days)
+        // O resultado no fluxo mensal eh armazenado na variavel da classe
         public void CalculaResultadoFluxoMensal(PFResults perdasDU, PFResults perdasSA, PFResults perdasDO, GeneralParameters paramGerais, MainWindow janela)
         {
             // Limpa medidor atual.
@@ -229,7 +240,7 @@ namespace ExecutorOpenDSS.Classes
             return percentual.ToString("0.000");
         }
 
-        //Tradução da função getPerdasAlim
+        // Get Feeder losses
         public bool GetPerdasAlim(Circuit DSSCircuit)
         {
             Dictionary<string, double> lossesMap = new Dictionary<string, double>();
