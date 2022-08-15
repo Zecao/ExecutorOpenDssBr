@@ -256,7 +256,7 @@ namespace ExecutorOpenDSS
             return _parGUI._pathRecursosPerm + "Ajuste_" + TipoDiasMes.GetMesAbrv(mes) + ".xlsx";
         }
 
-        // Tradução da função criaDiretorioDSS
+        // Get fedeer *.dss string directory
         private string GetDirAlimentadorDSS(string nomeAlm)
         {
             return _parGUI._pathRaizGUI + nomeAlm + "\\";
@@ -304,7 +304,7 @@ namespace ExecutorOpenDSS
             return _parGUI._pathRaizGUI + _nomeAlimAtual + "\\";
         }
         
-        //Tradução da função getLoadMult
+        // get OpenDSS LoadMult parameter
         public double GetLoadMult()
         {
             // alimTmp
@@ -328,7 +328,7 @@ namespace ExecutorOpenDSS
                 }
                 else
                 {
-                    _janelaPrincipal.ExibeMsgDisplayMW(alimTmp + ": Alimentador não encontrado no arquivo de ajuste");
+                    _janelaPrincipal.ExibeMsgDisplay(alimTmp + ": Alimentador não encontrado no arquivo de ajuste");
 
                     // retorna loadMult Default
                     return _parGUI.loadMultDefault;
