@@ -38,7 +38,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
         public void CarregaDados()
         {
             // Arquivo de loadMUlt sempre sera carregado
-            _janela.ExibeMsgDisplayMW("Carregando arquivo de LoadMults...");
+            _janela.ExibeMsgDisplay("Carregando arquivo de LoadMults...");
 
             // Carrega map com os valores dos loadMult por alimentador
             _reqLoadMultMes = new MonthLoadMult(_paramGerais);
@@ -46,7 +46,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
             // carrega arquivo de requisito uma unica vez
             if ((_janela._parGUI._otmPorEnergia) && (!_reqEnergiaMesCarregado))
             {
-                _janela.ExibeMsgDisplayMW("Carregando arquivo de requisitos de energia...");
+                _janela.ExibeMsgDisplay("Carregando arquivo de requisitos de energia...");
 
                 // Carrega map com valores de energia mes do alimentador
                 _reqEnergiaMes.CarregaMapEnergiaMesAlim();
@@ -57,7 +57,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
             // carrega maps conforme necessidade
             if ((_janela._parGUI._otmPorDemMax) && (!_reqDemandaMaxCarregado))
             {
-                _janela.ExibeMsgDisplayMW("Carregando arquivo de LoadMults demanda...");
+                _janela.ExibeMsgDisplay("Carregando arquivo de LoadMults demanda...");
 
                 // Carrega map com valores de demanda maxima do alimentador
                 _janela._medAlim.CarregaMapDemandaMaxAlim();
@@ -66,7 +66,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
             }
         }
 
-        //Tradução da função carregaMapDemandaMaxAlim
+        // Load map from Excel file with demand values
         private void CarregaMapDemandaMaxAlim( )
         {
             // TODO refactory 
