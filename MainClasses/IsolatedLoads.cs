@@ -12,8 +12,8 @@ namespace ExecutorOpenDSS.Classes_Principais
 {
     class IsolatedLoads
     {
-        private Circuit _circuit;
-        private GeneralParameters _param;
+        private readonly Circuit _circuit;
+        private readonly GeneralParameters _param;
         readonly List<string> _lstCargasIsoladas;
 
         // construtor

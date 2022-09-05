@@ -13,56 +13,30 @@ namespace ExecutorOpenDSS.Classes_Principais
     class MonthlyPowerFlow
     {
         public int _nFP = 0;
-        private DailyFlow _fluxoDU;
+        public DailyFlow _fluxoDU;
         private DailyFlow _fluxoSA;
         private DailyFlow _fluxoDO;
 
-        private GeneralParameters _paramGerais;
-        private MainWindow _janela;
+        private GeneralParameters _par;
         public PFResults _resFluxoMensal;
-
-        public MonthlyPowerFlow(GeneralParameters paramGerais, MainWindow janela, ObjDSS oDSS)
+                
+        public MonthlyPowerFlow(GeneralParameters paramGerais)
         {
-            // preenche variaveis da classe
-            _paramGerais = paramGerais;
-            _janela = janela;
+            _par = paramGerais;
+
+            ObjDSS oDSS = new ObjDSS(paramGerais);
 
             // fluxo dia util 
-            _fluxoDU = new DailyFlow(paramGerais, janela, oDSS, "DU");
+            _fluxoDU = new DailyFlow(paramGerais, oDSS, "DU");
 
             // fluxo sabado 
-            _fluxoSA = new DailyFlow(paramGerais, janela, oDSS, "SA");
+            _fluxoSA = new DailyFlow(paramGerais, oDSS, "SA");
 
             // fluxo domingo
-            _fluxoDO = new DailyFlow(paramGerais, janela, oDSS, "DO");
+            _fluxoDO = new DailyFlow(paramGerais, oDSS, "DO");
 
             // instancia obj resultado Mensal
             _resFluxoMensal = new PFResults();
-        }
-
-        // calcula fluxo mensal sobre o "caso base" e armazena resultado de perdas em variavel da classe.
-        public bool CalculaFluxoMensalBase()
-        {
-            // Load week day DSS files/struct  
-            LoadFeederDSSFiles_weekDay();
-
-            // 
-            _janela.ExibeMsgDisplay("Configuração Inicial");
-
-            bool ret = ExecutaFluxoMensalSimples();
-
-            return ret;
-        }
-
-
-        // OBS: criada este metodo nesta classe, para chamar a funcao do fluxo diario
-        // Executa fluxo diario OU horario caso seja passado string hora
-        public bool ExecutaFluxoHorario(string hora = null)
-        {
-            // variavel de retorno;
-            bool ret = _fluxoDU.ExecutaFluxoHorario(hora);           
-
-            return ret;
         }
 
         // ajusta modelo de carga
@@ -102,7 +76,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
 
             // se modelo de carga Cemig == true
-            if (_paramGerais._parAvan._modeloCargaCemig)
+            if (_fluxoDU._paramGerais._parGUI._expanderPar._modeloCargaCemig)
             {
                 List<string> lstCommandsDSSModeloCarga = new List<string>
                 {
@@ -134,36 +108,6 @@ namespace ExecutorOpenDSS.Classes_Principais
             return _fluxoDU.GetBarrasDRPDRC();
         }
 
-
-        public bool LoadFeederDSSFiles_weekDay()
-        {
-            // se nao carregar algum dos dias, retorna false
-            if (!_fluxoDU.CarregaAlimentador())
-            {
-                return false;
-            }
-            return true;
-        }
-
-        public bool CarregaAlimentador()
-        {
-            // se nao carregar algum dos dias, retorna false
-            if (!_fluxoDU.CarregaAlimentador())
-            {
-                return false;
-            }
-            if (!_fluxoSA.CarregaAlimentador())
-            {
-                return false;
-            }
-            if (!_fluxoDO.CarregaAlimentador())
-            {
-                return false;
-            }
-            return true;
-        }
-
-        // TODO refactory. pode ser fonte de problema retornar sempre _oDSS do DU.
         // obtem objetoDSS
         internal ObjDSS GetObjDSS()
         {
@@ -192,43 +136,52 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
 
             // calcula resultados mensal 
-            _resFluxoMensal.CalculaResultadoFluxoMensal(_fluxoDU._resFluxo, _fluxoSA._resFluxo, _fluxoDO._resFluxo, _paramGerais, _janela);
-
-            //nivel pu
-            string nivelTensaoPU = _fluxoDU._oDSS.GetActiveCircuit().Vsources.pu.ToString("0.###");
+            _resFluxoMensal.CalculaResultadoFluxoMensal(_fluxoDU._resFluxo, _fluxoSA._resFluxo, _fluxoDO._resFluxo, _fluxoDU._paramGerais);
 
             //Plota perdas na tela //TODO fix me
-            _janela.ExibeMsgDisplay(_resFluxoMensal.GetResultadoFluxoToConsole(
-                nivelTensaoPU, _paramGerais.GetNomeAlimAtual()));
+            _par._mWindow.ExibeMsgDisplay(_resFluxoMensal.GetResultadoFluxoToConsole(_fluxoDU._paramGerais.GetNomeAlimAtual(), _fluxoDU._oDSS));
 
             return true;
         }
 
         // Fluxo mensal simplificado (numDiasDoMes X fluxoDiaUtil)
-        internal bool ExecutaFluxoMensalSimples()
+        internal bool ExecutaFluxoMensalAproximacaoDU()
         {
             bool ret = false;
 
             //Executa fluxo diário openDSS
-            ret = _fluxoDU.ExecutaFluxoMensalSimples();
+            ret = _fluxoDU.ExecutaFluxoDiario();
 
-            // se convergiu 
-            if (ret)
-            {
-                // incrementa contador de fluxo
-                _nFP++;
+            //
+            SetEnergiaPerdasFluxoSimples();
 
-                // calculo perdas
-                _resFluxoMensal.SetEnergiaPerdasFluxoSimples(_fluxoDU._resFluxo, _paramGerais);
-
-                //nivel pu
-                string nivelTensaoPU = _fluxoDU._oDSS.GetActiveCircuit().Vsources.pu.ToString("0.###");
-
-                //Plota perdas na tela // TODO fix me
-                _janela.ExibeMsgDisplay(_resFluxoMensal.GetResultadoFluxoToConsole(nivelTensaoPU
-                    , _paramGerais.GetNomeAlimAtual()));
-            }
             return ret;
+        }
+
+        // Fluxo mensal simplificado (numDiasDoMes X fluxoDiaUtil)
+        internal bool ExecutaFluxoMensalAproximacaoDU_SemRecarga()
+        {
+            bool ret = false;
+
+            //Executa fluxo diário openDSS
+            ret = _fluxoDU.ExecutaFluxoDiarioSemRecarga();
+
+            //
+            SetEnergiaPerdasFluxoSimples();
+
+            return ret;
+        }
+
+        internal void SetEnergiaPerdasFluxoSimples()
+        {
+            // incrementa contador de fluxo
+            _nFP++;
+
+            // calculo perdas
+            _resFluxoMensal.SetEnergiaPerdasFluxoSimples(_fluxoDU._resFluxo, _fluxoDU._paramGerais);
+
+            //Plota perdas na tela // TODO fix me
+            _par._mWindow.ExibeMsgDisplay(_resFluxoMensal.GetResultadoFluxoToConsole(_fluxoDU._paramGerais.GetNomeAlimAtual(), _fluxoDU._oDSS));
         }
 
         // Conta cargas isoladas

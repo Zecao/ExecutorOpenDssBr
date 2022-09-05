@@ -85,18 +85,22 @@ namespace ExecutorOpenDSS.Classes_Principais
             return statusAberto;
         }
 
+        // OBS: altered to direct access to member 
+        // TODO debugar
         // verifica se eh linha chave
-        public static bool IsChave(Text dssText, string linha)
+        public static bool IsChave(Circuit dSSCircuit, string aresta)
         {
-            dssText.Command = "? " + linha + ".switch"; 
-                       
-            // nome Barra
-            string isChave = dssText.Result;
+            // verifies if its line (as it can also receive transformer/voltage regulator)
+            if (aresta.Contains("Line"))
+            {
+                // 
+                dSSCircuit.SetActiveElement(aresta);
 
-            if (isChave.Equals("True"))
-                return true;
-            else
-                return false;
+                bool ehChave = dSSCircuit.Lines.IsSwitch;
+
+                return ehChave;
+            }
+            return false;
         }
 
         // abre chave

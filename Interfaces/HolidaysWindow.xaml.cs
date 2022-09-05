@@ -13,7 +13,7 @@ namespace ExecutorOpenDSS.Interfaces
     /// 
     public partial class HolidaysWindow : Window
     {
-        private GUIParameters _parGUI;
+        private readonly GUIParameters _parGUI;
 
         public HolidaysWindow(GUIParameters parGUI)
         {

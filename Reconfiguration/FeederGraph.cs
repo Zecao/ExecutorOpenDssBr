@@ -46,15 +46,16 @@ namespace ExecutorOpenDSS.Classes_Principais
         public List<string> _lstNomeChavesNFcam1;
 
         private GeneralParameters _paramGerais;
-        private MainWindow _janela;
-        private Text _DSSText;
 
-        public FeederGraph(GeneralParameters par, MainWindow jan, Text DSSText)
+        private Text _DSSText;
+        private Circuit _DSS_SE;
+
+        public FeederGraph(GeneralParameters par, ObjDSS objDSS )
         {
             _paramGerais = par;
-            _janela = jan;
 
-            _DSSText = DSSText;
+            _DSSText = objDSS._DSSText;
+            _DSS_SE = objDSS.GetActiveCircuit();
 
             // get matriz incidencia da API OpenDSS
             GetMatrizIncidencia();
@@ -182,7 +183,6 @@ namespace ExecutorOpenDSS.Classes_Principais
                     // coloca nova list ano grafo
                     _matrizIncidencia.Add(sAresta1, lstVertices);
 
-
                     // NOVO codigo #######
                     // preenche map listaVertices -> Aresta
                     string strLstVertices = lstVertices[0] + "." + lstVertices[1];
@@ -254,6 +254,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         }
 
         // filtra arestas com chaves 
+        // OBS arestas sao: segmentosMT, chaves e reguladores
         private List<string> FiltraArestasComChaves(IEnumerable<Edge<string>> caminho)
         {
             // variavel tmp
@@ -279,21 +280,19 @@ namespace ExecutorOpenDSS.Classes_Principais
                     string nomeChave = _dicNomeBranchs.GetNomeBranchByIndice(indiceAresta);
 
                     // verifica se eh chave
-                    bool teste = Switch.IsChave(_DSSText, nomeChave);
-
-                    // armazena chave NF na lista 
-                    if (teste)
+                    if (Switch.IsChave(_DSS_SE, nomeChave))
                     {
                         // remove o "line."
                         nomeChave = nomeChave.Remove(0, 5);
 
+                        // armazena chave NF na lista 
                         lstNomeChavesNFcaminho.Add(nomeChave);
                     }
                 }
 
                 if (_mapIndVertices2Aresta.ContainsKey(lstVertices2)) 
                 {
-                    _janela.ExibeMsgDisplay("detectada inversao de lista de Vertices");
+                    _paramGerais._mWindow.ExibeMsgDisplay("detectada inversao de lista de Vertices");
                 }
 
             }

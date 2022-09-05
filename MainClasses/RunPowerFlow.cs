@@ -15,24 +15,17 @@ namespace ExecutorOpenDSS
 {
     class RunPowerFlow
     {
-        public static MainWindow _janela;
         public GeneralParameters _paramGerais;
-
-        public ObjDSS _oDSS;
         public DailyFlow _fluxoDiario;
         public MonthlyPowerFlow _fluxoMensal;
 
-        public RunPowerFlow(MainWindow janela, GeneralParameters par)
+        public RunPowerFlow(GeneralParameters par)
         {          
             // variaveis de classe
-            _janela = janela;
             _paramGerais = par;
 
-            // Instancia ObjDSS
-            _oDSS = new ObjDSS(_paramGerais);
-
             //Executa o Fluxo
-            _janela.ExibeMsgDisplay("Executando Fluxo...");
+            _paramGerais._mWindow.ExibeMsgDisplay("Executando Fluxo...");
         }
 
         // executa modo Snap
@@ -45,7 +38,7 @@ namespace ExecutorOpenDSS
             foreach (string nomeAlim in lstAlimentadoresCemig)
             {
                 // Verifica se foi solicitado o cancelamento.
-                if (_janela._cancelarExecucao)
+                if (_paramGerais._mWindow._cancelarExecucao)
                 {
                     break;
                 }
@@ -54,10 +47,7 @@ namespace ExecutorOpenDSS
                 _paramGerais.SetNomeAlimAtual(nomeAlim);
 
                 //cria objeto fluxo diario
-                _fluxoDiario = new DailyFlow(_paramGerais, _janela, _oDSS);
-
-                // carrega alimentador
-                _fluxoDiario.CarregaAlimentador();
+                _fluxoDiario = new DailyFlow(_paramGerais);
 
                 //Execução com otimização demanda energia
                 if (_paramGerais._parGUI._otmPorDemMax)
@@ -85,10 +75,16 @@ namespace ExecutorOpenDSS
             //Limpa Arquivos
             _paramGerais.DeletaArqResultados();
 
+            // return condition
+            if ( lstAlimentadoresCemig.Count == 0)
+            {
+                _paramGerais._mWindow.ExibeMsgDisplay("Lista de alimentadores vazia!");
+            }
+
             //Roda fluxo para cada alimentador
             foreach (string alim in lstAlimentadoresCemig)
             {
-                if (_janela._cancelarExecucao)
+                if (_paramGerais._mWindow._cancelarExecucao)
                 {
                     return;
                 }
@@ -97,30 +93,26 @@ namespace ExecutorOpenDSS
                 _paramGerais.SetNomeAlimAtual(alim);
 
                 //cria objeto fluxo diario
-                _fluxoMensal = new MonthlyPowerFlow(_paramGerais, _janela, _oDSS);
+                _fluxoMensal = new MonthlyPowerFlow(_paramGerais);
 
-                // se carregou alimentador
-                if (_fluxoMensal.CarregaAlimentador())
+                //Execução com otimização
+                if (_paramGerais._parGUI._otmPorEnergia)
                 {
-                    //Execução com otimização
-                    if (_paramGerais._parGUI._otmPorEnergia)
-                    {
-                        // Otimiza por energia
-                        Otimiza();
+                    // Otimiza por energia
+                    Otimiza();
 
-                        continue;
-                    }
-                    // Otimiza PU saida
-                    if (_paramGerais._parAvan._otimizaPUSaidaSE)
-                    {
-                        // Calcula nivel otimo PU
-                        OtimizaPUSaidaSE();
-
-                        continue;
-                    }
-                    //Execução padrão
-                    Mensal();
+                    continue;
                 }
+                // Otimiza PU saida
+                if (_paramGerais._parGUI._expanderPar._otimizaPUSaidaSE)
+                {
+                    // Calcula nivel otimo PU
+                    OtimizaPUSaidaSE();
+
+                    continue;
+                }
+                //Execução padrão
+                Mensal();
             }
 
             //Se modo otimiza grava arquivo load mult
@@ -134,7 +126,7 @@ namespace ExecutorOpenDSS
         internal void Snap(string noeAlim)
         {
             //Verifica se foi solicitado o cancelamento.
-            if (_janela._cancelarExecucao)
+            if (_paramGerais._mWindow._cancelarExecucao)
             {
                 return;
             }
@@ -153,7 +145,7 @@ namespace ExecutorOpenDSS
                 string alimTmp = _paramGerais.GetNomeAlimAtual();
 
                 //Exibe mensagem de erro, caso não encontrem os arquivos de resultados
-                _janela.ExibeMsgDisplay(alimTmp + ": Arquivos *.dss não encontrados");
+                _paramGerais._mWindow.ExibeMsgDisplay(alimTmp + ": Arquivos *.dss não encontrados");
             }
         }
 
@@ -161,7 +153,7 @@ namespace ExecutorOpenDSS
         internal void Otimiza()
         {
             // Verifica se foi solicitado o cancelamento.
-            if (_janela._cancelarExecucao)
+            if (_paramGerais._mWindow._cancelarExecucao)
             {
                 return;
             }
@@ -170,7 +162,7 @@ namespace ExecutorOpenDSS
             double loadMult = OtimizaPvt();
 
             // Atualiza map loadMultAlim
-            _janela._medAlim.AtualizaMapAlimLoadMult(loadMult);
+            _paramGerais._medAlim.AtualizaMapAlimLoadMult(loadMult);
         }
 
         // Otimiza Pvt
@@ -182,11 +174,11 @@ namespace ExecutorOpenDSS
             // loadMult inicial 
             double loadMultInicial = 0;
 
-            loadMultInicial = _janela._medAlim._reqLoadMultMes.GetLoadMult();
+            loadMultInicial = _paramGerais._medAlim._reqLoadMultMes.GetLoadMult();
 
             if ( loadMultInicial.Equals(double.NaN) )
             {
-                _janela.ExibeMsgDisplay(alimTmp + ": Alimentador não encontrado no arquivo de ajuste");
+                _paramGerais._mWindow.ExibeMsgDisplay(alimTmp + ": Alimentador não encontrado no arquivo de ajuste");
 
                 return loadMultInicial;
             }
@@ -194,7 +186,7 @@ namespace ExecutorOpenDSS
             // OBS: condicao de retorno: Skipa alimentadores com loadMult igual a zero se loadMult == 0 
             if (loadMultInicial == 0)
             {
-                _janela.ExibeMsgDisplay(alimTmp + ": Alimentador não otimizado! LoadMult=0");
+                _paramGerais._mWindow.ExibeMsgDisplay(alimTmp + ": Alimentador não otimizado! LoadMult=0");
 
                 return loadMultInicial;  
             }
@@ -202,7 +194,7 @@ namespace ExecutorOpenDSS
             // OBS: condicao de retorno: Skipa alimentadores com loadMult > 10 
             if ((loadMultInicial > 10) || (loadMultInicial < 0.1))
             {
-                _janela.ExibeMsgDisplay(alimTmp + ": Alimentador não otimizado! LoadMult = " + loadMultInicial);
+                _paramGerais._mWindow.ExibeMsgDisplay(alimTmp + ": Alimentador não otimizado! LoadMult = " + loadMultInicial);
                 
                 return _paramGerais._parGUI._loadMultAlternativo;
             }
@@ -229,17 +221,17 @@ namespace ExecutorOpenDSS
             _paramGerais.DeletaArqResultados();
 
             // cria arquivo e preenche Cabecalho, caso modo _calcDRPDRC
-            if (_paramGerais._parAvan._calcDRPDRC)
+            if (_paramGerais._parGUI._expanderPar._calcDRPDRC)
             {
                 // Cria arquivo cabecalho
-                VoltageLevelAnalysis.CriaArqCabecalho(_paramGerais, _janela);
+                VoltageLevelAnalysis.CriaArqCabecalho(_paramGerais);
             } 
 
             //Roda o fluxo para cada alimentador
             foreach (string nomeAlim in lstAlimentadoresCemig)
             {
                 //Verifica se foi solicitado o cancelamento.
-                if (_janela._cancelarExecucao)
+                if (_paramGerais._mWindow._cancelarExecucao)
                 {
                     return;
                 }
@@ -248,14 +240,10 @@ namespace ExecutorOpenDSS
                 _paramGerais.SetNomeAlimAtual(nomeAlim);
 
                 //cria objeto fluxo diario
-                _fluxoDiario = new DailyFlow(_paramGerais, _janela, _oDSS);             
+                _fluxoDiario = new DailyFlow(_paramGerais);             
 
-                // se carregou alimentador
-                if (_fluxoDiario.CarregaAlimentador())
-                {
-                    //Executa fluxo diário openDSS
-                    ExecutaFluxoDiarioOpenDSS();
-                }
+                //Executa fluxo diário openDSS
+                ExecutaFluxoDiarioOpenDSS();
             }
         }
 
@@ -268,7 +256,7 @@ namespace ExecutorOpenDSS
             // se nao convergiu 
             if (!ret)
             {
-                _janela.ExibeMsgDisplay(_paramGerais.GetNomeAlimAtual() + " alimentador não convergiu!");
+                _paramGerais._mWindow.ExibeMsgDisplay(_paramGerais.GetNomeAlimAtual() + " alimentador não convergiu!");
             }
         }
 
@@ -294,7 +282,7 @@ namespace ExecutorOpenDSS
                 for (int mes = 1; mes < 13; mes++)
                 {
                     // Verifica se foi solicitado o cancelamento.
-                    if (_janela._cancelarExecucao)
+                    if (_paramGerais._mWindow._cancelarExecucao)
                     {
                         return;
                     }          
@@ -303,40 +291,42 @@ namespace ExecutorOpenDSS
                     _paramGerais._parGUI.SetMes(mes);
 
                     //cria objeto fluxo diario
-                    _fluxoMensal = new MonthlyPowerFlow(_paramGerais, _janela, _oDSS);
+                    _fluxoMensal = new MonthlyPowerFlow(_paramGerais);
 
+                    /*
                     // se nao carregou alimentador retorna
                     if (_fluxoMensal.CarregaAlimentador())
+                    { */
+                    // Otimiza
+                    if (_paramGerais._parGUI._otmPorEnergia)
                     {
-                        // Otimiza
-                        if (_paramGerais._parGUI._otmPorEnergia)
-                        {
-                            Otimiza();
-                        }
-                        else
-                        {
-                            // Executa Fluxo Mensal 
-                            _fluxoMensal.ExecutaFluxoMensal();
-                        }
-                        PFResults resTmp = new PFResults(_fluxoMensal._resFluxoMensal);
-
-                        //Armazena Resultado
-                        lstResultadoFluxo.Add(resTmp);
+                        Otimiza();
                     }
+                    else
+                    {
+                        // Executa Fluxo Mensal 
+                        _fluxoMensal.ExecutaFluxoMensal();
+                    }
+                    PFResults resTmp = new PFResults(_fluxoMensal._resFluxoMensal);
+
+                    //Armazena Resultado
+                    lstResultadoFluxo.Add(resTmp);
+                    //}
+                    /*
                     // FIX ME
                     // se nao carregou alimentador, forca mes = 13 para terminar o for 
                     else 
                     {
                         mes = 13;
                         break;
-                    }
+                    }*/
                 }
 
                 // se convergiu, Calcula resultado Ano 
                 if (_fluxoMensal._resFluxoMensal._convergiuBool )
                 {
                     //Calcula resultado Ano
-                    _fluxoMensal._resFluxoMensal.CalculaResAno(lstResultadoFluxo, alim, _paramGerais.GetNomeComp_arquivoResPerdasAnual(), _janela);
+                    _fluxoMensal._resFluxoMensal.CalculaResAno(lstResultadoFluxo, alim, _paramGerais.GetNomeComp_arquivoResPerdasAnual(), _paramGerais._mWindow);
                 }
             }
         }
@@ -350,7 +340,7 @@ namespace ExecutorOpenDSS
             while (puSaidaSE < 1.05)
             {
                 //Verifica se foi solicitado o cancelamento.
-                if (_janela._cancelarExecucao)
+                if (_paramGerais._mWindow._cancelarExecucao)
                 {
                     return;
                 }
@@ -374,13 +364,13 @@ namespace ExecutorOpenDSS
 
             //referência de geração (semana típica ou medição do MECE)
             double refGeracao;
-            if (_janela._medAlim._mapDadosDemanda.ContainsKey(alimTmp))
+            if (_paramGerais._medAlim._mapDadosDemanda.ContainsKey(alimTmp))
             {
-                refGeracao = _janela._medAlim._mapDadosDemanda[alimTmp];
+                refGeracao = _paramGerais._medAlim._mapDadosDemanda[alimTmp];
             }
             else
             {
-                _janela.ExibeMsgDisplay(alimTmp + ": mapDadosDemanda não encontrado");
+                _paramGerais._mWindow.ExibeMsgDisplay(alimTmp + ": mapDadosDemanda não encontrado");
                 return double.NaN;
             }
 
@@ -405,7 +395,7 @@ namespace ExecutorOpenDSS
             while ( Math.Abs(geracao - refGeracao) > _paramGerais._parGUI.GetPrecisao() )
             {
                 //Verifica se foi solicitado o cancelamento.
-                if (_janela._cancelarExecucao)
+                if (_paramGerais._mWindow._cancelarExecucao)
                 {
                     return loadMult;
                 }
@@ -439,12 +429,12 @@ namespace ExecutorOpenDSS
         internal double OtimizaLoadMultEnergiaPvt(string alimentador, double loadMult)
         {
             // obtem referência de EnergiaMes (medição do MECE)
-            double refEnergiaMes = _janela._medAlim._reqEnergiaMes.GetRefEnergia(alimentador, _paramGerais._parGUI.GetMes());
+            double refEnergiaMes = _paramGerais._medAlim._reqEnergiaMes.GetRefEnergia(alimentador, _paramGerais._parGUI.GetMes());
 
             // verifica ausencia de medicao de energia
             if (refEnergiaMes.Equals(0)||refEnergiaMes.Equals(double.NaN))
             {
-                _janela.ExibeMsgDisplay(alimentador + ": Energia mansal igual a 0 ou NaN. Atribuindo loadMult alternativo.");
+                _paramGerais._mWindow.ExibeMsgDisplay(alimentador + ": Energia mansal igual a 0 ou NaN. Atribuindo loadMult alternativo.");
 
                 return _paramGerais._parGUI._loadMultAlternativo;
             }
@@ -452,7 +442,7 @@ namespace ExecutorOpenDSS
             //calcula energia inicial
             if ( !ExecutaFluxoMensalOtm(loadMult) )
             {
-                _janela.ExibeMsgDisplay(alimentador + " alimentador não convergiu! Atribuindo loadMult alternativo.");
+                _paramGerais._mWindow.ExibeMsgDisplay(alimentador + " alimentador não convergiu! Atribuindo loadMult alternativo.");
 
                 return _paramGerais._parGUI._loadMultAlternativo;
             }
@@ -461,7 +451,7 @@ namespace ExecutorOpenDSS
             // energia simulada (energiaMes) esta proxima da energia medida (refEnergiaMes)
             if (VerificaEnergiaSimulada(refEnergiaMes))
             {
-                _janela.ExibeMsgDisplay(alimentador + " ajustado com precisão " + _paramGerais._parGUI.GetPrecisao().ToString() + "KWh.");
+                _paramGerais._mWindow.ExibeMsgDisplay(alimentador + " ajustado com precisão " + _paramGerais._parGUI.GetPrecisao().ToString() + "KWh.");
 
                 return loadMult;
             }
@@ -469,7 +459,7 @@ namespace ExecutorOpenDSS
             // Se fluxo não convergiu retorna loadMult alternativo
             if ( !_fluxoMensal._resFluxoMensal._convergiuBool )
             {
-                _janela.ExibeMsgDisplay(alimentador + ": erro valor energia!");
+                _paramGerais._mWindow.ExibeMsgDisplay(alimentador + ": erro valor energia!");
 
                 return _paramGerais._parGUI._loadMultAlternativo;
             }
@@ -487,7 +477,7 @@ namespace ExecutorOpenDSS
                 sentidoBusca = -1;
             }
 
-            // ajusta modelo de carga se opcao _paramGerais._parAvan._modeloCargaCemig = true
+            // ajusta modelo de carga se opcao _paramGerais._expanderPar._modeloCargaCemig = true
             _fluxoMensal.AjustaModeloDeCargaCemig(sentidoBusca);
 
             // calcula novo LoadMult
@@ -536,7 +526,7 @@ namespace ExecutorOpenDSS
             while (GetDiferencaEnergia(refEnergiaMes) > _paramGerais._parGUI.GetPrecisao())
             {
                 //Verifica se foi solicitado o cancelamento.
-                if (_janela._cancelarExecucao)
+                if (_paramGerais._mWindow._cancelarExecucao)
                 {
                     return loadMultAnt;
                 }
@@ -544,7 +534,7 @@ namespace ExecutorOpenDSS
                 // detecta se mudou sendido de busca, interrompendo o processo e retornando loadMult apropriado. 
                 if (sentidoBuscaAnt != sentidoBusca)
                 {
-                    _janela.ExibeMsgDisplay(alimTmp + " mudança sentido de busca. Diminua o Incremento/Precisão!");
+                    _paramGerais._mWindow.ExibeMsgDisplay(alimTmp + " mudança sentido de busca. Diminua o Incremento/Precisão!");
 
                     // se sentido de busca era decrescente, admite-se retornar loadMult 
                     if (sentidoBuscaAnt == -1)
@@ -556,7 +546,7 @@ namespace ExecutorOpenDSS
                 // condicao saida while: se executou 10 FP
                 if (contFP == 10)
                 {
-                    _janela.ExibeMsgDisplay(alimTmp + " não ajustado em " + contFP.ToString() + " execuções de fluxo. Repita o processo!");
+                    _paramGerais._mWindow.ExibeMsgDisplay(alimTmp + " não ajustado em " + contFP.ToString() + " execuções de fluxo. Repita o processo!");
 
                     return loadMultAnt;
                 }
@@ -577,7 +567,7 @@ namespace ExecutorOpenDSS
                 // calcula energia mes. Se modo fluxo mensal Aproximado
                 if (!ExecutaFluxoMensalOtm(loadMult))
                 {
-                    _janela.ExibeMsgDisplay(alimTmp + " não convergiu! Retornando loadMult anterior.");
+                    _paramGerais._mWindow.ExibeMsgDisplay(alimTmp + " não convergiu! Retornando loadMult anterior.");
 
                     return loadMultAnt;
                 }
@@ -597,7 +587,7 @@ namespace ExecutorOpenDSS
                 }
             }
             //saida 
-            _janela.ExibeMsgDisplay(alimTmp + " ajustado nos limites escolhidos.");
+            _paramGerais._mWindow.ExibeMsgDisplay(alimTmp + " ajustado nos limites escolhidos.");
 
             return loadMult;
         }
@@ -614,7 +604,7 @@ namespace ExecutorOpenDSS
             if (_paramGerais._parGUI.GetAproximaFluxoMensalPorDU())
             {
                 // Executa fluxo diario
-                ret = _fluxoMensal.ExecutaFluxoMensalSimples();
+                ret = _fluxoMensal.ExecutaFluxoMensalAproximacaoDU();
             }
             else
             {
@@ -637,7 +627,7 @@ namespace ExecutorOpenDSS
             string alimTmp = _paramGerais.GetNomeAlimAtual();
 
             //informa usuario convergencia
-            _janela.ExibeMsgDisplay(_fluxoDiario.GetMsgConvergencia(null, alimTmp));
+            _paramGerais._mWindow.ExibeMsgDisplay(_fluxoDiario.GetMsgConvergencia(null, alimTmp));
 
             // retorno
             return _fluxoDiario._resFluxo.GetMaxKW();
@@ -649,12 +639,8 @@ namespace ExecutorOpenDSS
             // Executa fluxo diario
             _fluxoDiario.ExecutaFluxoDiario();
 
-            //nivel pu
-            string nivelTensaoPU = _oDSS.GetActiveCircuit().Vsources.pu.ToString("0.###");
-
             //Plota perdas na tela
-            _janela.ExibeMsgDisplay(_fluxoDiario._resFluxo.GetResultadoFluxoToConsole(
-                nivelTensaoPU, _paramGerais.GetNomeAlimAtual()));
+            _paramGerais._mWindow.ExibeMsgDisplay(_fluxoDiario._resFluxo.GetResultadoFluxoToConsole( _paramGerais.GetNomeAlimAtual(), _fluxoDiario._oDSS ));
         }
     }
 }

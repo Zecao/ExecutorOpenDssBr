@@ -18,9 +18,9 @@ namespace ExecutorOpenDSS.Classes_Principais
         private static int _numBarras;
         private static int _numClientesTotal;
         private static int _numClientesIP;
-        private Circuit _circuit;
-        private Loads _loadsDSS;
-        private Text _DSSText;
+        private readonly Circuit _circuit;
+        private readonly Loads _loadsDSS;
+        private readonly Text _DSSText;
 
         public static List<string> _lstBarrasDRCeDRP = new List<string>();
 
@@ -39,7 +39,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         }
 
         // Cria arquivo texto cabecalho DRP DRC 
-        public static void CriaArqCabecalho(GeneralParameters paramGerais, MainWindow janela)
+        public static void CriaArqCabecalho(GeneralParameters paramGerais)
         {                           
             // 
             string nomeArq = paramGerais.GetNomeComp_arquivoDRPDRC();
@@ -48,7 +48,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             string linha = "Alim\tF.A.\tDRP:\tDRC:\tTotal:";
                 
             //Grava em arquivo
-            TxtFile.GravaEmArquivo(linha, nomeArq, janela);  
+            TxtFile.GravaEmArquivo(linha, nomeArq, paramGerais._mWindow);  
         }
 
         // obtem barra da carga por meio da interface de Text
@@ -155,7 +155,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         }
 
         // grava numero clientes com DRP e DRC no arquivo
-        public void ImprimeNumClientesDRPDRC(GeneralParameters paramGerais, MainWindow _janela )
+        public void ImprimeNumClientesDRPDRC(GeneralParameters paramGerais )
         {
             //nome arquivo DRP e DRC
             string nomeArq = paramGerais.GetNomeComp_arquivoDRPDRC();
@@ -167,11 +167,11 @@ namespace ExecutorOpenDSS.Classes_Principais
             string linha = nomeAlim + "\t" + _numClientesOK.ToString() + "\t" + _numClientesDRP.ToString() + "\t" + _numClientesDRC.ToString() + "\t" + _numClientesTotal.ToString();
 
             //Grava em arquivo
-            TxtFile.GravaEmArquivo(linha, nomeArq, _janela);
+            TxtFile.GravaEmArquivo(linha, nomeArq, paramGerais._mWindow);
         }
 
         // grava numero clientes com DRP e DRC no arquivo
-        public void ImprimeBarrasDRPDRC(GeneralParameters paramGerais, MainWindow _janela)
+        public void ImprimeBarrasDRPDRC(GeneralParameters paramGerais)
         {
             //nome arquivo DRP e DRC
             string nomeArq = paramGerais.GetNomeComp_arqBarrasDRPDRC();
@@ -189,13 +189,13 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
 
             //Grava em arquivo
-            TxtFile.GravaListArquivoTXT(lstStr, nomeArq, _janela);
+            TxtFile.GravaListArquivoTXT(lstStr, nomeArq, paramGerais._mWindow);
         }
         
         // ajusta numero de clientes totais, subtraindo os clientes de IP
         private void AjustaNumClientes()
         {
-            _numClientesTotal = _numClientesTotal - _numClientesIP;      
+            _numClientesTotal -= _numClientesIP;      
         }
 
         // public

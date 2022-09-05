@@ -12,7 +12,7 @@ namespace ExecutorOpenDSS.Reconfigurador
         public Dictionary<string, string> _mapNomeBranchsXIndice = new Dictionary<string, string>();
 
         // map Indice (comecando em 0) para nome do branch
-        private Dictionary<string, string> _mapIndiceXNomeBranchs = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> _mapIndiceXNomeBranchs = new Dictionary<string, string>();
 
         // preenche map nome Branchs 
         public void PreencheMapNomeBranchs(string dir)

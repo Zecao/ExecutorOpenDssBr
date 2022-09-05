@@ -9,7 +9,7 @@ namespace ExecutorOpenDSS.Classes
     {
         //variaveis 
         public string _hora;
-        public string _ano = "2019";
+        public string _ano = "2021";
         public string _mes;
         public string _tipoDia;
         private int _mesNum;
@@ -32,8 +32,11 @@ namespace ExecutorOpenDSS.Classes
         public double loadMultDefault = 1; // LoadMult retornado qnd alim nao eh encontrado no arquivo de ajuste.
         public double loadMultAtual = 1;
         public string _mesAbrv3letras;
-        private readonly string _lstAlim = "lstAlimentadores.m";
-        
+        private readonly string _lstAlim = "lstAlimentadores.m"; // TODO 
+
+        // expander parameters
+        public ExpanderParameters _expanderPar;
+
         // set Mes 
         internal void SetMes(int mes)
         {
@@ -63,12 +66,11 @@ namespace ExecutorOpenDSS.Classes
         // 
         public void CopiaVariaveis(MainWindow jan)
         {
-            //Armazena os valores da interface, a fim de se manterem acessíveis por outro processo
-            _hora = jan.horaTextBox.Text; //ok
+            //Armazena os valores da interface
+            _hora = jan.horaTextBox.Text;
             _ano = jan.anoTextBox.Text;
             _mes = jan.mesComboBox.Text;
 
-            // TODO testando
             _tipoDia = jan.tipoDiaComboBox.Text;
             _mesNum = jan.mesComboBox.SelectedIndex + 1;
             _mesAbrv3letras = _mes.Substring(0, 3); //OBS: Alternativa _mesAbrv3letras = TipoDiasMes.getMesAbrv(_mesNum);
@@ -80,13 +82,15 @@ namespace ExecutorOpenDSS.Classes
             _otmPorDemMax = jan.otimizaCheckBox.IsChecked.Value;
             _otmPorEnergia = jan.otimizaEnergiaCheckBox.IsChecked.Value;
             _aproximaFluxoMensalPorDU = jan.simplificaMesComDUCheckBox.IsChecked.Value;
-            _allowForms = jan.AllowFormsCheckBox.IsChecked.Value;
 
             // preenche incremento
             SetIncremento(jan.incrementoAjusteTextBox.Text);
 
             // transforma texto para double
             _loadMultAlternativo = Double.Parse(jan.loadMultAltTextBox.Text);
+
+            //
+            _expanderPar = new ExpanderParameters(jan);
         }
 
         public void SetIncremento(float i)

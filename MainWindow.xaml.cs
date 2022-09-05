@@ -1,6 +1,8 @@
 ﻿using ExecutorOpenDSS.Classes;
 using ExecutorOpenDSS.Classes_Auxiliares;
+using ExecutorOpenDSS.Classes_Principais;
 using ExecutorOpenDSS.Interfaces;
+using ExecutorOpenDSS.Reconfigurador;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -20,16 +22,14 @@ namespace ExecutorOpenDSS
     /// </summary>
     ///
 
-   
     public partial class MainWindow : Window
     {
         //Variáveis Globais da classe
-        public System.Windows.Threading.Dispatcher _tbdDispatcher;
-        public System.Windows.Threading.Dispatcher _ebDispatcher;
+        public System.Windows.Threading.Dispatcher _displayDispatcher;
+        public System.Windows.Threading.Dispatcher _mainWindowDispatcher;
 
         // variaveis da GUI
         public GUIParameters _parGUI = new GUIParameters();
-        public AdvancedParameters _parAvan = new AdvancedParameters();
         public GeneralParameters _paramGerais;
 
         // variaveis classe 
@@ -40,7 +40,7 @@ namespace ExecutorOpenDSS
         public int _indiceArq;
 
         // gerencia dados de medicao 
-        public FeederMetering _medAlim;
+        //public FeederMetering _medAlim;
 
         //Função principal
         public MainWindow()
@@ -60,39 +60,37 @@ namespace ExecutorOpenDSS
             //
             _paramGerais = new GeneralParameters(this);
 
-            //
-            _medAlim = new FeederMetering(this,_paramGerais);
+            // prenche variaveis de classe 
+            _displayDispatcher = display.Dispatcher;
+            _mainWindowDispatcher = this.Dispatcher;
         }
 
         //Função que exibe as mensagens na TextBox e as grava em um arquivo de log
-        public void ExibeMsgDisplayMW(string mensagem, string log = "")
-        {            
+        public void ExibeMsgDisplay(string mensagem)
+        {
             //Pega o texto do display. Como a interface roda em outro processo, é necessária a utilização
             //de função delegada, dispatcher e invoke
-            MainWindow.GetDisplayDelegate getDisplay = new MainWindow.GetDisplayDelegate(this.GetDisplay);
+            MainWindow.GetDisplayDelegate getDisplay = new MainWindow.GetDisplayDelegate(GetDisplay);
 
             //
-            string str = this._tbdDispatcher.Invoke(getDisplay).ToString();
+            string str = _displayDispatcher.Invoke(getDisplay).ToString();
 
             // chama DispPvt
             str = DispPvt(str, mensagem);
 
             //Escreve no display da tela.Como a interface roda em outro processo, é necessária a utilização
             //de função delegada, dispatcher e invoke
-            MainWindow.UpdateDisplayDelegate update = new MainWindow.UpdateDisplayDelegate(this.UpdateDisplay);
-            this._tbdDispatcher.BeginInvoke(update, str);
-        }
+            MainWindow.UpdateDisplayDelegate update = new MainWindow.UpdateDisplayDelegate(UpdateDisplay);
+            _displayDispatcher.BeginInvoke(update, str);
 
-        //Função que exibe as mensagens na TextBox e as grava em um arquivo de log
-        public void ExibeMsgDisplay(string mensagem, string log = "")
-        {
-            //
+            /*
+            // OLD CODE ExibeMsgDisplay
             string str = GetDisplay();
 
             // chama DispPvt
             str = DispPvt(str, mensagem);
 
-            UpdateDisplay(str);
+            UpdateDisplay(str);*/
         }
 
         //
@@ -120,22 +118,15 @@ namespace ExecutorOpenDSS
 
             //TODO 
             _indiceArq = 0;
-           
+
             //limpa display
             display.Text = "";
 
-            // preenche variaveis da GUI antes da exeucao
-            _parGUI.CopiaVariaveis(this);
-            
-            // 
-            _tbdDispatcher = display.Dispatcher;
-            _ebDispatcher = this.Dispatcher;
-
-            // Roda worker_ExecutaFluxo em background
-            Task.Run((Action)Worker_ExecutaFluxo);           
-
             //
             GravaConfig();
+
+            // Roda worker_ExecutaFluxo em background
+            Task.Run((Action)Worker_ExecutaFluxo);
         }
 
         // Executa Fluxo potencia
@@ -145,19 +136,19 @@ namespace ExecutorOpenDSS
             _inicio = DateTime.Now;
 
             //Mensagem de Início
-            ExibeMsgDisplayMW("Início");
+            ExibeMsgDisplay("Início");
 
             //Lê os alimentadores e armazena a lista de alimentadores 
-            List<string> alimentadores = CemigFeeders.GetTodos( _parGUI.GetArqLstAlimentadores() );
+            List<string> alimentadores = CemigFeeders.GetTodos(_parGUI.GetArqLstAlimentadores());
 
             // carrega dados de medicoes
-            _medAlim.CarregaDados();
+            _paramGerais._medAlim.CarregaDados();
 
             // instancia classe ExecutaFluxo
-            RunPowerFlow executaFluxoObj = new RunPowerFlow(this, _paramGerais);
+            RunPowerFlow executaFluxoObj = new RunPowerFlow(_paramGerais);
 
             switch (_parGUI._tipoFluxo)
-            {             
+            {
                 //Executa o Fluxo Snap
                 case "Snap":
 
@@ -167,7 +158,7 @@ namespace ExecutorOpenDSS
 
                 //Executa o fluxo diário
                 case "Daily":
-                     
+
                     executaFluxoObj.ExecutaDiario(alimentadores);
 
                     break;
@@ -182,7 +173,7 @@ namespace ExecutorOpenDSS
                 case "Monthly":
 
                     executaFluxoObj.ExecutaMensal(alimentadores);
-                    
+
                     break;
 
                 //Executa o fluxo mensal
@@ -199,10 +190,16 @@ namespace ExecutorOpenDSS
             //Finalização do processo
             FinalizaProcesso(false);
 
-            //Reabilita a interface. 
-            //Como a interface está em outro processo, é necessário utilizar um Dispatcher
+            // Reabilita interface
+            ReabilitaInterface();
+        }
+
+        //Reabilita a interface. 
+        //Como a interface está em outro processo, é necessário utilizar um Dispatcher
+        private void ReabilitaInterface() 
+        {
             SetButtonDelegate setar = new SetButtonDelegate(SetButton);
-            _ebDispatcher.BeginInvoke(setar);
+            _mainWindowDispatcher.BeginInvoke(setar);
         }
 
         //Botão para cancelar a execução 
@@ -490,7 +487,6 @@ namespace ExecutorOpenDSS
             incrementoAjusteTextBox.IsEnabled = status;
             loadMultAltTextBox.IsEnabled = status;
             horaTextBox.IsEnabled = status;
-            opcoesButton.IsEnabled = status;
             AllowFormsCheckBox.IsEnabled = status;
 
             //
@@ -502,11 +498,11 @@ namespace ExecutorOpenDSS
         {
             if (cancelamento)
             {   
-                ExibeMsgDisplayMW("Execução abortada.");
+                ExibeMsgDisplay("Execução abortada.");
             }
             else
             {
-                ExibeMsgDisplayMW("Fim da execução.");
+                ExibeMsgDisplay("Fim da execução.");
             }
 
             _fimExecucao = true;
@@ -515,11 +511,11 @@ namespace ExecutorOpenDSS
             // data final para calculo do tempo de execucao
             DateTime fim = DateTime.Now;
 
-            ExibeMsgDisplayMW("Tempo total de execução: " + (fim - _inicio).ToString());
+            ExibeMsgDisplay("Tempo total de execução: " + (fim - _inicio).ToString());
 
             // TODO erro 2020
             // Grava Log
-            // GravaLog();
+            GravaLog();
         }
         
         //Inicializa valores da interface
@@ -534,6 +530,9 @@ namespace ExecutorOpenDSS
         //Grava configurações
         public void GravaConfig()
         {
+            // preenche variaveis da GUI antes da exeucao
+            _parGUI.CopiaVariaveis(this);
+
             string arqConfig = AppDomain.CurrentDomain.BaseDirectory + "Configuracoes.xml";
             XMLConfigurationFile.SetConfiguracoes(this, arqConfig);
         }
@@ -549,7 +548,7 @@ namespace ExecutorOpenDSS
             // TODO fix me: erro se Log.txt nao existir
             using (StreamWriter file = new StreamWriter(_logName, true))
             {
-                string str = _tbdDispatcher.Invoke(getDisplay).ToString();
+                string str = _displayDispatcher.Invoke(getDisplay).ToString();
                 file.Write(str);
             }
         }
@@ -563,12 +562,18 @@ namespace ExecutorOpenDSS
             //Apaga o arquivo de log existente
             TxtFile.SafeDelete(_logName);            
         }     
-                
-        /////////////////////////////////////////////////////////////////////////////////////////////////////
-        //Funções para chamadas inter-processos//////////////////////////////////////////////////////////////
- 
+
         //Funções para setar o texto do display
         public delegate void UpdateDisplayDelegate(string texto);
+
+        //Funções para pegar o texto do display
+        public delegate string GetDisplayDelegate();
+        
+        //Funções para habilitar/desabilitar a interface
+        public delegate void SetButtonDelegate();
+
+        //Exibir caixa de mensagem
+        public delegate bool MensagemDelegate(string texto, string titulo = "");
 
         public void UpdateDisplay(string texto)
         {
@@ -576,26 +581,17 @@ namespace ExecutorOpenDSS
             display.ScrollToEnd();
         }
 
-        //Funções para pegar o texto do display
-        public delegate string GetDisplayDelegate();
-
         //
         public string GetDisplay()
         {
             return display.Text;
         }
 
-        //Funções para habilitar/desabilitar a interface
-        public delegate void SetButtonDelegate();
-
         //
         public void SetButton()
         {
             StatusUI(true);
         }
-
-        //Exibir caixa de mensagem
-        public delegate bool MensagemDelegate(string texto, string titulo="");
 
         //
         public bool Mensagem(string texto, string titulo = "Aviso")
@@ -742,23 +738,7 @@ namespace ExecutorOpenDSS
                 ExibeMsgDisplay("Nova hora definida");
             }
         }
-
-        //
-        private void OpcoesAvancadasButton_Click(object sender, RoutedEventArgs e)
-        {
-            // preenche variaveis da GUI antes da exeucao
-            _parGUI.CopiaVariaveis(this);
-
-            // preenche dispatcher do display que sera usado em funcoes avancadas
-            _tbdDispatcher = display.Dispatcher;
-
-            // janela OpcoesAvancadas
-            Options opcoes = new Options(this);
-
-            opcoes.ShowDialog();
-
-        }
-        
+       
         // Atualiza classe com mes escolhido
         private void MesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -766,5 +746,136 @@ namespace ExecutorOpenDSS
             _parGUI.SetMes( mesComboBox.SelectedIndex + 1 );
             _parGUI._mesAbrv3letras = _parGUI._mes.Substring(0, 3);
         }
+
+        //Exibe janela de feriados
+        private void FeriadosButton_Click(object sender, RoutedEventArgs e)
+        {
+            HolidaysWindow FW = new HolidaysWindow(_parGUI);
+            FW.ShowDialog();
+        }
+
+        private void AnaliseChavesNAs_Click(object sender, RoutedEventArgs e)
+        {
+            // data final para calculo do tempo de execucao
+            _inicio = DateTime.Now;
+
+            // grava configuracoes
+            GravaConfig();
+
+            // Roda worker_ExecutaFluxo em background
+            Task.Run((Action)Worker_NormallyOpenSwitchAnalisys);
+        }
+
+        // Executa NormallyOpenSwitchAnalisys
+        void Worker_NormallyOpenSwitchAnalisys()
+        {
+            //Mensagem de Início
+            ExibeMsgDisplay("Início análise chaves NAs");
+
+            //Lê os alimentadores e armazena a lista de alimentadores 
+            List<string> lstAlimentadores = CemigFeeders.GetTodos(_parGUI.GetArqLstAlimentadores());
+
+            // load xlsx loadmults and xlsx Energy/month
+            _paramGerais._medAlim.CarregaDados();
+
+            // instancia classe de parametros Gerais
+            GeneralParameters paramGerais = new GeneralParameters(this);
+
+            // instancia classe AnaliseChavesNAs
+            NOSwitchAnalysis analiseChavesNAs = new NOSwitchAnalysis( _paramGerais, lstAlimentadores);
+
+            // Fim 
+            ExibeMsgDisplay("Fim análise chaves NAs");
+
+            // TODO Reabilita interface
+            //ReabilitaInterface();
+
+            // Finaliza processo
+            FinalizaProcesso(false);
+        }
+
+        private void AnaliseLoops_Click(object sender, RoutedEventArgs e)
+        {
+            // data final para calculo do tempo de execucao
+            _inicio = DateTime.Now;
+
+            // TODO verificar necessidade
+            // carrega dados de medicoes
+            // _medAlim.CarregaDados();
+
+            // grava configuracoes
+            GravaConfig();
+
+            // Roda worker_ExecutaFluxo em background
+            Task.Run((Action)Worker_ExecutaAnaliseLoops);
+        }
+
+        // Executa Analise de Loops
+        void Worker_ExecutaAnaliseLoops()
+        {
+            //Mensagem de Início
+            ExibeMsgDisplay("Início Analise Loops");
+
+            //Lê os alimentadores e armazena a lista de alimentadores 
+            List<string> alimentadores = CemigFeeders.GetTodos(_parGUI.GetArqLstAlimentadores());
+
+            // instancia classe de parametros Gerais
+            GeneralParameters paramGerais = new GeneralParameters(this);
+
+            // instancia classe AnaliseChavesNAs
+            LoopAnalysis analiseLoops = new LoopAnalysis(paramGerais, alimentadores);
+
+            // Fim 
+            ExibeMsgDisplay("Fim análise de loops");
+
+            // TODO Reabilita interface
+            //ReabilitaInterface();
+
+            // Finaliza processo
+            FinalizaProcesso(false);
+        }
+
+        //
+        private void ComparaManobras_Click(object sender, RoutedEventArgs e)
+        {
+            // data final para calculo do tempo de execucao
+            _inicio = DateTime.Now;
+
+            // grava configuracoes
+            GravaConfig();
+
+            // Roda worker_ComparaManobras em background
+            Task.Run((Action)Worker_ComparaManobras);
+        }
+
+        // Executa Fluxo potencia
+        void Worker_ComparaManobras()
+        {
+            //Mensagem de Início
+            ExibeMsgDisplay("Comparação Manobras");
+
+            //Lê os alimentadores e armazena a lista de alimentadores 
+            List<string> alimentadores = CemigFeeders.GetTodos(this._parGUI.GetArqLstAlimentadores());
+
+            // TODO eh necessario?
+            // carrega dados de medicoes
+            //_medAlim.CarregaDados();
+
+            // instancia classe de parametros Gerais
+            GeneralParameters paramGerais = new GeneralParameters(this);
+
+            // instancia classe
+            //ComparacaoManobras compManobras = new ComparacaoManobras(paramGerais, alimentadores );
+
+            // Fim 
+            ExibeMsgDisplay("Comparação Manobras");
+
+            // TODO Reabilita interface
+            //ReabilitaInterface();
+
+            // Finaliza processo
+            FinalizaProcesso(false);
+        }
+
     }
 }

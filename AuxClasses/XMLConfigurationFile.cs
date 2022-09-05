@@ -1,4 +1,5 @@
 ﻿using ExecutorOpenDSS.Classes_Auxiliares;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using System;
 using System.IO;
 using System.Xml.Linq;
@@ -66,23 +67,21 @@ namespace ExecutorOpenDSS
                     // Hora usuario
                     janela.horaTextBox.Text = raiz.Element("Hora").Value;
 
-                    // INICIO Parametros avancados
-                    janela._parAvan = new AdvancedParameters(raiz);
+                    // Populates Expander parameters
+                   janela._parGUI._expanderPar = new ExpanderParameters(raiz,janela);
 
-                    //Retorna verdadeiro se tudo ocorreu bem
                     return true;
                 }
                 catch
                 {
                     // TODO
-                    //Caso haja algum problema na leitura, retorna falso
                     return false;
                 }
                 
             }
             else
             {
-                //Retorna falso caso o arquivo não exista
+                // Retorna falso caso o arquivo não exista
                 return false;
             }
         }
@@ -142,28 +141,28 @@ namespace ExecutorOpenDSS
             raiz.Add(new XElement("Hora", janela.horaTextBox.Text));
                         
             //Adiciona calculaDRPDRCCheckBox
-            raiz.Add(new XElement("CalculaDRPDRC", janela._parAvan._calcDRPDRC));
+            raiz.Add(new XElement("CalculaDRPDRC", janela._parGUI._expanderPar._calcDRPDRC));
             
             //Adiciona _otimizaPUSaidaSE
-            raiz.Add(new XElement("CalculaPUOtm", janela._parAvan._otimizaPUSaidaSE ));
+            raiz.Add(new XElement("CalculaPUOtm", janela._parGUI._expanderPar._otimizaPUSaidaSE ));
                         
             //Adiciona _calcTensaoBarTrafo
-            raiz.Add(new XElement("CalcTensaoBarTrafo", janela._parAvan._calcTensaoBarTrafo));
+            raiz.Add(new XElement("CalcTensaoBarTrafo", janela._parGUI._expanderPar._calcTensaoBarTrafo));
 
             //Adiciona _verifCargaIsolada
-            raiz.Add(new XElement("VerifCargaIsolada", janela._parAvan._verifCargaIsolada));
+            raiz.Add(new XElement("VerifCargaIsolada", janela._parGUI._expanderPar._verifCargaIsolada));
 
             //Adiciona IncluirCapMT
-            raiz.Add(new XElement("IncluirCapMT", janela._parAvan._incluirCapMT));
+            raiz.Add(new XElement("IncluirCapMT", janela._parGUI._expanderPar._incluirCapMT));
 
             //Adiciona ModeloCargaCemig
-            raiz.Add(new XElement("ModeloCargaCemig", janela._parAvan._modeloCargaCemig));
+            raiz.Add(new XElement("ModeloCargaCemig", janela._parGUI._expanderPar._modeloCargaCemig));
 
             //Adiciona RelatorioTapsRTs
-            raiz.Add(new XElement("RelatorioTapsRTs", janela._parAvan._verifTapsRTs));
+            raiz.Add(new XElement("RelatorioTapsRTs", janela._parGUI._expanderPar._verifTapsRTs));
 
             //Adiciona o StringBatchEdit 
-            raiz.Add(new XElement("StringBatchEdit", janela._parAvan._strBatchEdit));
+            raiz.Add(new XElement("StringBatchEdit", janela._parGUI._expanderPar._strBatchEdit));
 
             //Adiciona o root ao XML
             xDoc.Add(raiz);

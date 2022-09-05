@@ -8,16 +8,14 @@ using dss_sharp;
 using ExecutorOpenDSS.Classes;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace ExecutorOpenDSS.Classes_Principais
 {
     class NOSwitchAnalysis
     {
-        public static MainWindow _janela;
         public GeneralParameters _paramGerais;
-        public ObjDSS _oDSS;
 
-        //
         private DailyFlow _fluxoSoMT;
         private MonthlyPowerFlow _fluxoMensal;
 
@@ -39,12 +37,10 @@ namespace ExecutorOpenDSS.Classes_Principais
 
         public FeederGraph _grafo;
 
-        public NOSwitchAnalysis(MainWindow janela, GeneralParameters par, List<string> lstAlimentadores, ObjDSS oDSS)
+        public NOSwitchAnalysis(GeneralParameters par, List<string> lstAlimentadores) 
         {           
             // inicializa variaveis de classe
-            _janela = janela;
-            _paramGerais = par;
-            _oDSS = oDSS;            
+            _paramGerais = par;  
 
             // analisa chave NA de cada alimentador
             foreach (string nomeAlim in lstAlimentadores)
@@ -53,7 +49,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
 
             // Grava Log
-            _janela.GravaLog();
+            _paramGerais._mWindow.GravaLog();
         }
 
         private void AnaliseChavesNAsPvt(string nomeAlim)
@@ -62,19 +58,10 @@ namespace ExecutorOpenDSS.Classes_Principais
             _paramGerais.SetNomeAlimAtual(nomeAlim);
 
             // Carrega arquivos DSS so MT
-            _fluxoSoMT = new DailyFlow(_paramGerais, _janela, _oDSS, null, true);
-
-            // Carrega arquivos DSS
-            bool ret = _fluxoSoMT.CarregaAlimentador();
-
-            if (!ret)
-            {
-                _janela.ExibeMsgDisplay("Problema ao executar fluxo só MT!");
-                return;
-            }
+            _fluxoSoMT = new DailyFlow(_paramGerais, "DU", true);
 
             // executa fluxo snap
-            ret = _fluxoSoMT.ExecutaFluxoSnap();
+            bool ret = _fluxoSoMT.ExecutaFluxoSnap();
             
             // Open the monophases lines, as it can contain a path to substation
             _fluxoSoMT.RemoveMonophaseLineSegments();
@@ -86,7 +73,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             if (ret)
             {
                 // verifica cancelamento usuario 
-                if (_janela._cancelarExecucao)
+                if (_paramGerais._mWindow._cancelarExecucao)
                 {
                     return;
                 }
@@ -95,28 +82,25 @@ namespace ExecutorOpenDSS.Classes_Principais
                 GetChaves();
              
                 // cria objeto grafo, juntamente com as matrizes de incidencia
-                _grafo = new FeederGraph( _paramGerais, _janela, _fluxoSoMT._oDSS._DSSText );
+                _grafo = new FeederGraph( _paramGerais, _fluxoSoMT._oDSS );
 
                 // verifica se extremidades das chaves NAs estao no conjunto escolhido
                 // OBS: no momento esta filtrando chaves monofasicas tb
                 FiltraLstChavesNAs();
-
-                // TODO
-                // Calcula Numero de Loops
 
                 // DEBUG plota chaves 
                 // plotaChavesNA();
 
                 // TODO criar nova flag interna 
                 // seta este parametro para true para evitar a recarga dos arquivos texto
-                _paramGerais._parGUI._otmPorEnergia = true;
+                //_paramGerais._parGUI._otmPorEnergia = true;
                 _paramGerais._parGUI.SetAproximaFluxoMensalPorDU(true);
 
                 // Creates monthly PF obj.
-                _fluxoMensal = new MonthlyPowerFlow(_paramGerais, _janela, _oDSS);
+                _fluxoMensal = new MonthlyPowerFlow(_paramGerais);
 
                 // fluxo mensal que servira de referencia para a otimizacao
-                bool ret2 = _fluxoMensal.CalculaFluxoMensalBase();
+                bool ret2 = _fluxoMensal.ExecutaFluxoMensalAproximacaoDU();
 
                 if (ret2)
                 {
@@ -133,7 +117,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                     _fluxoMensal._nFP++;
 
                     // plota numero de FPs
-                    _janela.ExibeMsgDisplay("Número de FPs: " + _fluxoMensal._nFP.ToString());
+                    _paramGerais._mWindow.ExibeMsgDisplay("Número de FPs: " + _fluxoMensal._nFP.ToString());
 
                     // plota pares otimizados
                     PlotaChavesOtimizadas();
@@ -146,7 +130,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         {
             foreach (string parChaves in _lstParDeChavesOtm)
             {
-                _janela.ExibeMsgDisplay(parChaves);
+                _paramGerais._mWindow.ExibeMsgDisplay(parChaves);
             }
         }
 
@@ -181,7 +165,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             _lstChavesNA = novaLstChavesNA;
 
             // plota numero chaves NA (filtradas)
-            _janela.ExibeMsgDisplay("\n N. chaves NA: " + _lstChavesNA.Count.ToString() );
+            _paramGerais._mWindow.ExibeMsgDisplay("\n N. chaves NA: " + _lstChavesNA.Count.ToString() );
         }
 
         // faz permutacao de ramos 
@@ -219,7 +203,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         private string VoltageVerificationIn_NO_Switches(Switch chaveNA, string novaChaveNA)
         {
             // 1 fluxo potencia as 18horas
-            _fluxoMensal.ExecutaFluxoHorario("18");
+            _fluxoMensal._fluxoDU.ExecutaFluxoHorario_SemRecarga("18");
 
             // Tensao antes: Chave NF original (novaNA)
             _fluxoMensal.GetObjDSS().GetActiveCircuit().SetActiveElement("Line." + novaChaveNA);
@@ -227,7 +211,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             double tensaoAntes = SeqVoltages[1];
 
             /* //DEBUG
-            double [] VoltagesMagAng = _fluxoMensal.GetObjDSS()._DSSCircuit.get_CktElements("Line." + novaChaveNA).VoltagesMagAng;
+            double[] VoltagesMagAng = _fluxoMensal.GetObjDSS()._DSSCircuit.get_CktElements("Line." + novaChaveNA).VoltagesMagAng;
             double[] Voltages = _fluxoMensal.GetObjDSS()._DSSCircuit.get_CktElements("Line." + novaChaveNA).Voltages; //ComplexVoltages
             */
 
@@ -235,7 +219,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             FazManobra(novaChaveNA, chaveNA);
 
             // 2 fluxo potencia as 18horas
-            _fluxoMensal.ExecutaFluxoHorario("18");
+            _fluxoMensal._fluxoDU.ExecutaFluxoHorario_SemRecarga("18");
 
             // Tensao DEPOIS: Nova NF (NA original)
             _fluxoMensal.GetObjDSS().GetActiveCircuit().SetActiveElement("Line." + chaveNA.nome);
@@ -256,16 +240,11 @@ namespace ExecutorOpenDSS.Classes_Principais
         // define nova chave NA, entre as chaves NFs 
         private string DefineNovaChaveNA(Switch chaveNAinicial)
         {
-            /* // DEBUG
-            // mensagem ao usuario
-            _janela.ExibeMsgDisplay("Análise ChaveNA: " + chaveNAinicial.nome);
-             * */
+            // copia o resultado do caso para para a analisa da chave NA.  
+            _MelhorResultadoPorNA = new PFResults(_resCasoBase);
 
             // obtem lstChaves no ciclo da chaveNA analisada
             bool ret = _grafo.MenorCaminho(chaveNAinicial);
-
-            // copia o resultado do caso para para a analisa da chave NA.  
-            _MelhorResultadoPorNA = new PFResults(_resCasoBase);
 
             // nova chaveNA
             string nomeNovaChaveNA = null;
@@ -293,7 +272,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         private string AnalisaChavesNF(List<string> lstNomeChavesNFcam1, Switch chaveNA)
         {
             bool ret = true;
-            
+                        
             // no inicio, nova ChaveNA eh null
             string nomeNovaChaveNA = null;
 
@@ -301,20 +280,16 @@ namespace ExecutorOpenDSS.Classes_Principais
             foreach (string nomeChaveNF in lstNomeChavesNFcam1)
             {
                 // verifica cancelamento usuario 
-                if (_janela._cancelarExecucao)
+                if (_paramGerais._mWindow._cancelarExecucao)
                 {
                     return null;
                 }
 
-                // DEBUG 
+                /* // DEBUG 
                 if (nomeChaveNF.Equals("ctr853573"))
                 {
                     int debug = 0;
-                }
-                /* // DEBUG
-                // mensagem ao usuario
-                _janela.ExibeMsgDisplay("Análise ChaveNF: " + nomeChaveNF);
-                 * */
+                }*/
 
                 // analisa 1 chave NF por vez
                 ret = AnalisaChavesNFPvt(nomeChaveNF, chaveNA);
@@ -322,9 +297,6 @@ namespace ExecutorOpenDSS.Classes_Principais
                 if (ret)
                 {
                     nomeNovaChaveNA = nomeChaveNF;
-
-                    // DEBUG
-                    //_janela.ExibeMsgDisplay("Possível redução de perdas com abertura ChaveNF: " + nomeChaveNF + "->" + chaveNA.perdaPercentual.ToString("0.##") + "%" );
                 }
                 else // se retorno igual a false (chave NF aumentou as perdas) interrompe a analise
                 { 
@@ -349,11 +321,11 @@ namespace ExecutorOpenDSS.Classes_Principais
             // verifica se chave NF eh trifasica
             if (GetNumFases(nomeChaveNF) != 3) 
             {
-                _janela.ExibeMsgDisplay("Tentativa de reconfigurar chave 1# " + nomeChaveNF);
+                _paramGerais._mWindow.ExibeMsgDisplay("Tentativa de reconfigurar chave 1# " + nomeChaveNF);
                 return ret;
             }
 
-            // FAz Manobra
+            // Faz Manobra
             FazManobra(nomeChaveNF, chaveNA);
 
             // executa fluxo 
@@ -366,7 +338,6 @@ namespace ExecutorOpenDSS.Classes_Principais
             // DEBUG verificacao se apos desfazer a manobra temos os mesmos resultados anteriores
             // resolve circuito 
             _fluxoMensal.ExecutaFluxoMensalSimples();
-
             double verifPerdas = _fluxoMensal._resFluxoMensal.getPerdasEnergia();
             */
             return ret;
@@ -466,8 +437,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         private bool AvaliaFluxoPot(Switch chaveNA)
         {
             // resolve circuito 
-            //_fluxoMensal.ExecutaFluxoMensal();
-            _fluxoMensal.ExecutaFluxoMensalSimples();
+            _fluxoMensal.ExecutaFluxoMensalAproximacaoDU_SemRecarga();
 
             double novaPerdas_kWh = double.PositiveInfinity;
             double novaEnergForn_kWh;            
@@ -486,7 +456,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             // verifica se isolou cargas
             if (_fluxoMensal.GetNumCargasIsoladas() != _numCargasIsoladas)
             {
-                _janela.ExibeMsgDisplay("Problema Isolamento de cargas!");
+                _paramGerais._mWindow.ExibeMsgDisplay("Problema Isolamento de cargas!");
             }
 
             // se alcancou valor menor de perdas & variacao da energia fornecida nao pode ser maior que 5%
@@ -511,29 +481,25 @@ namespace ExecutorOpenDSS.Classes_Principais
         // get chaves NAs conjunto/alimentador 
         private void GetChaves()
         {
-            int iterLinha = _fluxoSoMT._oDSS.GetActiveCircuit().Lines.First;
+            Circuit alim = _fluxoSoMT._oDSS.GetActiveCircuit();
+
+            int iterLinha = alim.Lines.First;
 
             _lstChavesNF = new List<Switch>();
             _dicChavesNF = new Dictionary<string,Switch>();
             _lstChavesNA = new List<Switch>();
 
-            Text dssText = _fluxoSoMT._oDSS._DSSText;
-
             while (iterLinha != 0)
             {
-                // nome composto da linha
-                string nomeCompLine = "line." + _fluxoSoMT._oDSS.GetActiveCircuit().Lines.Name;
-
                 // verifica se eh Chave
-                if ( Switch.IsChave(dssText, nomeCompLine) )
+                if ( alim.Lines.IsSwitch ) 
                 {
                     // criar objeto chave, armazenando nao so o nome, mas tambem os nodos
-                    Switch ch = new Switch(_fluxoSoMT._oDSS.GetActiveCircuit());
+                    Switch ch = new Switch(alim);
 
                     // verifica se chave NA
                     if (ch._estaAberta)
                     {
-                        // TODO testa 
                         // so adiciona chave NA se for trifasica
                         if (ch.phases.Equals(3))
                         {
@@ -542,7 +508,6 @@ namespace ExecutorOpenDSS.Classes_Principais
                     }
                     else
                     {
-                        // TODO testa 
                         // so adiciona chave NF se for trifasica
                         if (ch.phases.Equals(3))
                         { 
@@ -551,7 +516,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                         }
                     }
                 } 
-                iterLinha = _fluxoSoMT._oDSS.GetActiveCircuit().Lines.Next;
+                iterLinha = alim.Lines.Next;
             }
         }
        
@@ -572,7 +537,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                 linha += chave.nome + "\t";
             }
 
-            _janela.ExibeMsgDisplay(linha);
+            _paramGerais._mWindow.ExibeMsgDisplay(linha);
         }       
     }
 }

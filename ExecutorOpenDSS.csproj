@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ExecutorOpenDSS</RootNamespace>
     <AssemblyName>ExecutorOpenDSS</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -29,6 +29,7 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -70,9 +71,8 @@
     <Reference Include="Auxiliares">
       <HintPath>Lib\Auxiliares.dll</HintPath>
     </Reference>
-    <Reference Include="dss_sharp, Version=0.10.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Lib\dss_sharp.dll</HintPath>
+    <Reference Include="dss_sharp, Version=0.12.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\dss_sharp.0.12.2\lib\net45\dss_sharp.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus">
       <HintPath>Lib\EPPlus.dll</HintPath>
@@ -111,10 +111,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="Interfaces\Options.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Interfaces\HolidaysWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -128,9 +124,8 @@
     <Compile Include="AuxClasses\MonthlyEnergy.cs" />
     <Compile Include="AuxClasses\MonthLoadMult.cs" />
     <Compile Include="MainClasses\MyEnergyMeter.cs" />
-    <Compile Include="MainClasses\AdvancedParameters.cs" />
+    <Compile Include="MainClasses\ExpanderParameters.cs" />
     <Compile Include="AuxClasses\Calendar.cs" />
-    <Compile Include="UnderConstruction\SEConnectionsParameters.cs" />
     <Compile Include="MainClasses\CemigFeeders.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -140,7 +135,6 @@
     <Compile Include="MainClasses\IsolatedLoads.cs" />
     <Compile Include="MainClasses\TransformerVoltageLevelAnalysis.cs" />
     <Compile Include="MainClasses\VoltageLevelAnalysis.cs" />
-    <Compile Include="UnderConstruction\SEConnections.cs" />
     <Compile Include="MainClasses\LoopAnalysis.cs" />
     <Compile Include="MainClasses\VoltageReguladorAnalysis.cs" />
     <Compile Include="MainClasses\ObjDSS.cs" />
@@ -148,10 +142,8 @@
     <Compile Include="Reconfiguration\Switch.cs" />
     <Compile Include="MainClasses\DailyPowerFlow.cs" />
     <Compile Include="MainClasses\MonthlyPowerFlow.cs" />
-    <Compile Include="UnderConstruction\ComparacaoManobras.cs" />
     <Compile Include="Reconfiguration\DicNomeBranchs.cs" />
     <Compile Include="Reconfiguration\FeederGraph.cs" />
-    <Compile Include="MainClasses\DSSAuxFunction.cs" />
     <Compile Include="MainClasses\GUIParameters.cs" />
     <Compile Include="MainClasses\PFResults.cs" />
     <Compile Include="AuxClasses\XMLConfigurationFile.cs" />
@@ -159,9 +151,6 @@
     <Compile Include="MainClasses\RunPowerFlow.cs" />
     <Compile Include="AuxClasses\XLSXFile.cs" />
     <Compile Include="AuxClasses\ListOperation.cs" />
-    <Compile Include="Interfaces\Options.xaml.cs">
-      <DependentUpon>Options.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Interfaces\HolidaysWindow.xaml.cs">
       <DependentUpon>HolidaysWindow.xaml</DependentUpon>
     </Compile>
@@ -189,6 +178,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="messages\properties-en-US.mo" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

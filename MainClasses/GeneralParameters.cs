@@ -22,8 +22,8 @@ namespace ExecutorOpenDSS
         private readonly string _arquivoResAlimNaoConvergiram = "AlimentadoresNaoConvergentes.txt";
         private readonly string _arquivoDRPDRC = "AlimentadoresDRPDRC.txt";
         private readonly string _arqBarrasDRPDRC = "BarrasDRPDRC.txt";
-        private readonly string  _arqBarraTrafo = "BarrasTrafo.txt";
-        private readonly string  _arqTapsRTs = "TapsRTs.txt";
+        private readonly string _arqBarraTrafo = "BarrasTrafo.txt";
+        private readonly string _arqTapsRTs = "TapsRTs.txt";
         public string _arqDemandaMaxAlim = "demandaMaxAlim_" + "Jan" + ".xlsx";
         public string _arqTensoesBarramento = "tensoesBarramento.xlsx";
         private readonly string _arqLoops = "loops.txt";
@@ -38,14 +38,16 @@ namespace ExecutorOpenDSS
 
         // paramentros da interface GUI
         internal GUIParameters _parGUI;
-        internal AdvancedParameters _parAvan;
 
-        public MainWindow _janelaPrincipal;
+        public MainWindow _mWindow;
+
+        // gerencia dados de medicao 
+        public FeederMetering _medAlim;
 
         // construtor
         public GeneralParameters(MainWindow janelaPrincipal)
         {
-            _janelaPrincipal = janelaPrincipal;
+            _mWindow = janelaPrincipal;
 
             //Paramentros Otimizacao.
             _parGUI = janelaPrincipal._parGUI;
@@ -53,14 +55,14 @@ namespace ExecutorOpenDSS
             //Caminho curvas TXT 
             _pathCurvasTxt = _parGUI._pathRecursosPerm + "NovasCurvasTxt\\";
 
-            //Parametros Avancados
-            _parAvan = janelaPrincipal._parAvan;
-
             // preenche variavel _objTipoDeDiasDoMes
             _objTipoDeDiasDoMes = new TipoDiasMes(_parGUI, janelaPrincipal);
 
             // tipo fluxo
             _AlgoritmoFluxo = "Normal";
+
+            // 
+            _medAlim = new FeederMetering(this);
         }
 
         // 
@@ -89,7 +91,7 @@ namespace ExecutorOpenDSS
             int mes = _parGUI.GetMes();
 
             // 
-            Dictionary<string, double> mapAlimLoadMult = _janelaPrincipal._medAlim._reqLoadMultMes._mapAlimLoadMult[mes];
+            Dictionary<string, double> mapAlimLoadMult = _medAlim._reqLoadMultMes._mapAlimLoadMult[mes];
 
             // Grava arquivo Excel
             XLSXFile.GravaDictionaryExcel(file, mapAlimLoadMult);
@@ -322,13 +324,13 @@ namespace ExecutorOpenDSS
                 int mes = _parGUI.GetMes();
 
                 // se loadMult existe no map
-                if (_janelaPrincipal._medAlim._reqLoadMultMes._mapAlimLoadMult[mes].ContainsKey(alimTmp))
+                if (_medAlim._reqLoadMultMes._mapAlimLoadMult[mes].ContainsKey(alimTmp))
                 {
-                    return _janelaPrincipal._medAlim._reqLoadMultMes._mapAlimLoadMult[mes][alimTmp];
+                    return _medAlim._reqLoadMultMes._mapAlimLoadMult[mes][alimTmp];
                 }
                 else
                 {
-                    _janelaPrincipal.ExibeMsgDisplay(alimTmp + ": Alimentador não encontrado no arquivo de ajuste");
+                    _mWindow.ExibeMsgDisplay(alimTmp + ": Alimentador não encontrado no arquivo de ajuste");
 
                     // retorna loadMult Default
                     return _parGUI.loadMultDefault;

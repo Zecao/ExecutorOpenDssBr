@@ -14,26 +14,27 @@ namespace ExecutorOpenDSS.Classes_Principais
 {
     class DailyFlow
     {
-        private GeneralParameters _paramGerais;
-        private MainWindow _janela;
+        public GeneralParameters _paramGerais;
         public ObjDSS _oDSS;
 
-        private bool _DSSObjCarregadoOtm;
         private readonly bool _soMT;
         private readonly string _nomeAlim;
         private string _tipoDia = "DU";
         private List<string> _lstCommandsDSS;
         public PFResults _resFluxo = new PFResults();
 
+        private bool _DSSObjCarregadoOtm = false;
+
         // TODO refactory 
         private List<int> _lstOfIndexModeloDeCarga = new List<int>();
 
-        public DailyFlow(GeneralParameters paramGerais, MainWindow janela, ObjDSS objDSS, string tipoDia ="DU", bool soMT = false)
+        public DailyFlow(GeneralParameters paramGerais, string tipoDia ="DU", bool soMT = false)
         {
             // variaveis da classe
             _paramGerais = paramGerais;
-            _janela = janela;
-            _oDSS = objDSS;
+
+            //
+            _oDSS = new ObjDSS(paramGerais);  
 
             // TODO FIX ME da pau quando executa a segunda vez
             // OBS: datapath setado por alim
@@ -48,6 +49,35 @@ namespace ExecutorOpenDSS.Classes_Principais
 
             // Sets day type (week day, saturday, sunday) 
             SetTipoDia(paramGerais._parGUI);
+
+            // Load DSS Command String
+            LoadStringListwithDSSCommands();
+        }
+
+        public DailyFlow(GeneralParameters paramGerais, ObjDSS oDSS, string tipoDia = "DU", bool soMT = false)
+        {
+            // variaveis da classe
+            _paramGerais = paramGerais;
+
+            //
+            _oDSS = oDSS;
+
+            // TODO FIX ME da pau quando executa a segunda vez
+            // OBS: datapath setado por alim
+            string temp = _paramGerais.GetDataPathAlimOpenDSS();
+            _oDSS._DSSObj.DataPath = temp;
+
+            // nome alim
+            _nomeAlim = _paramGerais.GetNomeAlimAtual();
+
+            // seta variavel
+            _soMT = soMT;
+
+            // Sets day type (week day, saturday, sunday) 
+            SetTipoDia(paramGerais._parGUI);
+
+            // Load DSS Command String
+            LoadStringListwithDSSCommands();
         }
 
         private void SetTipoDia(GUIParameters parGUI)
@@ -91,7 +121,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         {
             _oDSS._DSSText.Command = "Set ReduceOption=Laterals KeepLoad=No";
             _oDSS._DSSText.Command = "Reduce";
-            _oDSS._DSSText.Command = "BuildY"; 
+            //_oDSS._DSSText.Command = "BuildY"; 
         }
 
         //
@@ -123,8 +153,8 @@ namespace ExecutorOpenDSS.Classes_Principais
             _lstCommandsDSS[_lstOfIndexModeloDeCarga[1]] = novoModeloCarga[1];
         }
 
-        // Carrega Alimentador
-        public bool CarregaAlimentador()
+        // Load StringList with  Alimentador
+        public bool LoadStringListwithDSSCommands()
         {
             bool ret;
 
@@ -162,7 +192,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
             else
             {
-                _janela.ExibeMsgDisplay(_nomeAlim + ": Arquivos *.dss não encontrados");
+                _paramGerais._mWindow.ExibeMsgDisplay(_nomeAlim + ": Arquivos *.dss não encontrados");
 
                 return false;
             }
@@ -229,7 +259,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
 
             // se modelo carga Cemig 
-            if (_paramGerais._parAvan._modeloCargaCemig)
+            if (_paramGerais._parGUI._expanderPar._modeloCargaCemig)
             {
                 // redirect arquivo CargaBT
                 if (File.Exists(dir + _paramGerais.GetNomeCargaBTCemig_mes()))
@@ -265,7 +295,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
 
             // redirect arquivo Capacitor
-            if (_paramGerais._parAvan._incluirCapMT && File.Exists(dir + _paramGerais.GetNomeCapacitorMT()))
+            if (_paramGerais._parGUI._expanderPar._incluirCapMT && File.Exists(dir + _paramGerais.GetNomeCapacitorMT()))
             {
                 _lstCommandsDSS.Add("Redirect " + _paramGerais.GetNomeCapacitorMT());
             }
@@ -298,15 +328,15 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
             else 
             {
-                _janela.ExibeMsgDisplay("Arquivo " + nomeArqBcomp + " não encontrado");
+                _paramGerais._mWindow.ExibeMsgDisplay("Arquivo " + nomeArqBcomp + " não encontrado");
                 return false;
             }
 
             // BatchEdit
-            if ( ! _paramGerais._parAvan._strBatchEdit.Equals("") )
+            if ( ! _paramGerais._parGUI._expanderPar._strBatchEdit.Equals("") )
             {
                 // adiciona na lista de comandos
-                _lstCommandsDSS.Add(_paramGerais._parAvan._strBatchEdit);
+                _lstCommandsDSS.Add(_paramGerais._parGUI._expanderPar._strBatchEdit);
             }
 
             return true;
@@ -336,7 +366,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
             else
             {
-                _janela.ExibeMsgDisplay(_nomeAlim + ": Arquivos *.dss não encontrados");
+                _paramGerais._mWindow.ExibeMsgDisplay(_nomeAlim + ": Arquivos *.dss não encontrados");
 
                 return false;            
             }
@@ -376,7 +406,6 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
 
             /* //OBS: comentei ao debugar possivel erro em manobras em SEs inteira. A matriz de incidencia diminui em 1/6.
-             * //OLD CODE
             // Transformadores
             string nArqTrafo = _nomeAlim + "Transformadores.dss";
             if (File.Exists(dir + nArqTrafo))
@@ -397,7 +426,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
 
             // redirect arquivo Capacitor
-            if (_paramGerais._parAvan._incluirCapMT && File.Exists(dir + _paramGerais.GetNomeCapacitorMT()))
+            if (_paramGerais._parGUI._expanderPar._incluirCapMT && File.Exists(dir + _paramGerais.GetNomeCapacitorMT()))
             {
                 _lstCommandsDSS.Add("Redirect " + _paramGerais.GetNomeCapacitorMT());
             }
@@ -430,122 +459,84 @@ namespace ExecutorOpenDSS.Classes_Principais
         }
 
         // executa fluxo mensal Simples 
-        internal bool ExecutaFluxoMensalSimples()
+        internal bool ExecutaFluxoDiarioSemRecarga()
         {
-            // carrega objeto OpenDSS
-            CarregaDSS();
-
             // Executa fluxo
-            bool ret = ExecutaFluxoDiarioOpenDSSPvt(null);
-
-            //informa usuario convergencia
-            if (ret)
-            {
-                _janela.ExibeMsgDisplay(GetMsgConvergencia(null, _nomeAlim));
-            }
-            return ret;
+            return (ExecutaFluxoDiarioOpenDSSPvt(null) );
         }
 
         // Executa fluxo diario OU horario caso seja passado string hora
         public bool ExecutaFluxoDiario()
         {
             //Verifica se foi solicitado o cancelamento.
-            if (_janela._cancelarExecucao)
+            if (_paramGerais._mWindow._cancelarExecucao)
             {
                 return false;
             }
-
+                        
             // carrega objeto OpenDSS
-            CarregaDSS();
+            LoadDSSObj();
+            
 
+            bool ret = ExecutaFluxoDiario_SemRecarga();            
+
+            return ret;
+        }
+
+        //TODO
+        // Executa fluxo diario OU horario caso seja passado string hora
+        public bool ExecutaFluxoDiario_SemRecarga()
+        {
             // variavel de retorno;
             bool ret = false;
 
-            // _modoFluxo
-            // TODO refatorar
-            // : SE modo _calcDRPDRC ou _calcTensaoBarTrafo necessario passar a hora 
-            if (_paramGerais._parGUI._tipoFluxo.Equals("Hourly"))
-            {
-                ret = ExecutaFluxoDiarioOpenDSSPvt(_paramGerais._parGUI._hora);
-            }
-            else
-            {
-                ret = ExecutaFluxoDiarioOpenDSSPvt(null);
-            }
+            ret = ExecutaFluxoDiarioOpenDSSPvt(null);
 
-            //informa usuario convergencia
-            if (ret)
-            {
-                _janela.ExibeMsgDisplay(GetMsgConvergencia(null, _nomeAlim));
-            }
             return ret;
         }
 
         // Executa fluxo horario caso seja passado string hora
-        public bool ExecutaFluxoHorario(string hora = null)
+        public bool ExecutaFluxoHorario(string hora = null) 
         {
             //Verifica se foi solicitado o cancelamento.
-            if (_janela._cancelarExecucao)
+            if (_paramGerais._mWindow._cancelarExecucao)
             {
                 return false;
             }
 
             // carrega objeto OpenDSS
-            CarregaDSS();
+            LoadDSSObj();
 
-            // variavel de retorno;
             bool ret = ExecutaFluxoDiarioOpenDSSPvt(hora);
-            
-            //informa usuario convergencia
-            if (ret)
-            {
-                _janela.ExibeMsgDisplay(GetMsgConvergencia(null, _nomeAlim));
-            }
+
+            return ret;
+        }
+
+        // Executa fluxo horario caso seja passado string hora
+        public bool ExecutaFluxoHorario_SemRecarga(string hora = null)
+        {
+            // variavel de retorno;
+            bool ret = ExecutaFluxoDiarioOpenDSSPvt(hora);            
+
             return ret;
         }
 
         // Executa comando no objDSS
-        internal void CarregaDSS()
-        {
-            // se esta no modo otimiza && aproximacao diario, carrega alimenador somente 1 vez
-            if (_paramGerais._parGUI._otmPorEnergia && _paramGerais._parGUI.GetAproximaFluxoMensalPorDU())
-            {
-                CarregaDSSOtm();
-            }
-            else
-            {
-                CarregaDSSPvt();
-            }
-        }
-
-        // Executa comando no objDSS
-        internal void CarregaDSSPvt()
+        internal void LoadDSSObj()
         {
             // carrega objeto OpenDSS
             foreach (string comando in _lstCommandsDSS)
             {
                 _oDSS._DSSText.Command = comando;
             }
-        }
-
-        // Executa comando no objDSS
-        internal void CarregaDSSOtm()
-        {
-            // Se NAO carregou DSSObj (E esta no modo otimiza), carrega somente 1 vez
-            if (!_DSSObjCarregadoOtm)
-            {
-                // carrega objeto OpenDSS
-                CarregaDSSPvt();
-
-                // seta variavel booleana
-                _DSSObjCarregadoOtm = true;
-            }
+            // seta variavel booleana
+            _DSSObjCarregadoOtm = true;
         }
 
         public bool ExecutaFluxoSnap()
         {
             // carrega alimentador no objDSS
-            CarregaDSS();
+            LoadDSSObj();
 
             //
             return (ExecutaFluxoSnapSemRecarga());
@@ -560,15 +551,11 @@ namespace ExecutorOpenDSS.Classes_Principais
             //informa usuario convergencia
             if (ret)
             {
-                _janela.ExibeMsgDisplay(GetMsgConvergencia(null, _nomeAlim));
+                _paramGerais._mWindow.ExibeMsgDisplay(GetMsgConvergencia(null, _nomeAlim));
             }
 
-            //nivel pu
-            string nivelTensaoPU = _oDSS.GetActiveCircuit().Vsources.pu.ToString("0.###");
-
             //Plota perdas na tela
-            _janela.ExibeMsgDisplay(_resFluxo.GetResultadoFluxoToConsole(
-                nivelTensaoPU, _paramGerais.GetNomeAlimAtual()));
+            _paramGerais._mWindow.ExibeMsgDisplay(_resFluxo.GetResultadoFluxoToConsole( _paramGerais.GetNomeAlimAtual(), _oDSS));
 
             return ret;
         }
@@ -585,7 +572,7 @@ namespace ExecutorOpenDSS.Classes_Principais
 
             if (loadMult == 0 )
             {
-                _janela.ExibeMsgDisplay("LoadMult igual a 0");
+                _paramGerais._mWindow.ExibeMsgDisplay("LoadMult igual a 0");
                 return false;
             }
 
@@ -608,6 +595,8 @@ namespace ExecutorOpenDSS.Classes_Principais
 
             if (DSSCircuit.Solution.Converged)
             {
+               // TODO OBS: its not necessary to use take in energy meters.
+                 
                 // Obtem dados para o medidor 
                 _oDSS._DSSText.Command = "energymeter.carga.action=take";
 
@@ -634,7 +623,7 @@ namespace ExecutorOpenDSS.Classes_Principais
 
             if (loadMult == 0)
             {
-                _janela.ExibeMsgDisplay("LoadMult igual a 0");
+                _paramGerais._mWindow.ExibeMsgDisplay("LoadMult igual a 0");
                 return false;
             }
 
@@ -681,6 +670,12 @@ namespace ExecutorOpenDSS.Classes_Principais
                 // verifica geracao de relatorios
                 GeraRelatorios();
             }
+
+            //informa usuario convergencia
+            if (ret)
+            {
+                _paramGerais._mWindow.ExibeMsgDisplay(GetMsgConvergencia(null, _nomeAlim));
+            }
             return ret;
         }
 
@@ -693,33 +688,33 @@ namespace ExecutorOpenDSS.Classes_Principais
                 return;
             }
 
-            if (_paramGerais._parAvan._verifTapsRTs)
+            if (_paramGerais._parGUI._expanderPar._verifTapsRTs)
             {
                 //
                 VoltageReguladorAnalysis obj = new VoltageReguladorAnalysis(_oDSS._DSSText, _oDSS._DSSObj.ActiveCircuit, _paramGerais);
-                obj.PlotaTapRTs(_janela);
+                obj.PlotaTapRTs(_paramGerais._mWindow);
             }
 
-            if (_paramGerais._parAvan._calcDRPDRC)
+            if (_paramGerais._parGUI._expanderPar._calcDRPDRC)
             {
                 //
                 CalculaDRPDRC();
             }
 
             // calcula tensao PU no primario trafos
-            if (_paramGerais._parAvan._calcTensaoBarTrafo)
+            if (_paramGerais._parGUI._expanderPar._calcTensaoBarTrafo)
             {
                 // obtem indices de tensao nos trafos
                 TransformerVoltageLevelAnalysis obj2 = new TransformerVoltageLevelAnalysis(_oDSS._DSSText, _oDSS._DSSObj.ActiveCircuit, _paramGerais);
-                obj2.PlotaNiveisTensaoBarras(_janela);
+                obj2.PlotaNiveisTensaoBarras(_paramGerais._mWindow);
             }
 
             // verifica cargas isoladas
-            if (_paramGerais._parAvan._verifCargaIsolada)
+            if (_paramGerais._parGUI._expanderPar._verifCargaIsolada)
             {
                 //analise cargas isoladas
                 IsolatedLoads obj = new IsolatedLoads(_oDSS._DSSObj.ActiveCircuit, _paramGerais);
-                obj.PlotaCargasIsoladasArq(_janela);
+                obj.PlotaCargasIsoladasArq(_paramGerais._mWindow);
             }
 
             // TODO criar interface
@@ -780,11 +775,11 @@ namespace ExecutorOpenDSS.Classes_Principais
 
             if (hora != null)
             {
-                str = nomeAlim + " Hour: " + Add1toHour(hora) + " -> Solution Converged";
+                str = nomeAlim + " Hour: " + Add1toHour(hora) + " -> Solução Convergiu";
             }
             else
             {
-                str = nomeAlim + " -> Solution Converged";
+                str = nomeAlim + " -> Solução Convergiu";
             }
             return str;
         }
@@ -801,7 +796,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         public void GravaPerdasArquivo()
         {
             //Se modo otmiza não grava arquivo
-            if (_paramGerais._parAvan._otimizaPUSaidaSE || _paramGerais._parGUI._otmPorEnergia || _paramGerais._parGUI._otmPorDemMax)
+            if (_paramGerais._parGUI._expanderPar._otimizaPUSaidaSE || _paramGerais._parGUI._otmPorEnergia || _paramGerais._parGUI._otmPorDemMax)
             {
                 return;
             }
@@ -810,7 +805,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             if (!_resFluxo._convergiuBool)
             {
                 //Grava a lista de alimentadores não convergentes em um txt
-                TxtFile.GravaLstAlimNaoConvergiram(_paramGerais, _janela);
+                TxtFile.GravaLstAlimNaoConvergiram(_paramGerais);
             }
             // Grava Perdas de acordo com o tipo de fluxo
             else
@@ -821,7 +816,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                 string arquivo = _paramGerais.GetNomeArquivoPerdas();
 
                 // Grava Perdas
-                TxtFile.GravaPerdas(_resFluxo, nomeAlim, arquivo, _janela);
+                TxtFile.GravaPerdas(_resFluxo, nomeAlim, arquivo, _paramGerais._mWindow);
             }
         }
 
@@ -842,10 +837,10 @@ namespace ExecutorOpenDSS.Classes_Principais
                 indTensao.CalculaNumClientesDRPDRC();
 
                 // grava em arquivo
-                indTensao.ImprimeNumClientesDRPDRC(_paramGerais, _janela);
+                indTensao.ImprimeNumClientesDRPDRC(_paramGerais);
 
                 //
-                indTensao.ImprimeBarrasDRPDRC(_paramGerais, _janela);
+                indTensao.ImprimeBarrasDRPDRC(_paramGerais);
             }
         }
 
@@ -910,7 +905,7 @@ namespace ExecutorOpenDSS.Classes_Principais
 
                     if (genRegisterValues == null)
                     {
-                        _janela.ExibeMsgDisplay("Usina desconectada!");
+                        _paramGerais._mWindow.ExibeMsgDisplay("Usina desconectada!");
                     }
 
                 } while (_oDSS.GetActiveCircuit().Generators.Next != 0);
@@ -968,9 +963,9 @@ namespace ExecutorOpenDSS.Classes_Principais
                 resXmatrix.Add("\tXmatrix=" + textDSS.Result);
             }
 
-            TxtFile.GravaListArquivoTXT(resRmatrix, _paramGerais.GetArqRmatrix(), _janela);
+            TxtFile.GravaListArquivoTXT(resRmatrix, _paramGerais.GetArqRmatrix(), _paramGerais._mWindow);
 
-            TxtFile.GravaListArquivoTXT(resXmatrix, _paramGerais.GetArqXmatrix(), _janela);
+            TxtFile.GravaListArquivoTXT(resXmatrix, _paramGerais.GetArqXmatrix(), _paramGerais._mWindow);
         }
 
         // TODO refactory 
@@ -1018,9 +1013,9 @@ namespace ExecutorOpenDSS.Classes_Principais
                 resXmatrix.Add(line + "\tXmatrix=" + textDSS.Result);
             }
 
-            TxtFile.GravaListArquivoTXT(resRmatrix, _paramGerais.GetArqRmatrix(), _janela);
+            TxtFile.GravaListArquivoTXT(resRmatrix, _paramGerais.GetArqRmatrix(), _paramGerais._mWindow);
 
-            TxtFile.GravaListArquivoTXT(resXmatrix, _paramGerais.GetArqXmatrix(), _janela);
+            TxtFile.GravaListArquivoTXT(resXmatrix, _paramGerais.GetArqXmatrix(), _paramGerais._mWindow);
         }
     }
 }

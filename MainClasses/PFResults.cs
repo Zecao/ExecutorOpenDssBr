@@ -6,6 +6,7 @@ using dss_sharp;
 #endif
 
 using ExecutorOpenDSS.Classes_Auxiliares;
+using ExecutorOpenDSS.Classes_Principais;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,8 +34,11 @@ namespace ExecutorOpenDSS.Classes
         }
 
         // formata resultado do fluco para console
-        public string GetResultadoFluxoToConsole(string tensao, string nomeAlim)
+        public string GetResultadoFluxoToConsole(string nomeAlim, ObjDSS oDSS)
         {
+            //nivel pu
+            string tensao = oDSS.GetActiveCircuit().Vsources.pu.ToString("0.###");
+
             double totalKWh = _energyMeter.KWh;
             string gd = "";
 
@@ -57,7 +61,7 @@ namespace ExecutorOpenDSS.Classes
 
         // Calculates monthly Power flow results from 3 daily Power Flow (Sunday, Saturday and common days)
         // O resultado no fluxo mensal eh armazenado na variavel da classe
-        public void CalculaResultadoFluxoMensal(PFResults perdasDU, PFResults perdasSA, PFResults perdasDO, GeneralParameters paramGerais, MainWindow janela)
+        public void CalculaResultadoFluxoMensal(PFResults perdasDU, PFResults perdasSA, PFResults perdasDO, GeneralParameters paramGerais)
         {
             // Limpa medidor atual.
             _energyMeter = new MyEnergyMeter();
@@ -96,7 +100,7 @@ namespace ExecutorOpenDSS.Classes
             if ( !paramGerais._parGUI._otmPorEnergia )
             {
                 // grava perdas alimentador em arquivo
-                TxtFile.GravaEmArquivo(conteudo, paramGerais.GetNomeComp_arquivoResPerdasMensal(), janela);
+                TxtFile.GravaEmArquivo(conteudo, paramGerais.GetNomeComp_arquivoResPerdasMensal(), paramGerais._mWindow);
             }
 
             // Se chegou ate aqui, seta convergencia para true

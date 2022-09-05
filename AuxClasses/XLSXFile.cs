@@ -28,7 +28,7 @@ namespace ExecutorOpenDSS
         }
 
         // Le coluna CSV do arquivo
-        public static List<string> Le1ColunaCSV(string fileName, char separador = ',')
+        public static List<string> Le1ColunaCSV(string fileName)
         {
             // verifica existencia de arquivo
             if (File.Exists(fileName))
@@ -221,8 +221,7 @@ namespace ExecutorOpenDSS
         //
         private static double[,] EliminaNan(double[,] entrada)
         {
-
-            List<double> temp = new List<double>(); ;
+            List<double> temp;
             List<List<double>> aux = new List<List<double>>();
             List<List<double>> aux2 = new List<List<double>>();
             int linhas = entrada.GetLength(0);

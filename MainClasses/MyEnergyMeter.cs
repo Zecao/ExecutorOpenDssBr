@@ -62,27 +62,6 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
         {
         }
 
-        public void GeracaoPerdasPotEPerdasEnergiaType(List<double> _geracaoPerdasPotEPerdasEnergia)
-        {
-            MaxkW = _geracaoPerdasPotEPerdasEnergia[0];
-            MaxkWLosses = _geracaoPerdasPotEPerdasEnergia[1];
-            KWh = _geracaoPerdasPotEPerdasEnergia[2];
-            kvarh = _geracaoPerdasPotEPerdasEnergia[3];
-            LossesKWh = _geracaoPerdasPotEPerdasEnergia[4];
-            TransformerLosses = _geracaoPerdasPotEPerdasEnergia[5];
-            MTLineLosses = _geracaoPerdasPotEPerdasEnergia[6];
-            BTLineLosses = _geracaoPerdasPotEPerdasEnergia[7];
-            lineLossesPosMode = _geracaoPerdasPotEPerdasEnergia[8];
-            lineLossesZeroMode = _geracaoPerdasPotEPerdasEnergia[9];
-            NoLoadLosseskWh = _geracaoPerdasPotEPerdasEnergia[10];
-            MTEnergy = _geracaoPerdasPotEPerdasEnergia[11];
-            BTEnergy = _geracaoPerdasPotEPerdasEnergia[12];
-            MTLineLosses34KV = _geracaoPerdasPotEPerdasEnergia[13];
-            TransformerAllLosses34KV = _geracaoPerdasPotEPerdasEnergia[14];
-            // TODO implementar
-            //KWhGD = injecaoEPerdasEnergia[15];
-        }
-
         // operador soma  de energia 
         public void Soma(MyEnergyMeter em)
         {

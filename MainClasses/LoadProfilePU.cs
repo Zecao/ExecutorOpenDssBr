@@ -171,7 +171,7 @@ namespace ExecutorOpenDSS
                             catch
                             {
                                 //Retorna null caso haja algum problema na leitura
-                                janela.ExibeMsgDisplay("Problema na leitura do arquivo " + caminho + arquivoCurvas + '.', "E");
+                                janela.ExibeMsgDisplay("Problema na leitura do arquivo " + caminho + arquivoCurvas + '.');
                                 return null;
                             }
                         }
@@ -182,14 +182,14 @@ namespace ExecutorOpenDSS
                 }
                 catch
                 {
-                    janela.ExibeMsgDisplay("Problema na leitura do arquivo " + caminho + arquivoCurvas + ". Verifique se o mesmo encontra-se aberto em outro programa.", "E");
+                    janela.ExibeMsgDisplay("Problema na leitura do arquivo " + caminho + arquivoCurvas + ". Verifique se o mesmo encontra-se aberto em outro programa.");
                     return null;
                 }
 
             }
             else
             {
-                janela.ExibeMsgDisplay("Arquivo " + caminho + arquivoCurvas + " não encontrado.", "E");
+                janela.ExibeMsgDisplay("Arquivo " + caminho + arquivoCurvas + " não encontrado.");
                 return null;
             }
 

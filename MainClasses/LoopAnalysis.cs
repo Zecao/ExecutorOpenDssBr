@@ -6,18 +6,14 @@ namespace ExecutorOpenDSS.Classes_Principais
 {
     class LoopAnalysis
     {
-        private MainWindow _janelaPrincipal;
         private GeneralParameters _paramGerais;
         private readonly List<string> _lstAlimentadores;
-        private ObjDSS _oDSS;
         private DailyFlow _fluxoSoMT;
 
-        public LoopAnalysis(MainWindow janelaPrincipal, GeneralParameters paramGerais, List<string> alimentadores, ObjDSS oDSS)
+        public LoopAnalysis(GeneralParameters paramGerais, List<string> alimentadores)
         {
-            _janelaPrincipal = janelaPrincipal;
-            this._paramGerais = paramGerais;
-            this._lstAlimentadores = alimentadores;
-            this._oDSS = oDSS;
+            _paramGerais = paramGerais;
+            _lstAlimentadores = alimentadores;
 
             //Limpa Arquivos
             _paramGerais.DeletaArqResultados();
@@ -29,7 +25,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
 
             // Grava Log
-            _janelaPrincipal.GravaLog();
+            paramGerais._mWindow.GravaLog();
         }
 
         private void AnaliseLoopsPvt(string nomeAlim)
@@ -38,31 +34,28 @@ namespace ExecutorOpenDSS.Classes_Principais
             _paramGerais.SetNomeAlimAtual(nomeAlim);
 
             // Carrega arquivos DSS so MT
-            _fluxoSoMT = new DailyFlow(_paramGerais, _janelaPrincipal, _oDSS, null, true);
+            _fluxoSoMT = new DailyFlow(_paramGerais, null, true);
 
-            // Carrega arquivos DSS
-            if ( _fluxoSoMT.CarregaAlimentador() )
+            // SE executou fluxo snap
+            if (_fluxoSoMT.ExecutaFluxoSnap() )
             {
-                // SE executou fluxo snap
-                if (_fluxoSoMT.ExecutaFluxoSnap() )
+                // verifica cancelamento usuario 
+                if (_paramGerais._mWindow._cancelarExecucao)
                 {
-                    // verifica cancelamento usuario 
-                    if (_janelaPrincipal._cancelarExecucao)
-                    {
-                        return;
-                    }
+                    return;
+                }
 
-                    //
-                    AnaliseLoops2();
-                }            
-            }
+                //
+                AnaliseLoops2();
+            }            
+
         }
 
         // Analise de Loops
         private void AnaliseLoops2()
         {
             // Obtem loops
-            string[] loops = _oDSS.GetActiveCircuit().Topology.AllLoopedPairs;
+            string[] loops = _fluxoSoMT._oDSS.GetActiveCircuit().Topology.AllLoopedPairs;
 
             // armazena loops em lista
             List<string> lstLoops = new List<string>(loops);
@@ -92,7 +85,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                     linha += "\n";
                 }
             }
-            TxtFile.GravaEmArquivoAsync(linha, _paramGerais.GetNomeCompArqLoops(), _janelaPrincipal);
+            TxtFile.GravaEmArquivoAsync(linha, _paramGerais.GetNomeCompArqLoops(), _paramGerais._mWindow);
         }
     }
 }

@@ -6,8 +6,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
     {
         // map energia injetada X alim
         public Dictionary<int, Dictionary<string, double>> _mapAlimLoadMult = new Dictionary<int, Dictionary<string, double>>();
-
-        GeneralParameters _paramGerais;
+        private readonly GeneralParameters _paramGerais;
 
         // construtor
         public MonthLoadMult(GeneralParameters par)
