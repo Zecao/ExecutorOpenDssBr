@@ -14,10 +14,10 @@ namespace ExecutorOpenDSS.Classes_Principais
     {
         public int _nFP = 0;
         public DailyFlow _fluxoDU;
-        private DailyFlow _fluxoSA;
-        private DailyFlow _fluxoDO;
+        private readonly DailyFlow _fluxoSA;
+        private readonly DailyFlow _fluxoDO;
 
-        private GeneralParameters _par;
+        private readonly GeneralParameters _par;
         public PFResults _resFluxoMensal;
                 
         public MonthlyPowerFlow(GeneralParameters paramGerais)
@@ -108,6 +108,37 @@ namespace ExecutorOpenDSS.Classes_Principais
             return _fluxoDU.GetBarrasDRPDRC();
         }
 
+        /* //OLD
+        public bool LoadFeederDSSFiles_weekDay()
+        {
+            // se nao carregar algum dos dias, retorna false
+            if (!_fluxoDU.LoadStringListwithDSSCommands())
+            {
+                return false;
+            }
+            return true;
+        }*/
+
+        /*
+        public bool CarregaAlimentador()
+        {
+            // se nao carregar algum dos dias, retorna false
+            if (!_fluxoDU.LoadDSSCommandStringList())
+            {
+                return false;
+            }
+            if (!_fluxoSA.LoadDSSCommandStringList())
+            {
+                return false;
+            }
+            if (!_fluxoDO.LoadDSSCommandStringList())
+            {
+                return false;
+            }
+            return true;
+        }
+        */
+
         // obtem objetoDSS
         internal ObjDSS GetObjDSS()
         {
@@ -147,10 +178,8 @@ namespace ExecutorOpenDSS.Classes_Principais
         // Fluxo mensal simplificado (numDiasDoMes X fluxoDiaUtil)
         internal bool ExecutaFluxoMensalAproximacaoDU()
         {
-            bool ret = false;
-
             //Executa fluxo diário openDSS
-            ret = _fluxoDU.ExecutaFluxoDiario();
+            bool ret = _fluxoDU.ExecutaFluxoDiario(); 
 
             //
             SetEnergiaPerdasFluxoSimples();
@@ -161,10 +190,8 @@ namespace ExecutorOpenDSS.Classes_Principais
         // Fluxo mensal simplificado (numDiasDoMes X fluxoDiaUtil)
         internal bool ExecutaFluxoMensalAproximacaoDU_SemRecarga()
         {
-            bool ret = false;
-
             //Executa fluxo diário openDSS
-            ret = _fluxoDU.ExecutaFluxoDiarioSemRecarga();
+            bool ret = _fluxoDU.ExecutaFluxoDiario_SemRecarga();
 
             //
             SetEnergiaPerdasFluxoSimples();

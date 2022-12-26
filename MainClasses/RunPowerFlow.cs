@@ -57,7 +57,7 @@ namespace ExecutorOpenDSS
                 //Execução padrão
                 else
                 {
-                    Snap(nomeAlim);
+                    Snap();
                 }
             }
 
@@ -123,7 +123,7 @@ namespace ExecutorOpenDSS
         }
 
         // Run snap Power Flow 
-        internal void Snap(string noeAlim)
+        internal void Snap()
         {
             //Verifica se foi solicitado o cancelamento.
             if (_paramGerais._mWindow._cancelarExecucao)
@@ -172,9 +172,7 @@ namespace ExecutorOpenDSS
             string alimTmp = _paramGerais.GetNomeAlimAtual();
 
             // loadMult inicial 
-            double loadMultInicial = 0;
-
-            loadMultInicial = _paramGerais._medAlim._reqLoadMultMes.GetLoadMult();
+            double loadMultInicial = _paramGerais._medAlim._reqLoadMultMes.GetLoadMult();
 
             if ( loadMultInicial.Equals(double.NaN) )
             {
@@ -183,20 +181,21 @@ namespace ExecutorOpenDSS
                 return loadMultInicial;
             }
 
+            /* // OLD CODE
             // OBS: condicao de retorno: Skipa alimentadores com loadMult igual a zero se loadMult == 0 
             if (loadMultInicial == 0)
             {
                 _paramGerais._mWindow.ExibeMsgDisplay(alimTmp + ": Alimentador não otimizado! LoadMult=0");
 
                 return loadMultInicial;  
-            }
+            }*/
 
             // OBS: condicao de retorno: Skipa alimentadores com loadMult > 10 
             if ((loadMultInicial > 10) || (loadMultInicial < 0.1))
             {
                 _paramGerais._mWindow.ExibeMsgDisplay(alimTmp + ": Alimentador não otimizado! LoadMult = " + loadMultInicial);
                 
-                return _paramGerais._parGUI._loadMultAlternativo;
+                return loadMultInicial;
             }
 
             double loadMult;
@@ -408,7 +407,7 @@ namespace ExecutorOpenDSS
                 geracao = ExecutaFluxoSnapOtm(loadMult);
 
                 // incrementa contador fluxo
-                contFP = contFP + 1;
+                contFP ++;
 
                 // se geracao nao eh vazia
                 if (double.IsNaN(geracao))
@@ -481,7 +480,7 @@ namespace ExecutorOpenDSS
             _fluxoMensal.AjustaModeloDeCargaCemig(sentidoBusca);
 
             // calcula novo LoadMult
-            loadMult = AjustaLoadMult(energiaMesTmp, refEnergiaMes, loadMult, sentidoBusca);
+            loadMult = AjustaLoadMult(refEnergiaMes, loadMult, sentidoBusca);
 
             return loadMult;
         }
@@ -509,7 +508,7 @@ namespace ExecutorOpenDSS
         }
 
         // ajusta loadMult incrementalmente
-        internal double AjustaLoadMult(double energiaMes, double refEnergiaMes, double loadMult, int sentidoBusca = 1)
+        internal double AjustaLoadMult(double refEnergiaMes, double loadMult, int sentidoBusca = 1)
         {
             // contador fluxo de potência
             // OBS: considera a execução acima
@@ -556,12 +555,12 @@ namespace ExecutorOpenDSS
                 loadMultAnt = loadMult;
                 if (sentidoBusca == 1)
                 {
-                    loadMult = loadMult * _paramGerais._parGUI.GetIncremento();
+                    loadMult *=  _paramGerais._parGUI.GetIncremento();
                 }
                 // retrocede ajuste 
                 else
                 {
-                    loadMult = loadMult / _paramGerais._parGUI.GetIncremento();
+                    loadMult /= _paramGerais._parGUI.GetIncremento();
                 }
 
                 // calcula energia mes. Se modo fluxo mensal Aproximado
@@ -573,7 +572,7 @@ namespace ExecutorOpenDSS
                 }
 
                 // incrementa contador fluxo
-                contFP = contFP + 1;
+                contFP ++;
 
                 //atualiza sentido de busca
                 if ((_fluxoMensal._resFluxoMensal.GetEnergia() > refEnergiaMes) && (sentidoBusca == 1) ||
@@ -598,20 +597,17 @@ namespace ExecutorOpenDSS
             // adiciona loadMult ao paramento gerais           
             _paramGerais._parGUI.loadMultAtual = loadMult;
 
-            bool ret = false;
-
             // fluxo mensal aproximado
             if (_paramGerais._parGUI.GetAproximaFluxoMensalPorDU())
             {
                 // Executa fluxo diario
-                ret = _fluxoMensal.ExecutaFluxoMensalAproximacaoDU();
+                return (_fluxoMensal.ExecutaFluxoMensalAproximacaoDU());
             }
             else
             {
                 // Executa fluxo mensal
-                ret = _fluxoMensal.ExecutaFluxoMensal();
+                return ( _fluxoMensal.ExecutaFluxoMensal() );
             }
-            return ret;
         }
 
         // run snap power flow 
@@ -621,7 +617,7 @@ namespace ExecutorOpenDSS
             _paramGerais._parGUI.loadMultAtual = loadMult;
 
             // Chama fluxo snap
-            Snap(_paramGerais.GetNomeAlimAtual());
+            Snap();
 
             //alimTmp
             string alimTmp = _paramGerais.GetNomeAlimAtual();

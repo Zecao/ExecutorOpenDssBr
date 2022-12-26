@@ -12,11 +12,11 @@ namespace ExecutorOpenDSS.Classes_Principais
 {
     class TransformerVoltageLevelAnalysis
     {
-        private Circuit _circuit;
-        private Transformers _trafosDSS;
-        private Text _DSSText;
-        private Dictionary<string, double> _nivelTensaoBarra;
-        private GeneralParameters _param;
+        private readonly Circuit _circuit;
+        private readonly Transformers _trafosDSS;
+        private readonly Text _DSSText;
+        private readonly Dictionary<string, double> _nivelTensaoBarra;
+        private readonly GeneralParameters _param;
 
         //construtor 
         public TransformerVoltageLevelAnalysis(Text txt, Circuit cir , GeneralParameters paramGerais) 
@@ -101,8 +101,8 @@ namespace ExecutorOpenDSS.Classes_Principais
             // obtem a barra, apos ativada
             Bus barraDSS = _circuit.ActiveBus;
 
-            // kvbase
-            double kVbase = barraDSS.kVBase;
+            // DEBUG kvbase 
+            //double kVbase = barraDSS.kVBase;
 
             // array de tensoes
             //double[] tensaoPU = barraDSS.puVoltages;

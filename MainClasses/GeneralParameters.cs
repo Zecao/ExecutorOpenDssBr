@@ -102,7 +102,7 @@ namespace ExecutorOpenDSS
         {
             string tipoFluxo = _parGUI._tipoFluxo;
 
-            string arquivo = null;
+            string arquivo;
 
             switch (tipoFluxo)
             {

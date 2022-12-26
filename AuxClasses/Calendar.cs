@@ -2,15 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ExecutorOpenDSS.Classes_Auxiliares
 {
     class TipoDiasMes
     {
-        GUIParameters _parGUI;
+        public readonly GUIParameters _parGUI;
         
         // armazena dias de feriados do ano
         public List<List<int>> _listaDiasDeFeriadoAno;

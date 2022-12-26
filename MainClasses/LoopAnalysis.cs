@@ -6,14 +6,14 @@ namespace ExecutorOpenDSS.Classes_Principais
 {
     class LoopAnalysis
     {
-        private GeneralParameters _paramGerais;
-        private readonly List<string> _lstAlimentadores;
+        private readonly GeneralParameters _paramGerais;
+        //private readonly List<string> _lstAlimentadores; // OLD CODE
         private DailyFlow _fluxoSoMT;
 
         public LoopAnalysis(GeneralParameters paramGerais, List<string> alimentadores)
         {
             _paramGerais = paramGerais;
-            _lstAlimentadores = alimentadores;
+            //_lstAlimentadores = alimentadores; //DEL
 
             //Limpa Arquivos
             _paramGerais.DeletaArqResultados();
@@ -24,8 +24,8 @@ namespace ExecutorOpenDSS.Classes_Principais
                 AnaliseLoopsPvt(nomeAlim);
             }
 
-            // Grava Log
-            paramGerais._mWindow.GravaLog();
+            // Grava Log // TODO
+            //paramGerais._mWindow.GravaLog();
         }
 
         private void AnaliseLoopsPvt(string nomeAlim)
@@ -34,7 +34,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             _paramGerais.SetNomeAlimAtual(nomeAlim);
 
             // Carrega arquivos DSS so MT
-            _fluxoSoMT = new DailyFlow(_paramGerais, null, true);
+            _fluxoSoMT = new DailyFlow(_paramGerais, "DU", true);
 
             // SE executou fluxo snap
             if (_fluxoSoMT.ExecutaFluxoSnap() )

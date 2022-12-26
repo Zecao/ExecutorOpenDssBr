@@ -11,13 +11,13 @@ namespace ExecutorOpenDSS.ClassesPrincipais
 {
     class VoltageReguladorAnalysis
     {
-        private Circuit _circuit;
-        private Transformers _trafosDSS;
-        private List<string> _tapsRT;
-        private GeneralParameters _param;
+        private readonly Circuit _circuit;
+        private readonly Transformers _trafosDSS;
+        private readonly List<string> _tapsRT;
+        private readonly GeneralParameters _param;
 
         //constructor 
-        public VoltageReguladorAnalysis(Text txt, Circuit cir, GeneralParameters paramGerais) 
+        public VoltageReguladorAnalysis( Circuit cir, GeneralParameters paramGerais) 
         {
             _circuit = cir;
             _trafosDSS = cir.Transformers;

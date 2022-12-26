@@ -103,20 +103,20 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
 
         internal void MultiplicaEnergia(int numDias)
         {
-            KWh = KWh * numDias;
-            kvarh = kvarh * numDias ;
-            LossesKWh = LossesKWh * numDias ;
-            TransformerLosses = TransformerLosses * numDias;
-            MTLineLosses =  MTLineLosses * numDias;
-            BTLineLosses =  BTLineLosses * numDias;
-            lineLossesPosMode = lineLossesPosMode * numDias;
-            lineLossesZeroMode = lineLossesZeroMode * numDias;
-            NoLoadLosseskWh = NoLoadLosseskWh * numDias;
-            MTEnergy = MTEnergy * numDias;
-            BTEnergy = BTEnergy * numDias;
-            MTLineLosses34KV = MTLineLosses34KV * numDias;
-            TransformerAllLosses34KV = TransformerAllLosses34KV * numDias;
-            KWhGD = KWhGD * numDias;
+            KWh *= numDias;
+            kvarh *= numDias ;
+            LossesKWh *= numDias ;
+            TransformerLosses *= numDias;
+            MTLineLosses *=  numDias;
+            BTLineLosses *=  numDias;
+            lineLossesPosMode *= numDias;
+            lineLossesZeroMode *= numDias;
+            NoLoadLosseskWh *= numDias;
+            MTEnergy *= numDias;
+            BTEnergy *= numDias;
+            MTLineLosses34KV *= numDias;
+            TransformerAllLosses34KV *= numDias;
+            KWhGD *= numDias;
         }
 
         public string FormataResultado(string nomeAlim)

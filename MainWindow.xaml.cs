@@ -1,8 +1,6 @@
 ﻿using ExecutorOpenDSS.Classes;
-using ExecutorOpenDSS.Classes_Auxiliares;
 using ExecutorOpenDSS.Classes_Principais;
 using ExecutorOpenDSS.Interfaces;
-using ExecutorOpenDSS.Reconfigurador;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,7 +11,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-
 
 namespace ExecutorOpenDSS
 {
@@ -39,9 +36,6 @@ namespace ExecutorOpenDSS
         public DateTime _inicio;
         public int _indiceArq;
 
-        // gerencia dados de medicao 
-        //public FeederMetering _medAlim;
-
         //Função principal
         public MainWindow()
         {
@@ -51,6 +45,10 @@ namespace ExecutorOpenDSS
             //Inicializa os valores da interface
             InicializaValores();
 
+            // prenche variaveis de classe 
+            _displayDispatcher = display.Dispatcher; //OBS: devi vir antes new GeneralParameters
+            _mainWindowDispatcher = this.Dispatcher;
+
             // copia variaveis MainWindow
             _parGUI.CopiaVariaveis(this);
 
@@ -59,10 +57,6 @@ namespace ExecutorOpenDSS
 
             //
             _paramGerais = new GeneralParameters(this);
-
-            // prenche variaveis de classe 
-            _displayDispatcher = display.Dispatcher;
-            _mainWindowDispatcher = this.Dispatcher;
         }
 
         //Função que exibe as mensagens na TextBox e as grava em um arquivo de log
@@ -513,7 +507,6 @@ namespace ExecutorOpenDSS
 
             ExibeMsgDisplay("Tempo total de execução: " + (fim - _inicio).ToString());
 
-            // TODO erro 2020
             // Grava Log
             GravaLog();
         }
@@ -597,7 +590,7 @@ namespace ExecutorOpenDSS
         public bool Mensagem(string texto, string titulo = "Aviso")
         {
             MessageBoxButton botoes = MessageBoxButton.YesNo;
-            MessageBoxResult resultado =MessageBox.Show(texto, titulo, botoes);
+            MessageBoxResult resultado = MessageBox.Show(texto, titulo, botoes);
             if (resultado == MessageBoxResult.Yes)
             {
                 return true;
@@ -685,20 +678,6 @@ namespace ExecutorOpenDSS
             }
         }
 
-        // Adiciona PU
-        private void AddButton_Click(object sender, RoutedEventArgs e)
-        {
-            _parGUI._tensaoSaidaBarUsuario = tensaoSaidaBarTextBox.Text;
-
-            double tensaoPU = Double.Parse(_parGUI._tensaoSaidaBarUsuario);
-            
-            tensaoPU = tensaoPU + 0.01;
-
-            _parGUI._tensaoSaidaBarUsuario = tensaoPU.ToString();
-
-            tensaoSaidaBarTextBox.Text = tensaoPU.ToString();
-        }
-
         // habilita Text, caso conformo 
         private void UsarTensoesBarramentoCheckBox_Checked(object sender, RoutedEventArgs e)
         {
@@ -710,12 +689,6 @@ namespace ExecutorOpenDSS
         {
             // desahabilita TextBox valor default pu
             tensaoSaidaBarTextBox.IsEnabled = false;
-        }
-
-        private void CalculaPUotm_Checked(object sender, RoutedEventArgs e)
-        {
-            //desabilita PUSaidaSE arquivo
-            usarTensoesBarramentoCheckBox.IsChecked = false;
         }
 
         // perda de foco TexBox hora do modo diario
@@ -778,9 +751,6 @@ namespace ExecutorOpenDSS
             // load xlsx loadmults and xlsx Energy/month
             _paramGerais._medAlim.CarregaDados();
 
-            // instancia classe de parametros Gerais
-            GeneralParameters paramGerais = new GeneralParameters(this);
-
             // instancia classe AnaliseChavesNAs
             NOSwitchAnalysis analiseChavesNAs = new NOSwitchAnalysis( _paramGerais, lstAlimentadores);
 
@@ -819,11 +789,8 @@ namespace ExecutorOpenDSS
             //Lê os alimentadores e armazena a lista de alimentadores 
             List<string> alimentadores = CemigFeeders.GetTodos(_parGUI.GetArqLstAlimentadores());
 
-            // instancia classe de parametros Gerais
-            GeneralParameters paramGerais = new GeneralParameters(this);
-
             // instancia classe AnaliseChavesNAs
-            LoopAnalysis analiseLoops = new LoopAnalysis(paramGerais, alimentadores);
+            LoopAnalysis analiseLoops = new LoopAnalysis(_paramGerais, alimentadores);
 
             // Fim 
             ExibeMsgDisplay("Fim análise de loops");
@@ -855,14 +822,11 @@ namespace ExecutorOpenDSS
             ExibeMsgDisplay("Comparação Manobras");
 
             //Lê os alimentadores e armazena a lista de alimentadores 
-            List<string> alimentadores = CemigFeeders.GetTodos(this._parGUI.GetArqLstAlimentadores());
+            //List<string> alimentadores = CemigFeeders.GetTodos(this._parGUI.GetArqLstAlimentadores());
 
             // TODO eh necessario?
             // carrega dados de medicoes
             //_medAlim.CarregaDados();
-
-            // instancia classe de parametros Gerais
-            GeneralParameters paramGerais = new GeneralParameters(this);
 
             // instancia classe
             //ComparacaoManobras compManobras = new ComparacaoManobras(paramGerais, alimentadores );

@@ -200,9 +200,11 @@ namespace ExecutorOpenDSS.Classes
         public List<double> GetGeracaoEPerdaPotencia()
         {
             // TODO refactory
-            List<double> ret = new List<double>();
-            ret.Add(_energyMeter.MaxkW);
-            ret.Add(_energyMeter.MaxkWLosses);
+            List<double> ret = new List<double>
+            {
+                _energyMeter.MaxkW,
+                _energyMeter.MaxkWLosses
+            };
 
             return ret;
         }
@@ -249,7 +251,8 @@ namespace ExecutorOpenDSS.Classes
         {
             Dictionary<string, double> lossesMap = new Dictionary<string, double>();
 
-            string[] registersNames = DSSCircuit.Meters.RegisterNames;
+            // DEBUG
+            //string[] registersNames = DSSCircuit.Meters.RegisterNames;
 
             // %%% Valor maximo de requisito e perdas
             _energyMeter.MaxkW = DSSCircuit.Meters.RegisterValues[2];
@@ -349,6 +352,8 @@ namespace ExecutorOpenDSS.Classes
             // TODO verificar caso 22.0kV
             _energyMeter.MTLineLosses = lossesMap["13.8 kV Line Loss"];
 
+
+
             // Trafo 34.5
             _energyMeter.TransformerAllLosses34KV = lossesMap["34.5 kV Load Loss"] + lossesMap["34.5 kV No Load Loss"]; ;
 
@@ -431,7 +436,7 @@ namespace ExecutorOpenDSS.Classes
         internal bool VerificaConvergencia()
         {
             // verifica se excedeu a geracao maxima
-            if ( ExcedeuGeracaoMaxima() || ExcedeuRequisitoMaximo() || PerdaMaiorQueInjecao() )
+            if ( ExcedeuGeracaoMaxima() || ExcedeuRequisitoMaximo() )
             {
                 _convergiuBool = false;
             } 
@@ -440,15 +445,6 @@ namespace ExecutorOpenDSS.Classes
                 _convergiuBool = true;
             }
             return _convergiuBool;
-        }
-
-        // verifica se perda maior que a injecao de energia
-        private bool PerdaMaiorQueInjecao()
-        {            
-            if ( _energyMeter.LossesKWh > _energyMeter.KWh + _energyMeter.KWhGD )
-                return true;
-            else 
-                return false;
         }
 
         //

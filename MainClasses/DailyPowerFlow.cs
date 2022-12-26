@@ -19,16 +19,14 @@ namespace ExecutorOpenDSS.Classes_Principais
 
         private readonly bool _soMT;
         private readonly string _nomeAlim;
-        private string _tipoDia = "DU";
+        private string _tipoDiaCrv = "DU";
         private List<string> _lstCommandsDSS;
         public PFResults _resFluxo = new PFResults();
 
-        private bool _DSSObjCarregadoOtm = false;
-
         // TODO refactory 
-        private List<int> _lstOfIndexModeloDeCarga = new List<int>();
+        private readonly List<int> _lstOfIndexModeloDeCarga = new List<int>();
 
-        public DailyFlow(GeneralParameters paramGerais, string tipoDia ="DU", bool soMT = false)
+        public DailyFlow(GeneralParameters paramGerais, string tipoDia = "DU", bool soMT = false)
         {
             // variaveis da classe
             _paramGerais = paramGerais;
@@ -48,7 +46,8 @@ namespace ExecutorOpenDSS.Classes_Principais
             _soMT = soMT;
 
             // Sets day type (week day, saturday, sunday) 
-            SetTipoDia(paramGerais._parGUI);
+            SetTipoDia(paramGerais._parGUI); // TODO FIX ME
+            _tipoDiaCrv = tipoDia;
 
             // Load DSS Command String
             LoadStringListwithDSSCommands();
@@ -75,6 +74,7 @@ namespace ExecutorOpenDSS.Classes_Principais
 
             // Sets day type (week day, saturday, sunday) 
             SetTipoDia(paramGerais._parGUI);
+            _tipoDiaCrv = tipoDia;
 
             // Load DSS Command String
             LoadStringListwithDSSCommands();
@@ -88,13 +88,13 @@ namespace ExecutorOpenDSS.Classes_Principais
                 switch (parGUI._tipoDia)
                 {
                     case "Sábado":
-                        _tipoDia = "SA";
+                        _tipoDiaCrv = "SA";
                         break;
                     case "Domingo":
-                        _tipoDia = "DO";
+                        _tipoDiaCrv = "DO";
                         break;
                     default:
-                        _tipoDia = "DU";
+                        _tipoDiaCrv = "DU";
                         break;
                 }
             }
@@ -121,7 +121,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         {
             _oDSS._DSSText.Command = "Set ReduceOption=Laterals KeepLoad=No";
             _oDSS._DSSText.Command = "Reduce";
-            //_oDSS._DSSText.Command = "BuildY"; 
+            _oDSS._DSSText.Command = "BuildY"; 
         }
 
         //
@@ -198,9 +198,9 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
 
             // Redirect arquivo Curva de Carga, OBS: de acordo com o TIPO do dia 
-            if (File.Exists(_paramGerais.GetNomeEPathCurvasTxtCompleto(_tipoDia)))
+            if (File.Exists(_paramGerais.GetNomeEPathCurvasTxtCompleto(_tipoDiaCrv)))
             {
-                _lstCommandsDSS.Add("Redirect " + _paramGerais.GetNomeEPathCurvasTxtCompleto(_tipoDia));
+                _lstCommandsDSS.Add("Redirect " + _paramGerais.GetNomeEPathCurvasTxtCompleto(_tipoDiaCrv));
             }
 
             // condutores
@@ -372,9 +372,9 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
 
             // Redirect arquivo Curva de Carga, OBS: de acordo com o TIPO do dia 
-            if (File.Exists(_paramGerais.GetNomeEPathCurvasTxtCompleto(_tipoDia)))
+            if (File.Exists(_paramGerais.GetNomeEPathCurvasTxtCompleto(_tipoDiaCrv)))
             {
-                _lstCommandsDSS.Add("Redirect " + _paramGerais.GetNomeEPathCurvasTxtCompleto(_tipoDia));
+                _lstCommandsDSS.Add("Redirect " + _paramGerais.GetNomeEPathCurvasTxtCompleto(_tipoDiaCrv));
             }
 
             // condutores
@@ -458,13 +458,6 @@ namespace ExecutorOpenDSS.Classes_Principais
             return true;
         }
 
-        // executa fluxo mensal Simples 
-        internal bool ExecutaFluxoDiarioSemRecarga()
-        {
-            // Executa fluxo
-            return (ExecutaFluxoDiarioOpenDSSPvt(null) );
-        }
-
         // Executa fluxo diario OU horario caso seja passado string hora
         public bool ExecutaFluxoDiario()
         {
@@ -473,13 +466,14 @@ namespace ExecutorOpenDSS.Classes_Principais
             {
                 return false;
             }
-                        
+
             // carrega objeto OpenDSS
-            LoadDSSObj();
-            
+            bool ret = LoadDSSObj();
 
-            bool ret = ExecutaFluxoDiario_SemRecarga();            
-
+            if (ret)
+            {
+                ret = ExecutaFluxoDiario_SemRecarga();
+            }
             return ret;
         }
 
@@ -487,12 +481,8 @@ namespace ExecutorOpenDSS.Classes_Principais
         // Executa fluxo diario OU horario caso seja passado string hora
         public bool ExecutaFluxoDiario_SemRecarga()
         {
-            // variavel de retorno;
-            bool ret = false;
-
-            ret = ExecutaFluxoDiarioOpenDSSPvt(null);
-
-            return ret;
+            // Executa fluxo
+            return (ExecutaFluxoDiarioOpenDSSPvt(null));
         }
 
         // Executa fluxo horario caso seja passado string hora
@@ -505,10 +495,12 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
 
             // carrega objeto OpenDSS
-            LoadDSSObj();
+            bool ret = LoadDSSObj();
 
-            bool ret = ExecutaFluxoDiarioOpenDSSPvt(hora);
-
+            if (ret)
+            {
+                ret = ExecutaFluxoDiarioOpenDSSPvt(hora);
+            }
             return ret;
         }
 
@@ -522,24 +514,34 @@ namespace ExecutorOpenDSS.Classes_Principais
         }
 
         // Executa comando no objDSS
-        internal void LoadDSSObj()
+        internal bool LoadDSSObj()
         {
+            //condicao de retorno
+            if (_lstCommandsDSS.Count < 2) 
+            {
+                return false;
+            }
+
             // carrega objeto OpenDSS
             foreach (string comando in _lstCommandsDSS)
             {
                 _oDSS._DSSText.Command = comando;
             }
-            // seta variavel booleana
-            _DSSObjCarregadoOtm = true;
+            return true;
         }
 
         public bool ExecutaFluxoSnap()
         {
             // carrega alimentador no objDSS
-            LoadDSSObj();
+            bool ret = LoadDSSObj();
+
+            if (ret)
+            {
+                ret = ExecutaFluxoSnapSemRecarga();
+            }
 
             //
-            return (ExecutaFluxoSnapSemRecarga());
+            return ret;
         }
 
         // Executa fluxo Snap
@@ -590,6 +592,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             // seta modo snap.
             _oDSS._DSSText.Command = "Set mode=snap";
 
+            // TODO 
             // resolve circuito 
             DSSSolution.Solve();
 
@@ -646,9 +649,20 @@ namespace ExecutorOpenDSS.Classes_Principais
                     _oDSS._DSSText.Command = "Set mode=daily hour=0 number=24 stepsize=1h";
                     break;
              }
-
+            /*
             // resolve circuito 
             DSSSolution.Solve();
+                        */
+            try
+            {
+                // resolve circuito 
+                DSSSolution.Solve();
+            }
+            catch (DSSException e)
+            {
+                _paramGerais._mWindow.ExibeMsgDisplay(e.Message);
+                return false;
+            }
 
             // se nao convergiu, retorna
             if (!DSSCircuit.Solution.Converged)
@@ -691,7 +705,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             if (_paramGerais._parGUI._expanderPar._verifTapsRTs)
             {
                 //
-                VoltageReguladorAnalysis obj = new VoltageReguladorAnalysis(_oDSS._DSSText, _oDSS._DSSObj.ActiveCircuit, _paramGerais);
+                VoltageReguladorAnalysis obj = new VoltageReguladorAnalysis( _oDSS._DSSObj.ActiveCircuit, _paramGerais);
                 obj.PlotaTapRTs(_paramGerais._mWindow);
             }
 
@@ -914,7 +928,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         }
 
         // TODO refactory 
-        private void QueryLineCode(Circuit dssCircuit)
+        private void QueryLineCode()
         {
             List<string> lstCabos = new List<string>
             {
@@ -969,7 +983,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         }
 
         // TODO refactory 
-        private void QueryLine(Circuit dssCircuit)
+        private void QueryLine()
         {
             List<string> lstLinhas = new List<string>
             {

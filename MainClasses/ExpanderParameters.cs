@@ -1,5 +1,4 @@
-﻿using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
-using System;
+﻿using System;
 using System.Xml.Linq;
 
 namespace ExecutorOpenDSS.Classes_Auxiliares
