@@ -1,7 +1,7 @@
 # ExecutorOpenDssBr
 This project is a C# [OpenDSS](http://smartgrid.epri.com/SimulationTool.aspx) customization to batch calculate the power flow of brazilian eletricity distribution feeders. The feeders \*.dss files - see [FeederExample](https://github.com/Zecao/ExecutorOpenDssBr/tree/master/FeederExample) directory - are very similar to the ones created by the GeoPerdas.EXE software from the brazilian energy regulatory agency [ANEEL](http://aneel.gov.br/), but in this case, the .dss files were created using the project [ExportadorGeoPerdasDSS](https://github.com/Zecao/ExportadorGeoPerdasDSS), a simple **GeoPerdas** database reader also created by me. 
 
-Objective of this project:
+Objectives of this project:
 1. Alternative to using the official software of ANEEL **GeoPerdas.EXE**, with the following benefits:
 - faster execution time compared with **GeoPerdas.EXE**. 
 - easier to detect and correct errors in the .dss files. BTW, I always try to converge 100% of feeders before run the official GeoPerdas.EXE.
