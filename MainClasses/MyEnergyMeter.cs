@@ -49,15 +49,6 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
             loadMultAlim = LM;
         }
 
-        // Construtor por lista
-        public MyEnergyMeter(List<double> perdasMax, List<double> perdasEnergia)
-        {
-            MaxkW = perdasMax[0];
-            MaxkWLosses = perdasMax[1];
-
-            PreencheEnergia(perdasEnergia);
-        }
-
         public MyEnergyMeter()
         {
         }
@@ -79,26 +70,6 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
             MTLineLosses34KV += em.MTLineLosses34KV;
             TransformerAllLosses34KV += em.TransformerAllLosses34KV;
             KWhGD += em.KWhGD;
-        }
-
-        // preenche campos de energia somente
-        internal void PreencheEnergia(List<double> injecaoEPerdasEnergia)
-        {
-            KWh = injecaoEPerdasEnergia[0];
-            kvarh = injecaoEPerdasEnergia[1];
-            LossesKWh = injecaoEPerdasEnergia[2];
-            TransformerLosses = injecaoEPerdasEnergia[3];
-            MTLineLosses = injecaoEPerdasEnergia[4];
-            BTLineLosses = injecaoEPerdasEnergia[5];
-            lineLossesPosMode = injecaoEPerdasEnergia[6];
-            lineLossesZeroMode = injecaoEPerdasEnergia[7];
-            NoLoadLosseskWh = injecaoEPerdasEnergia[8];
-            MTEnergy = injecaoEPerdasEnergia[9];
-            BTEnergy = injecaoEPerdasEnergia[10];
-            MTLineLosses34KV = injecaoEPerdasEnergia[11];
-            TransformerAllLosses34KV = injecaoEPerdasEnergia[12];
-            // TODO implementar
-            //KWhGD = injecaoEPerdasEnergia[13];
         }
 
         internal void MultiplicaEnergia(int numDias)

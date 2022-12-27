@@ -49,7 +49,8 @@ namespace ExecutorOpenDSS
             }
         }
         
-        //Grava CONTEUDO em arquivo FID 
+        // OLD CODE
+        // Grava CONTEUDO em arquivo FID 
         public static void GravaEmArquivoAsync(string conteudo, string fid, MainWindow jan)
         {
             //

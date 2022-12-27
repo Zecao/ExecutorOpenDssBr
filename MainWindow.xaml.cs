@@ -34,7 +34,7 @@ namespace ExecutorOpenDSS
         public bool _fimExecucao = false;
         public string _logName;
         public DateTime _inicio;
-        public int _indiceArq;
+        public int _indiceArq = 0;
 
         //Função principal
         public MainWindow()
@@ -110,8 +110,8 @@ namespace ExecutorOpenDSS
             //Desabilita a interface
             StatusUI(false);
 
-            //TODO 
-            _indiceArq = 0;
+            //FIX ME 
+            //_indiceArq = 0;
 
             //limpa display
             display.Text = "";
@@ -146,34 +146,34 @@ namespace ExecutorOpenDSS
                 //Executa o Fluxo Snap
                 case "Snap":
 
-                    executaFluxoObj.ExecutaSnap(alimentadores);
+                    executaFluxoObj.ExecutesSnap(alimentadores);
 
                     break;
 
                 //Executa o fluxo diário
                 case "Daily":
 
-                    executaFluxoObj.ExecutaDiario(alimentadores);
+                    executaFluxoObj.ExecutesDailyPowerFlow(alimentadores);
 
                     break;
 
                 //Executa o fluxo diário
                 case "Hourly":
 
-                    executaFluxoObj.ExecutaDiario(alimentadores);
+                    executaFluxoObj.ExecutesDailyPowerFlow(alimentadores);
                     break;
 
                 //Executa o fluxo mensal
                 case "Monthly":
 
-                    executaFluxoObj.ExecutaMensal(alimentadores);
+                    executaFluxoObj.ExecutesMonthlyPowerFlow(alimentadores);
 
                     break;
 
                 //Executa o fluxo mensal
                 case "Yearly":
 
-                    executaFluxoObj.ExecutaAnual(alimentadores);
+                    executaFluxoObj.ExecutesAnnualPowerFlow(alimentadores);
 
                     break;
 
@@ -221,9 +221,6 @@ namespace ExecutorOpenDSS
 
                     //4. desabilita textBox hora
                     horaTextBox.IsEnabled = false;
-
-                    //5. habilita combo box do tipo dia
-                    tipoDiaComboBox.IsEnabled = true;
 
                     //5. habilita combo box do mes
                     mesComboBox.IsEnabled = true;
@@ -303,10 +300,6 @@ namespace ExecutorOpenDSS
                     //5. habilita combo box do mes
                     mesComboBox.IsEnabled = true;
 
-                    //6. desabilita combo box do tipo dia
-                    //tipoDiaComboBox.Text = "Dia Útil";
-                    tipoDiaComboBox.IsEnabled = false;
-
                     //8. desabilita otimiza Snap 
                     otimizaCheckBox.IsEnabled = false;
 
@@ -333,9 +326,6 @@ namespace ExecutorOpenDSS
                     //5. ajusta combo box do mes
                     mesComboBox.Text = "Janeiro";
                     mesComboBox.IsEnabled = false;
-
-                    //6. ajusta combo box do tipo dia
-                    tipoDiaComboBox.IsEnabled = false;
 
                     //7. ajusta text box da hora
                     horaTextBox.IsEnabled = false;
@@ -757,7 +747,7 @@ namespace ExecutorOpenDSS
             // Fim 
             ExibeMsgDisplay("Fim análise chaves NAs");
 
-            // TODO Reabilita interface
+            // OLD CODE FIX Reabilita interface
             //ReabilitaInterface();
 
             // Finaliza processo

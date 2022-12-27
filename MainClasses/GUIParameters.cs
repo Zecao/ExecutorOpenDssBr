@@ -93,11 +93,6 @@ namespace ExecutorOpenDSS.Classes
             _expanderPar = new ExpanderParameters(jan);
         }
 
-        public void SetIncremento(float i)
-        {
-            _incremento = i / 100 + 1;
-        }
-
         public void SetIncremento(string s)
         {
             float i = float.Parse(s, CultureInfo.InvariantCulture);
@@ -119,17 +114,12 @@ namespace ExecutorOpenDSS.Classes
             return _aproximaFluxoMensalPorDU;
         }
 
-        internal void SetAproximaFluxoMensalPorDU(bool p)
-        {
-            _aproximaFluxoMensalPorDU = p;
-        }
-
         // traducao do tipo do dia da combobox para o codigo string necessario
         public void PreencheTipoDia()
         {
             switch (_tipoDia)
             {
-                case "Dia Útil":
+                case "Dia útil":
                     _tipoDia = "DU";
                     break;
                 case "Domingo":

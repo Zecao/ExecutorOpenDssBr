@@ -103,41 +103,11 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
         }
 
+        // TODO
         internal List<string> GetBarrasDRPDRC()
         {
             return _fluxoDU.GetBarrasDRPDRC();
         }
-
-        /* //OLD
-        public bool LoadFeederDSSFiles_weekDay()
-        {
-            // se nao carregar algum dos dias, retorna false
-            if (!_fluxoDU.LoadStringListwithDSSCommands())
-            {
-                return false;
-            }
-            return true;
-        }*/
-
-        /*
-        public bool CarregaAlimentador()
-        {
-            // se nao carregar algum dos dias, retorna false
-            if (!_fluxoDU.LoadDSSCommandStringList())
-            {
-                return false;
-            }
-            if (!_fluxoSA.LoadDSSCommandStringList())
-            {
-                return false;
-            }
-            if (!_fluxoDO.LoadDSSCommandStringList())
-            {
-                return false;
-            }
-            return true;
-        }
-        */
 
         // obtem objetoDSS
         internal ObjDSS GetObjDSS()
@@ -167,6 +137,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
 
             // calcula resultados mensal 
+            _resFluxoMensal = new PFResults();
             _resFluxoMensal.CalculaResultadoFluxoMensal(_fluxoDU._resFluxo, _fluxoSA._resFluxo, _fluxoDO._resFluxo, _fluxoDU._paramGerais);
 
             //Plota perdas na tela //TODO fix me
@@ -191,7 +162,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         internal bool ExecutaFluxoMensalAproximacaoDU_SemRecarga()
         {
             //Executa fluxo diário openDSS
-            bool ret = _fluxoDU.ExecutaFluxoDiario_SemRecarga();
+            bool ret = _fluxoDU.ExecutaFluxoDiario_SemRecarga(null);
 
             //
             SetEnergiaPerdasFluxoSimples();
@@ -205,7 +176,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             _nFP++;
 
             // calculo perdas
-            _resFluxoMensal.SetEnergiaPerdasFluxoSimples(_fluxoDU._resFluxo, _fluxoDU._paramGerais);
+            _resFluxoMensal.EstimatesMonthEnergyAndLossesByDay(_fluxoDU._resFluxo, _fluxoDU._paramGerais);
 
             //Plota perdas na tela // TODO fix me
             _par._mWindow.ExibeMsgDisplay(_resFluxoMensal.GetResultadoFluxoToConsole(_fluxoDU._paramGerais.GetNomeAlimAtual(), _fluxoDU._oDSS));

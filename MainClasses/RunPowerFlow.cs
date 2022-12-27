@@ -29,7 +29,7 @@ namespace ExecutorOpenDSS
         }
 
         // executa modo Snap
-        public void ExecutaSnap(List<string> lstAlimentadoresCemig)
+        public void ExecutesSnap(List<string> lstAlimentadoresCemig)
         {
             //Limpa Arquivos
             _paramGerais.DeletaArqResultados();
@@ -69,8 +69,8 @@ namespace ExecutorOpenDSS
             }
         }
 
-        // executa modo Mensal
-        public void ExecutaMensal(List<string> lstAlimentadoresCemig)
+        // executes monthly power flow
+        public void ExecutesMonthlyPowerFlow(List<string> lstAlimentadoresCemig)
         {
             //Limpa Arquivos
             _paramGerais.DeletaArqResultados();
@@ -178,7 +178,8 @@ namespace ExecutorOpenDSS
             {
                 _paramGerais._mWindow.ExibeMsgDisplay(alimTmp + ": Alimentador não encontrado no arquivo de ajuste");
 
-                return loadMultInicial;
+                // sets alternative LM
+                return _paramGerais._parGUI._loadMultAlternativo;
             }
 
             /* // OLD CODE
@@ -214,7 +215,7 @@ namespace ExecutorOpenDSS
         }
 
         // Run daily Power Flow
-        public void ExecutaDiario(List<string> lstAlimentadoresCemig)
+        public void ExecutesDailyPowerFlow(List<string> lstAlimentadoresCemig)
         {
             //Limpa arquivos
             _paramGerais.DeletaArqResultados();
@@ -260,7 +261,7 @@ namespace ExecutorOpenDSS
         }
 
         // Fluxo anual
-        public void ExecutaAnual(List<string> lstAlimentadoresCemig)
+        public void ExecutesAnnualPowerFlow(List<string> lstAlimentadoresCemig)
         {
             //Limpa Arquivos
             _paramGerais.DeletaArqResultados();
@@ -292,10 +293,6 @@ namespace ExecutorOpenDSS
                     //cria objeto fluxo diario
                     _fluxoMensal = new MonthlyPowerFlow(_paramGerais);
 
-                    /*
-                    // se nao carregou alimentador retorna
-                    if (_fluxoMensal.CarregaAlimentador())
-                    { */
                     // Otimiza
                     if (_paramGerais._parGUI._otmPorEnergia)
                     {
@@ -390,7 +387,7 @@ namespace ExecutorOpenDSS
             // Inicializa loadMult anterior com LoadMult
             double loadMultAnt = loadMult;
 
-            // TODO testar
+            // while difference of simulated energy and refEnergy is greater than precision
             while ( Math.Abs(geracao - refGeracao) > _paramGerais._parGUI.GetPrecisao() )
             {
                 //Verifica se foi solicitado o cancelamento.

@@ -21,7 +21,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         private readonly string _nomeAlim;
         private string _tipoDiaCrv = "DU";
         private List<string> _lstCommandsDSS;
-        public PFResults _resFluxo = new PFResults();
+        public PFResults _resFluxo;
 
         // TODO refactory 
         private readonly List<int> _lstOfIndexModeloDeCarga = new List<int>();
@@ -472,17 +472,14 @@ namespace ExecutorOpenDSS.Classes_Principais
 
             if (ret)
             {
-                ret = ExecutaFluxoDiario_SemRecarga();
+                // ExecutaFluxoDiario_SemRecarga
+                ret = ExecutaFluxoDiario_SemRecarga(null);
+            }
+            else 
+            {
+                _paramGerais._mWindow.ExibeMsgDisplay("Erro carregamento alimentador " + _nomeAlim);
             }
             return ret;
-        }
-
-        //TODO
-        // Executa fluxo diario OU horario caso seja passado string hora
-        public bool ExecutaFluxoDiario_SemRecarga()
-        {
-            // Executa fluxo
-            return (ExecutaFluxoDiarioOpenDSSPvt(null));
         }
 
         // Executa fluxo horario caso seja passado string hora
@@ -499,7 +496,7 @@ namespace ExecutorOpenDSS.Classes_Principais
 
             if (ret)
             {
-                ret = ExecutaFluxoDiarioOpenDSSPvt(hora);
+                ret = ExecutaFluxoDiario_SemRecarga(hora);
             }
             return ret;
         }
@@ -508,7 +505,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         public bool ExecutaFluxoHorario_SemRecarga(string hora = null)
         {
             // variavel de retorno;
-            bool ret = ExecutaFluxoDiarioOpenDSSPvt(hora);            
+            bool ret = ExecutaFluxoDiario_SemRecarga(hora);            
 
             return ret;
         }
@@ -615,7 +612,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         }
 
         // Run daily PowerFlow (pvt)
-        private bool ExecutaFluxoDiarioOpenDSSPvt(string hora)
+        public bool ExecutaFluxoDiario_SemRecarga(string hora)
         {
             //% Interfaces
             Circuit DSSCircuit = _oDSS._DSSObj.ActiveCircuit;
@@ -652,7 +649,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             /*
             // resolve circuito 
             DSSSolution.Solve();
-                        */
+            */
             try
             {
                 // resolve circuito 
@@ -889,6 +886,9 @@ namespace ExecutorOpenDSS.Classes_Principais
         // Get EnergyMeter values
         public bool GetValoresEnergyMeter()
         {
+            // nem PFresults
+            _resFluxo = new PFResults();
+
             // preenche saida com as perdas do alimentador e verifica se dados estao corretos (ie. convergencia)
             bool ret = _resFluxo.GetPerdasAlim(_oDSS._DSSObj.ActiveCircuit);
             

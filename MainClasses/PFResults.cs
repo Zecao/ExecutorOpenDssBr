@@ -13,11 +13,13 @@ using System.Linq;
 
 namespace ExecutorOpenDSS.Classes
 { 
+    // Class Power Flow results
     class PFResults
     {
         // membros
         public bool _convergiuBool;
-        public MyEnergyMeter _energyMeter ;
+        public MyEnergyMeter _energyMeter;
+        private Dictionary<string, double> _lossesMap; // = new Dictionary<string, double>(); 
 
         //Construtor por copia 
         public PFResults(PFResults rf)
@@ -118,41 +120,23 @@ namespace ExecutorOpenDSS.Classes
         }
 
         // set energia e perdas mes para o fluxo simplificado
-        internal void SetEnergiaPerdasFluxoSimples(PFResults resFluxo, int numDias)
+        public void EstimatesMonthEnergyAndLossesByDay(PFResults resFluxo, GeneralParameters par)
         {
-            //get Energia diaria
-            double energiaDiaria = resFluxo.GetEnergia();
+            // month
+            int mes = par._parGUI.GetMes();
 
-            // calcula energia mensal
-            double energiaMes = energiaDiaria * numDias;
+            // number of days in the month
+            int numDias = par._objTipoDeDiasDoMes.GetNumDiasMes(mes);
+            
+            // Multiplies the Daily solution by the number of days
+            resFluxo._energyMeter.MultiplicaEnergia(numDias);
 
-            // preenchee variavel da classe
-            SetEnergia(energiaMes);
-
-            //get Perda diaria
-            double perdaDiaria = resFluxo.GetPerdasEnergia();
-
-            //perda mensal
-            double perdaMes = perdaDiaria * numDias;
-
-            // preenche varial de perdas
-            _energyMeter.LossesKWh = perdaMes;
+            // copia novos valores 
+            _energyMeter = new MyEnergyMeter();
+            _energyMeter = resFluxo._energyMeter;
 
             // seta fluxo mensal igual a true
             _convergiuBool = true;
-        }
-
-        // set energia e perdas mes para o fluxo simplificado
-        public void SetEnergiaPerdasFluxoSimples(PFResults resFluxo, GeneralParameters par)
-        {
-            // mes
-            int mes = par._parGUI.GetMes();
-
-            // num de dias do mes
-            int numDias = par._objTipoDeDiasDoMes.GetNumDiasMes(mes);
-
-            //
-            SetEnergiaPerdasFluxoSimples(resFluxo, numDias);
         }
 
         // calcula geracao e perdas maximas entre os 3 dias tipicos
@@ -249,8 +233,6 @@ namespace ExecutorOpenDSS.Classes
         // Get Feeder losses
         public bool GetPerdasAlim(Circuit DSSCircuit)
         {
-            Dictionary<string, double> lossesMap = new Dictionary<string, double>();
-
             // DEBUG
             //string[] registersNames = DSSCircuit.Meters.RegisterNames;
 
@@ -263,7 +245,24 @@ namespace ExecutorOpenDSS.Classes
             _energyMeter.kvarh = DSSCircuit.Meters.RegisterValues[1];
             _energyMeter.LossesKWh = DSSCircuit.Meters.RegisterValues[12];
 
-            GetPerdasAlimLines(DSSCircuit, lossesMap);
+            SetLossesMap(DSSCircuit);
+
+            // OLD CODE
+            // 34.5 kV line losses
+            //_energyMeter.MTLineLosses34KV = lossesMap["34.5 kV Line Loss"];
+
+            // LV line Losses
+            _energyMeter.BTLineLosses = _lossesMap["0.22 kV Line Loss"] + _lossesMap["0.24 kV Line Loss"];
+
+            // MV line losses
+            _energyMeter.MTLineLosses = _lossesMap["13.8 kV Line Loss"] + _lossesMap["22 kV Line Loss"] + _lossesMap["34.5 kV Line Loss"];
+
+            // Trafo 34.5 
+            _energyMeter.TransformerAllLosses34KV = _lossesMap["34.5 kV Load Loss"] + _lossesMap["34.5 kV No Load Loss"];
+
+            // perdas em transformadores de 13.8kV/220/127V
+            // OBS: subtrai as perdas nos trafos de 34.5KV 
+            _energyMeter.TransformerLosses = DSSCircuit.Meters.RegisterValues[23] - _energyMeter.TransformerAllLosses34KV;
 
             // Reg 19 NoLoadLosseskWh
             _energyMeter.NoLoadLosseskWh = DSSCircuit.Meters.RegisterValues[18];
@@ -274,16 +273,15 @@ namespace ExecutorOpenDSS.Classes
             _energyMeter.lineLossesZeroMode = DSSCircuit.Meters.RegisterValues[25];
             // lineLossesoneTwoPhase = DSSCircuit.Meters.RegisterValues[27];
 
-            //
-            _energyMeter.MTEnergy = lossesMap["13.8 kV Load Energy"] + lossesMap["22.0 kV Load Energy"] + lossesMap["34.5 kV Load Energy"];
-            _energyMeter.BTEnergy = lossesMap["0.22 kV Load Energy"] + lossesMap["0.24 kV Load Energy"];
-
+            //            
+            _energyMeter.MTEnergy = _lossesMap["13.8 kV Load Energy"] + _lossesMap["22 kV Load Energy"] + _lossesMap["34.5 kV Load Energy"];
+            _energyMeter.BTEnergy = _lossesMap["0.22 kV Load Energy"] + _lossesMap["0.24 kV Load Energy"];
+            
             // obtem energia gerada por GDs
             GetGeracaoGD(DSSCircuit);
             
             // verifica convergencia
             return (VerificaConvergencia());
-
         }
 
         // obtem energia gerada por GDs
@@ -301,65 +299,47 @@ namespace ExecutorOpenDSS.Classes
             }
         }
 
-        private void GetPerdasAlimLines(Circuit DSSCircuit, Dictionary<string, double> lossesMap)
+        private void SetLossesMap(Circuit DSSCircuit)
         {
             string[] registersNames = DSSCircuit.Meters.RegisterNames;
 
-            //preenche map com zeros para evitar erro
-            lossesMap.Add("34.5 kV Line Loss", 0);
-            lossesMap.Add("22.0 kV Line Loss", 0);
-            lossesMap.Add("13.8 kV Line Loss", 0);
-            lossesMap.Add("0.22 kV Line Loss", 0);
-            lossesMap.Add("0.24 kV Line Loss", 0);
-            lossesMap.Add("34.5 kV Load Loss", 0);
-            lossesMap.Add("22.0 kV Load Loss", 0);
-            lossesMap.Add("13.8 kV Load Loss", 0);
-            lossesMap.Add("0.22 kV Load Loss", 0);
-            lossesMap.Add("0.24 kV Load Loss", 0);
-            lossesMap.Add("34.5 kV No Load Loss", 0);
-            lossesMap.Add("22.0 kV No Load Loss", 0);
-            lossesMap.Add("13.8 kV No Load Loss", 0);
-            lossesMap.Add("0.22 kV No Load Loss", 0);
-            lossesMap.Add("0.24 kV No Load Loss", 0);
-            lossesMap.Add("13.8 kV Load Energy", 0);
-            lossesMap.Add("22.0 kV Load Energy", 0);
-            lossesMap.Add("34.5 kV Load Energy", 0);
-            lossesMap.Add("0.24 kV Load Energy", 0);
-            lossesMap.Add("0.22 kV Load Energy", 0);
+            _lossesMap = new Dictionary<string, double>(); 
 
-            //1 nivel
-            // verifica nivel tensao 1 registrador
+            //preenche map com zeros para evitar erro
+            _lossesMap.Add("34.5 kV Line Loss", 0);
+            _lossesMap.Add("22 kV Line Loss", 0); //OBS: string without decimal "22 kV"
+            _lossesMap.Add("13.8 kV Line Loss", 0);
+            _lossesMap.Add("0.22 kV Line Loss", 0);
+            _lossesMap.Add("0.24 kV Line Loss", 0);
+            _lossesMap.Add("34.5 kV Load Loss", 0);
+            _lossesMap.Add("22 kV Load Loss", 0); //OBS: string without decimal "22 kV"
+            _lossesMap.Add("13.8 kV Load Loss", 0);
+            _lossesMap.Add("0.22 kV Load Loss", 0);
+            _lossesMap.Add("0.24 kV Load Loss", 0);
+            _lossesMap.Add("34.5 kV No Load Loss", 0);
+            _lossesMap.Add("22 kV No Load Loss", 0); //OBS: string without decimal "22 kV"
+            _lossesMap.Add("13.8 kV No Load Loss", 0);
+            _lossesMap.Add("0.22 kV No Load Loss", 0);
+            _lossesMap.Add("0.24 kV No Load Loss", 0);
+            _lossesMap.Add("13.8 kV Load Energy", 0);
+            _lossesMap.Add("22 kV Load Energy", 0); //OBS: string without decimal "22 kV"
+            _lossesMap.Add("34.5 kV Load Energy", 0);
+            _lossesMap.Add("0.24 kV Load Energy", 0);
+            _lossesMap.Add("0.22 kV Load Energy", 0);
+
+            // search register and put the values in the lossesMap 
             for (int i=39;i<67;i++)
             {
                 // se registrador nao eh nulo
                 if (registersNames[i] != null )
                 {
                     // adiciona perda no map 
-                    if (lossesMap.ContainsKey(registersNames[i]))
+                    if (_lossesMap.ContainsKey(registersNames[i]))
                     {
-                        lossesMap[registersNames[i]] = DSSCircuit.Meters.RegisterValues[i];
+                        _lossesMap[registersNames[i]] = DSSCircuit.Meters.RegisterValues[i];
                     }
                 }
             }
-
-            // Perdas linhas 34.5kV
-            _energyMeter.MTLineLosses34KV = lossesMap["34.5 kV Line Loss"];
-
-            // Perdas linhas de BT
-            _energyMeter.BTLineLosses = lossesMap["0.22 kV Line Loss"] + lossesMap["0.24 kV Line Loss"];
-
-            // Perdas linhas de MT
-            // TODO verificar caso 22.0kV
-            _energyMeter.MTLineLosses = lossesMap["13.8 kV Line Loss"];
-
-
-
-            // Trafo 34.5
-            _energyMeter.TransformerAllLosses34KV = lossesMap["34.5 kV Load Loss"] + lossesMap["34.5 kV No Load Loss"]; ;
-
-            // perdas em transformadores de 13.8kV/220/127V
-            // OBS: subtrai as perdas nos trafos de 34.5KV 
-            _energyMeter.TransformerLosses = DSSCircuit.Meters.RegisterValues[23] - _energyMeter.TransformerAllLosses34KV;
         }
 
         /*

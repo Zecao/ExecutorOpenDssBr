@@ -7,13 +7,11 @@ namespace ExecutorOpenDSS.Classes_Principais
     class LoopAnalysis
     {
         private readonly GeneralParameters _paramGerais;
-        //private readonly List<string> _lstAlimentadores; // OLD CODE
         private DailyFlow _fluxoSoMT;
 
         public LoopAnalysis(GeneralParameters paramGerais, List<string> alimentadores)
         {
             _paramGerais = paramGerais;
-            //_lstAlimentadores = alimentadores; //DEL
 
             //Limpa Arquivos
             _paramGerais.DeletaArqResultados();
@@ -85,7 +83,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                     linha += "\n";
                 }
             }
-            TxtFile.GravaEmArquivoAsync(linha, _paramGerais.GetNomeCompArqLoops(), _paramGerais._mWindow);
+            TxtFile.GravaEmArquivo(linha, _paramGerais.GetNomeCompArqLoops(), _paramGerais._mWindow);
         }
     }
 }

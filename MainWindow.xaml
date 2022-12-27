@@ -74,7 +74,7 @@
 
         <Label Grid.Row="1" Grid.Column="1" Content="Tipo de dia:" HorizontalAlignment="Left" Height="26" Width="75"/>
         <ComboBox Grid.Row="1" Grid.Column="1" x:Name="tipoDiaComboBox" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="24" Width="90" IsEnabled="False" Margin="80,0,0,0" >
-            <ComboBoxItem IsSelected="True">Dia Útil</ComboBoxItem>
+            <ComboBoxItem IsSelected="True">Dia útil</ComboBoxItem>
             <ComboBoxItem>Sábado</ComboBoxItem>
             <ComboBoxItem>Domingo</ComboBoxItem>
         </ComboBox>
