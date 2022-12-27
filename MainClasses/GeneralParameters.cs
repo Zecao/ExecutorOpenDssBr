@@ -269,13 +269,7 @@ namespace ExecutorOpenDSS
         {
             return GetDirAlimentadorDSS(_nomeAlimAtual) + _nomeAlimAtual + ".dss";
         }
-
-        // get Nome e Path CurvasTxtCompleto
-        internal string GetPathCurvasTxtCompleto()
-        {
-            return _pathCurvasTxt;
-        }
-        
+       
         // nome arquivo gerador MT
         internal string GetNomeGeradorMT_mes()
         {

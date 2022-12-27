@@ -51,6 +51,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             return barra;
         }
 
+        // TODO
         public Switch()
         {
             //variavel chave
@@ -73,6 +74,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             _estaAberta = dSSCircuit.get_CktElements("Line." + nome).IsOpen(1, 0);
         }
 
+        // OLD CODE altered to direct access to member 
         // obtem status da chave 
         public bool GetStatusAberto(Circuit dSSCircuit)
         {
@@ -96,6 +98,8 @@ namespace ExecutorOpenDSS.Classes_Principais
                 // 
                 dSSCircuit.SetActiveElement(aresta);
 
+                // #if ENGINE
+                //bool ehChave = true;
                 bool ehChave = dSSCircuit.Lines.IsSwitch;
 
                 return ehChave;

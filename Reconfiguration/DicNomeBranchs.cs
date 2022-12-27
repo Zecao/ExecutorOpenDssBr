@@ -23,7 +23,9 @@ namespace ExecutorOpenDSS.Reconfigurador
             // Le uma coluna
             List<string> nomeBranchs = XLSXFile.Le1ColunaCSV(nomeArqBranchs);
 
+            /* // DEBUG
             int debug = nomeBranchs.Count;
+            */
 
             // OBS: comeca a contar de 1, porque 0 eh o cabecalho (nome da coluna) exportado pelo OpenDSS
             for (int i = 1; i < nomeBranchs.Count(); i++)

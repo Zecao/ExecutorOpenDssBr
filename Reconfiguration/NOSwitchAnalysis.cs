@@ -8,7 +8,6 @@ using dss_sharp;
 using ExecutorOpenDSS.Classes;
 using System;
 using System.Collections.Generic;
-using System.Security.Claims;
 
 namespace ExecutorOpenDSS.Classes_Principais
 {
@@ -63,6 +62,13 @@ namespace ExecutorOpenDSS.Classes_Principais
             // executa fluxo snap
             bool ret = _fluxoSoMT.ExecutaFluxoSnap();
             
+            if (!ret)
+            {
+                // plota numero de FPs
+                _paramGerais._mWindow.ExibeMsgDisplay("Fluxo nao convergiu!");
+                return;
+            }
+
             // Open the monophases lines, as it can contain a path to substation
             _fluxoSoMT.RemoveMonophaseLineSegments();
             
@@ -90,11 +96,6 @@ namespace ExecutorOpenDSS.Classes_Principais
 
                 // DEBUG plota chaves 
                 // plotaChavesNA();
-
-                // TODO criar nova flag interna 
-                // seta este parametro para true para evitar a recarga dos arquivos texto
-                //_paramGerais._parGUI._otmPorEnergia = true;
-                _paramGerais._parGUI.SetAproximaFluxoMensalPorDU(true);
 
                 // Creates monthly PF obj.
                 _fluxoMensal = new MonthlyPowerFlow(_paramGerais);
@@ -271,7 +272,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         // analisa lista de "Nome De Chaves NF" (obtida pelo grafo) 
         private string AnalisaChavesNF(List<string> lstNomeChavesNFcam1, Switch chaveNA)
         {
-            bool ret = true;
+            bool ret;
                         
             // no inicio, nova ChaveNA eh null
             string nomeNovaChaveNA = null;
@@ -410,6 +411,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             //bool debug = chaveNA.GetStatusAberto(_fluxoMensal.getObjDSS()._DSSCircuit);
         }
 
+        // OLD CODE substituido por metodo OpenDSS C#
         // obtem status da chave 
         private bool GetStatusChave(Switch chaveNA)
         {
@@ -492,7 +494,8 @@ namespace ExecutorOpenDSS.Classes_Principais
             while (iterLinha != 0)
             {
                 // verifica se eh Chave
-                if ( alim.Lines.IsSwitch ) 
+                if ( alim.Lines.IsSwitch) //#if ENGINE
+                //if ( true ) //#if ENGINE
                 {
                     // criar objeto chave, armazenando nao so o nome, mas tambem os nodos
                     Switch ch = new Switch(alim);
@@ -519,7 +522,8 @@ namespace ExecutorOpenDSS.Classes_Principais
                 iterLinha = alim.Lines.Next;
             }
         }
-       
+
+        // OLD CODE
         //Plota niveis tensao nas barras dos trafos
         public void PlotaChavesNA()
         {

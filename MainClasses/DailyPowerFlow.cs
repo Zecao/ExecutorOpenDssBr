@@ -483,25 +483,6 @@ namespace ExecutorOpenDSS.Classes_Principais
         }
 
         // Executa fluxo horario caso seja passado string hora
-        public bool ExecutaFluxoHorario(string hora = null) 
-        {
-            //Verifica se foi solicitado o cancelamento.
-            if (_paramGerais._mWindow._cancelarExecucao)
-            {
-                return false;
-            }
-
-            // carrega objeto OpenDSS
-            bool ret = LoadDSSObj();
-
-            if (ret)
-            {
-                ret = ExecutaFluxoDiario_SemRecarga(hora);
-            }
-            return ret;
-        }
-
-        // Executa fluxo horario caso seja passado string hora
         public bool ExecutaFluxoHorario_SemRecarga(string hora = null)
         {
             // variavel de retorno;
@@ -762,6 +743,7 @@ namespace ExecutorOpenDSS.Classes_Principais
              
         }
 
+        // TODO criar interface
         private void IteraSobreLineCode(Circuit dSSCircuit)
         {
             //DEBUG
@@ -831,6 +813,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
         }
 
+        // TODO mover p/ classe VoltageLevelAnalysis
         // Calcula DRP e DRC
         private void CalculaDRPDRC()
         {
@@ -855,6 +838,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
         }
 
+        // TODO mover p/ classe VoltageLevelAnalysis
         // Calcula DRP e DRC
         public List<string> GetBarrasDRPDRC()
         {

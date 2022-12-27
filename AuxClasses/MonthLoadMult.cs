@@ -37,12 +37,6 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
         }
 
         //
-        internal void Add(int mes, Dictionary<string, double> mapLMMes)
-        {
-            _mapAlimLoadMult.Add(mes, mapLMMes);
-        }
-
-        //
         internal double GetLoadMult()
         {
             // mes

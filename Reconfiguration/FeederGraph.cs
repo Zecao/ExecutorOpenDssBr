@@ -45,10 +45,10 @@ namespace ExecutorOpenDSS.Classes_Principais
         // lista nome chaves NF
         public List<string> _lstNomeChavesNFcam1;
 
-        private GeneralParameters _paramGerais;
+        private readonly GeneralParameters _paramGerais;
 
-        private Text _DSSText;
-        private Circuit _DSS_SE;
+        private readonly Text _DSSText;
+        private readonly Circuit _DSS_SE;
 
         public FeederGraph(GeneralParameters par, ObjDSS objDSS )
         {
@@ -121,7 +121,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             foreach (KeyValuePair<string, List<string>> kvp in _matrizIncidencia)
             {  
                 // aresta
-                string sAresta1 = kvp.Key;
+                string sAresta1;
 
                 // vertices
                 string vertice1 = (kvp.Value)[0];
@@ -269,7 +269,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                 string lstVertices1 = indiceVertFonte + "." + indiceVertCarga;
                 string lstVertices2 = indiceVertCarga + "." + indiceVertFonte;
 
-                string indiceAresta = null;
+                string indiceAresta;
 
                 // se map contem 
                 if (_mapIndVertices2Aresta.ContainsKey(lstVertices1) || _mapIndVertices2Aresta.ContainsKey(lstVertices2))

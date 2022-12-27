@@ -427,12 +427,6 @@ namespace ExecutorOpenDSS.Classes
             return _convergiuBool;
         }
 
-        //
-        internal void SetEnergia(double energiaMes)
-        {
-            _energyMeter.KWh = energiaMes;
-        }
-
         //calcula resultado ano
         internal void CalculaResAno(List<PFResults> lstResultadoFluxo, string alim, string arquivo, MainWindow jan)
         {
