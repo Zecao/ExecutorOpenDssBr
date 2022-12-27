@@ -30,7 +30,7 @@ There are 2 directories in this project:
 2. **FeederExample**: This directory contains a 13.8 kV feeder *.dss files, created by the data base exporter [ExportadorGeoPerdasDSS](https://github.com/Zecao/ExportadorGeoPerdasDSS). The files must be placed in a subdirectory with the same feeder name. 
 There are also a subdirectory with some .xlsx and .txt files with external resources to run the *.dss files, such as the "linecode" and the "load profiles" files.  I've included thise files in a separated subdirectory, as they are the same for all feeders.
 
-In addition to **OpenDSSengine.dll** and the OpenDSS Extensions (from Unicamp), the project uses two other dll files: **EEPlus.dll** which allows Excel files to be read in the C# and **Auxiliares.dll**. All the dll files are included in this project.    
+In addition to **OpenDSSengine.dll** and the OpenDSS Extensions (from Unicamp), the project uses the  dll **EEPlus.dll** which allows Excel files to be read in the C#. All the dll files are included in this project.    
 
 Most of the code are in portuguese, but I'm making efforts (in every release) to translate some code to english.
 
