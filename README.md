@@ -31,7 +31,7 @@ Currently, the following reports were developed (yet in a crude model, i.e. a .t
 In addition to **OpenDSSengine.dll** the project uses the following dlls from other projects (all of them included):
 - OpenDSS Extensions from Unicamp (dss_capi, dss_sharp, libklusolvex, libwinpthread dlls)
 - **EEPlus.dll**: which allows Excel files to be read in the C#;
-- QuickGraph dlls. 
+- Dlls from [QuickGraph 3.6](https://archive.codeplex.com/?p=quickgraph). 
 
 **Language** 
 Most of the code are in portuguese, but I'm making an effort (in every new release) to translate some code to english.
