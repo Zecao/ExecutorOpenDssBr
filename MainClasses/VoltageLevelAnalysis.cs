@@ -1,4 +1,4 @@
-﻿//#define ENGINE
+﻿#define ENGINE
 #if ENGINE
 using OpenDSSengine;
 #else
@@ -7,8 +7,9 @@ using dss_sharp;
 
 using System;
 using System.Collections.Generic;
+using ExecutorOpenDSS.AuxClasses;
 
-namespace ExecutorOpenDSS.Classes_Principais
+namespace ExecutorOpenDSS.MainClasses
 {
     class VoltageLevelAnalysis
     {
@@ -25,7 +26,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         public static List<string> _lstBarrasDRCeDRP = new List<string>();
 
         //construtor 
-        public VoltageLevelAnalysis(Circuit cir, Text txt ) 
+        public VoltageLevelAnalysis(Circuit cir, Text txt)
         {
             _circuit = cir;
             _loadsDSS = cir.Loads;
@@ -40,15 +41,15 @@ namespace ExecutorOpenDSS.Classes_Principais
 
         // Cria arquivo texto cabecalho DRP DRC 
         public static void CriaArqCabecalho(GeneralParameters paramGerais)
-        {                           
+        {
             // 
             string nomeArq = paramGerais.GetNomeComp_arquivoDRPDRC();
 
             //Grava cabecalho
             string linha = "Alim\tF.A.\tDRP:\tDRC:\tTotal:";
-                
+
             //Grava em arquivo
-            TxtFile.GravaEmArquivo(linha, nomeArq, paramGerais._mWindow);  
+            TxtFile.GravaEmArquivo(linha, nomeArq, paramGerais._mWindow);
         }
 
         // obtem barra da carga por meio da interface de Text
@@ -60,7 +61,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             // nome Barra
             string busName = _DSSText.Result;
 
-            return busName;  
+            return busName;
         }
 
         // verificaNivelTensaoBarra
@@ -96,12 +97,12 @@ namespace ExecutorOpenDSS.Classes_Principais
             //BT OBS: assume que qquer tensao abaixo de 500Volts eh BT
             if (Math.Round(kVcarga, 3) <= 0.220)
             {
-                VerificaNivelTensaoBarraBT(tensoaFaseApu, nomeBarra );
+                VerificaNivelTensaoBarraBT(tensoaFaseApu, nomeBarra);
             }
             else
             {
                 VerificaNivelTensaoBarraMT(tensoaFaseApu, nomeBarra);
-            }                           
+            }
         }
 
         // verificaNivelTensaoBarraBT e incrementa contador de clientes
@@ -116,7 +117,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                 return;
             }
             //DRP para cada carga, checa o tensao
-            if ((tensaoPU < 0.9213 ) && (tensaoPU >= 0.8661))
+            if ((tensaoPU < 0.9213) && (tensaoPU >= 0.8661))
             {
                 _numClientesDRP++;
                 _lstBarrasDRCeDRP.Add(nomeBarra + "\t" + tensaoPU.ToString());
@@ -137,32 +138,32 @@ namespace ExecutorOpenDSS.Classes_Principais
             }
 
             //DRP para cada carga, checa o tensao
-            if ((tensaoPU >= 0.90) && (tensaoPU < 0.93 ))
+            if ((tensaoPU >= 0.90) && (tensaoPU < 0.93))
             {
                 _numClientesDRP++;
 
                 _lstBarrasDRCeDRP.Add(nomeBarra + "\t" + tensaoPU.ToString());
             }
         }
-
+        // TODO
         // imprime numero de clientes DPRPDR
         private void ImprimeNumClientesDRPDRC(MainWindow janela)
         {
             // numero clientes DRP
-            janela.ExibeMsgDisplay("Clientes com DRP: " + _numClientesDRP.ToString() );
-            janela.ExibeMsgDisplay("Clientes com DRC: " + _numClientesDRC.ToString() );
-            janela.ExibeMsgDisplay("Clientes totais: " + _numClientesTotal.ToString() );
+            janela.ExibeMsgDisplay("Clientes com DRP: " + _numClientesDRP.ToString());
+            janela.ExibeMsgDisplay("Clientes com DRC: " + _numClientesDRC.ToString());
+            janela.ExibeMsgDisplay("Clientes totais: " + _numClientesTotal.ToString());
         }
 
         // grava numero clientes com DRP e DRC no arquivo
-        public void ImprimeNumClientesDRPDRC(GeneralParameters paramGerais )
+        public void ImprimeNumClientesDRPDRC(GeneralParameters paramGerais)
         {
             //nome arquivo DRP e DRC
             string nomeArq = paramGerais.GetNomeComp_arquivoDRPDRC();
 
             // nome alim
             string nomeAlim = paramGerais.GetNomeAlimAtual();
-                
+
             // linha //ALim DRP DRC totais    
             string linha = nomeAlim + "\t" + _numClientesOK.ToString() + "\t" + _numClientesDRP.ToString() + "\t" + _numClientesDRC.ToString() + "\t" + _numClientesTotal.ToString();
 
@@ -180,10 +181,10 @@ namespace ExecutorOpenDSS.Classes_Principais
             string nomeAlim = paramGerais.GetNomeAlimAtual();
 
             // linha  
-            List<string> lstStr = new List<string>(); 
-            
+            List<string> lstStr = new List<string>();
+
             //
-            foreach (string barras in _lstBarrasDRCeDRP) 
+            foreach (string barras in _lstBarrasDRCeDRP)
             {
                 lstStr.Add(nomeAlim + "\t" + barras);
             }
@@ -191,14 +192,13 @@ namespace ExecutorOpenDSS.Classes_Principais
             //Grava em arquivo
             TxtFile.GravaListArquivoTXT(lstStr, nomeArq, paramGerais._mWindow);
         }
-        
+
         // ajusta numero de clientes totais, subtraindo os clientes de IP
         private void AjustaNumClientes()
         {
-            _numClientesTotal -= _numClientesIP;      
+            _numClientesTotal -= _numClientesIP;
         }
 
-        // public
         // CalculaNumClientesDRPDRC
         public void CalculaNumClientesDRPDRC()
         {
@@ -206,7 +206,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             string nomeBarra;
 
             // para cada carga
-            for ( int i = 1; i <= _loadsDSS.Count; i++  )
+            for (int i = 1; i <= _loadsDSS.Count; i++)
             {
                 /*
                 ///DEBUG

@@ -1,10 +1,11 @@
-﻿using ExecutorOpenDSS.Classes;
-using System;
+﻿using ExecutorOpenDSS.MainClasses;
 using System.Collections.Generic;
 using System.IO;
 
-namespace ExecutorOpenDSS
+namespace ExecutorOpenDSS.AuxClasses
 {
+    /* Author: Daniel Rocha
+     * */
     class TxtFile
     {
         //Verifica se o arquivo existe antes de deletá-lo
@@ -43,15 +44,14 @@ namespace ExecutorOpenDSS
                 //Caso não consiga, exibe mensagem de erro
                 catch
                 {
-                    
+
                     jan.ExibeMsgDisplay("Não foi possível escrever no arquivo " + arquivo);
                 }
             }
         }
-        
-        // OLD CODE
-        // Grava CONTEUDO em arquivo FID 
-        public static void GravaEmArquivoAsync(string conteudo, string fid, MainWindow jan)
+
+        //Grava CONTEUDO em arquivo FID 
+        public static void GravaEmArquivo(string conteudo, string fid, MainWindow jan)
         {
             //
             while (true)
@@ -80,36 +80,6 @@ namespace ExecutorOpenDSS
             }
         }
 
-        //Grava CONTEUDO em arquivo FID 
-        public static void GravaEmArquivo(string conteudo, string fid, MainWindow jan )
-        {
-            //
-            while(true)
-            {
-                try
-                {
-                    // TODO consertar esquema de bloqueio de arquivo
-                    string arq = jan._indiceArq == 0 ? fid : fid + jan._indiceArq + ".txt";
-                    
-                    using (StreamWriter file = new StreamWriter(arq, true))
-                    {
-                        file.WriteLineAsync(conteudo);
-                    }
-                    break;
-                }
-                catch 
-                {
-                        jan.ExibeMsgDisplay("Arquivo " + fid + " bloqueado. Tentando outro nome de arquivo");
-                        jan._indiceArq++;
-                }
-                if (jan._indiceArq > 10)
-                {
-                    jan.ExibeMsgDisplay("Não foi possível escrever o arquivo " + fid + ". Verifique se possui permissão de escrita no local");
-                    break;
-                }
-            }       
-        }
-
         //funcao gravaPerdas em arquivo
         static public void GravaPerdas(PFResults perdasTotais, string nomeAlim, string fid, MainWindow jan)
         {
@@ -119,7 +89,7 @@ namespace ExecutorOpenDSS
             //Grava em arquivo
             TxtFile.GravaEmArquivo(conteudo, fid, jan);
         }
- 
+
         //Grava a lista de alimentadores não convergentes em um txt
         static public void GravaLstAlimNaoConvergiram(GeneralParameters paramGerais)
         {
@@ -131,7 +101,7 @@ namespace ExecutorOpenDSS
                 {
                     // 
                     string arquivoNome = paramGerais.GetNomeComp_arquivoResAlimNaoConvergiram();
-                    
+
                     using (StreamWriter file = new StreamWriter(arquivoNome, true))
                     {
                         file.WriteLineAsync(nomeAlim);
@@ -142,8 +112,8 @@ namespace ExecutorOpenDSS
                 {
                     paramGerais._mWindow.ExibeMsgDisplay("Arquivo dos alimentadores não convergentes bloqueado!");
                 }
-            }       
+            }
         }
-    
+
     }
 }

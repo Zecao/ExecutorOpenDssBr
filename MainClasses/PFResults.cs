@@ -1,18 +1,17 @@
-﻿//#define ENGINE
+﻿#define ENGINE
 #if ENGINE
 using OpenDSSengine;
 #else
 using dss_sharp;
 #endif
 
-using ExecutorOpenDSS.Classes_Auxiliares;
-using ExecutorOpenDSS.Classes_Principais;
+using ExecutorOpenDSS.AuxClasses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ExecutorOpenDSS.Classes
-{ 
+namespace ExecutorOpenDSS.MainClasses
+{
     // Class Power Flow results
     class PFResults
     {
@@ -29,14 +28,16 @@ namespace ExecutorOpenDSS.Classes
         }
 
         //Construtor vazio
-        public PFResults()
+        public PFResults(double loadMult = 1)
         {
             _convergiuBool = false;
             _energyMeter = new MyEnergyMeter();
+            _energyMeter.loadMultAlim = loadMult;
         }
 
+
         // formata resultado do fluco para console
-        public string GetResultadoFluxoToConsole(string nomeAlim, ObjDSS oDSS)
+        public string GetResultadoFluxoToConsole(string nomeAlim, ObjDSS oDSS, string tipoDia = "DU")
         {
             //nivel pu
             string tensao = oDSS.GetActiveCircuit().Vsources.pu.ToString("0.###");
@@ -45,19 +46,20 @@ namespace ExecutorOpenDSS.Classes
             string gd = "";
 
             // verifies Distributed Genaration 
-            if (_energyMeter.KWhGD != 0)
+            if (_energyMeter.kWh_GD != 0)
             {
                 // adds DG genarator to totalkWH
-                totalKWh += _energyMeter.KWhGD;
+                totalKWh += _energyMeter.kWh_GD;
                 gd = " (GD)";
             }
 
             string tmp = "Alim\\PU SaidaSE:\\Energia(KWh)\\Perdas(KWh)\\Perdas(%)" +
                 "\n" + nomeAlim +
-                " \t" + tensao +
-                " \t" + totalKWh.ToString("0.0") + gd +
-                " \t" + _energyMeter.LossesKWh.ToString("0.0") +
-                " \t" + CalcPercentualPerdas() + "%";
+                "\t" + tensao +
+                "\t" + totalKWh.ToString("0.0") + gd +
+                "\t" + _energyMeter.LossesKWh.ToString("0.0") +
+                "\t" + CalcPercentualPerdas() + "%" +
+                "\t" + tipoDia;
             return tmp;
         }
 
@@ -76,9 +78,9 @@ namespace ExecutorOpenDSS.Classes
 
             // cria curva de carga dados: numero de dias do mes e matriz de consumo em PU
             Dictionary<string, int> numTipoDiasMes = paramGerais._objTipoDeDiasDoMes._qntTipoDiasMes[mes];
-            
+
             // DIAS UTEIS
-            perdasDU._energyMeter.MultiplicaEnergia(numTipoDiasMes["DU"]);        
+            perdasDU._energyMeter.MultiplicaEnergia(numTipoDiasMes["DU"]);
 
             // multiplica pelo Num dias
             perdasSA._energyMeter.MultiplicaEnergia(numTipoDiasMes["SA"]);
@@ -97,9 +99,9 @@ namespace ExecutorOpenDSS.Classes
 
             // cria string com o formato de saida das perdas
             string conteudo = _energyMeter.FormataResultado(paramGerais.GetNomeAlimAtual());
-            
+
             // se modo otimiza nao grava perdas arquivo
-            if ( !paramGerais._parGUI._otmPorEnergia )
+            if (!paramGerais._parGUI._otmPorEnergia)
             {
                 // grava perdas alimentador em arquivo
                 TxtFile.GravaEmArquivo(conteudo, paramGerais.GetNomeComp_arquivoResPerdasMensal(), paramGerais._mWindow);
@@ -127,13 +129,12 @@ namespace ExecutorOpenDSS.Classes
 
             // number of days in the month
             int numDias = par._objTipoDeDiasDoMes.GetNumDiasMes(mes);
-            
+
             // Multiplies the Daily solution by the number of days
             resFluxo._energyMeter.MultiplicaEnergia(numDias);
 
             // copia novos valores 
-            _energyMeter = new MyEnergyMeter();
-            _energyMeter = resFluxo._energyMeter;
+            _energyMeter = new MyEnergyMeter(resFluxo._energyMeter);
 
             // seta fluxo mensal igual a true
             _convergiuBool = true;
@@ -166,6 +167,13 @@ namespace ExecutorOpenDSS.Classes
         public double GetEnergia()
         {
             return _energyMeter.KWh;
+        }
+
+        //get Energia
+        public string GetActiveAndReactiveEnergy()
+        {
+            string ret = _energyMeter.KWh.ToString() + "\t" + _energyMeter.kVAr_h.ToString();
+            return ret;
         }
 
         // get Geracao
@@ -210,8 +218,8 @@ namespace ExecutorOpenDSS.Classes
         // verifica se excedeu a geracao maxima
         private bool ExcedeuRequisitoMaximo()
         {
-            //MAXREQUISITO alim igual 40.000 kWh 
-            double MAXREQUISITO = 40000;
+            //MAXREQUISITO alim igual 100.000 kWh 
+            double MAXREQUISITO = 100000;
 
             // condicao de erro no fluxo diario 
             if (Math.Abs(GetMaxKW()) > MAXREQUISITO)
@@ -224,7 +232,7 @@ namespace ExecutorOpenDSS.Classes
         // Calcula percentual de perdas
         public string CalcPercentualPerdas()
         {
-            double energia = _energyMeter.KWh + _energyMeter.KWhGD;
+            double energia = _energyMeter.KWh + _energyMeter.kWh_GD;
             double perdas = _energyMeter.LossesKWh;
             double percentual = perdas * 100 / energia;
             return percentual.ToString("0.000");
@@ -242,7 +250,7 @@ namespace ExecutorOpenDSS.Classes
 
             // %%% Energia Ativa e Reativa
             _energyMeter.KWh = DSSCircuit.Meters.RegisterValues[0];
-            _energyMeter.kvarh = DSSCircuit.Meters.RegisterValues[1];
+            _energyMeter.kVAr_h = DSSCircuit.Meters.RegisterValues[1];
             _energyMeter.LossesKWh = DSSCircuit.Meters.RegisterValues[12];
 
             SetLossesMap(DSSCircuit);
@@ -276,26 +284,43 @@ namespace ExecutorOpenDSS.Classes
             //            
             _energyMeter.MTEnergy = _lossesMap["13.8 kV Load Energy"] + _lossesMap["22 kV Load Energy"] + _lossesMap["34.5 kV Load Energy"];
             _energyMeter.BTEnergy = _lossesMap["0.22 kV Load Energy"] + _lossesMap["0.24 kV Load Energy"];
-            
-            // obtem energia gerada por GDs
-            GetGeracaoGD(DSSCircuit);
-            
+
+            // computes generators energy
+            GetGDEnergy(DSSCircuit);
+
+            // computes PVSystems energy
+            GetPVSystemsEnergy(DSSCircuit);
+
             // verifica convergencia
             return (VerificaConvergencia());
         }
 
         // obtem energia gerada por GDs
-        private void GetGeracaoGD(Circuit DSSCircuit)
+        private void GetGDEnergy(Circuit DSSCircuit)
         {
             //int debug = DSSCircuit.Generators.Count;
 
-            int iterGer = DSSCircuit.Generators.First ;
+            int iterGer = DSSCircuit.Generators.First;
 
             while (iterGer != 0)
             {
-                _energyMeter.KWhGD += DSSCircuit.Generators.RegisterValues[0];
+                _energyMeter.kWh_GD += DSSCircuit.Generators.RegisterValues[0];
 
-                iterGer = DSSCircuit.Generators.Next;  
+                iterGer = DSSCircuit.Generators.Next;
+            }
+        }
+
+        // obtem energia gerada por GDs
+        private void GetPVSystemsEnergy(Circuit DSSCircuit)
+        {
+            int iterPVSystem = DSSCircuit.PVSystems.First;
+
+            while (iterPVSystem != 0)
+            {
+                _energyMeter.kWh_GD += DSSCircuit.PVSystems.RegisterValues[0]; //kWh
+                _energyMeter.kVArh_GD += DSSCircuit.PVSystems.RegisterValues[1]; //kvarh
+
+                iterPVSystem = DSSCircuit.PVSystems.Next;
             }
         }
 
@@ -303,7 +328,7 @@ namespace ExecutorOpenDSS.Classes
         {
             string[] registersNames = DSSCircuit.Meters.RegisterNames;
 
-            _lossesMap = new Dictionary<string, double>(); 
+            _lossesMap = new Dictionary<string, double>();
 
             //preenche map com zeros para evitar erro
             _lossesMap.Add("34.5 kV Line Loss", 0);
@@ -328,10 +353,10 @@ namespace ExecutorOpenDSS.Classes
             _lossesMap.Add("0.22 kV Load Energy", 0);
 
             // search register and put the values in the lossesMap 
-            for (int i=39;i<67;i++)
+            for (int i = 39; i < 67; i++)
             {
                 // se registrador nao eh nulo
-                if (registersNames[i] != null )
+                if (registersNames[i] != null)
                 {
                     // adiciona perda no map 
                     if (_lossesMap.ContainsKey(registersNames[i]))
@@ -416,10 +441,10 @@ namespace ExecutorOpenDSS.Classes
         internal bool VerificaConvergencia()
         {
             // verifica se excedeu a geracao maxima
-            if ( ExcedeuGeracaoMaxima() || ExcedeuRequisitoMaximo() )
+            if (ExcedeuGeracaoMaxima() || ExcedeuRequisitoMaximo())
             {
                 _convergiuBool = false;
-            } 
+            }
             else
             {
                 _convergiuBool = true;
@@ -435,16 +460,16 @@ namespace ExecutorOpenDSS.Classes
 
             //usa variavel da classe para armazenar a soma
             _energyMeter = res1._energyMeter;
-                 
+
             //remove     
             lstResultadoFluxo.Remove(res1);
 
             // obtem medidores do 2mes em diante e soma com o 1mes
-            foreach (PFResults res in lstResultadoFluxo) 
+            foreach (PFResults res in lstResultadoFluxo)
             {
                 //medidor 
                 MyEnergyMeter emMes = res._energyMeter;
-            
+
                 //soma
                 _energyMeter.Soma(emMes);
             }
@@ -455,6 +480,6 @@ namespace ExecutorOpenDSS.Classes
             // grava perdas alimentador em arquivo 
             TxtFile.GravaEmArquivo(conteudo, arquivo, jan);
         }
-    }     
+    }
 }
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ExecutorOpenDSS.Classes_Auxiliares
+namespace ExecutorOpenDSS.AuxClasses
 {
     class MonthLoadMult
     {
@@ -41,7 +41,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
         {
             // mes
             int mes = _paramGerais._parGUI.GetMes();
-            
+
             //alim
             string alimTmp = _paramGerais.GetNomeAlimAtual();
 

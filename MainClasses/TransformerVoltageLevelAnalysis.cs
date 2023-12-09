@@ -1,4 +1,4 @@
-﻿//#define ENGINE
+﻿#define ENGINE
 #if ENGINE
 using OpenDSSengine;
 #else
@@ -7,8 +7,9 @@ using dss_sharp;
 
 using System;
 using System.Collections.Generic;
+using ExecutorOpenDSS.AuxClasses;
 
-namespace ExecutorOpenDSS.Classes_Principais
+namespace ExecutorOpenDSS.MainClasses
 {
     class TransformerVoltageLevelAnalysis
     {
@@ -19,7 +20,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         private readonly GeneralParameters _param;
 
         //construtor 
-        public TransformerVoltageLevelAnalysis(Text txt, Circuit cir , GeneralParameters paramGerais) 
+        public TransformerVoltageLevelAnalysis(Text txt, Circuit cir, GeneralParameters paramGerais)
         {
             _circuit = cir;
             _trafosDSS = cir.Transformers;
@@ -28,7 +29,7 @@ namespace ExecutorOpenDSS.Classes_Principais
 
             _nivelTensaoBarra = new Dictionary<string, double>();
         }
-        
+
         //Plota niveis tensao nas barras dos trafos
         public void PlotaNiveisTensaoBarras(MainWindow janela)
         {
@@ -40,7 +41,7 @@ namespace ExecutorOpenDSS.Classes_Principais
 
                 // Grava arquivo
                 GravaTensaoBarraTrafos(janela);
-            }           
+            }
         }
 
         // calcula tensao barra trafos 
@@ -51,7 +52,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             int iTrafo = _trafosDSS.First;
 
             // para cada carga
-            while ( iTrafo != 0  )
+            while (iTrafo != 0)
             {
                 // nome trafo
                 string trafoName = _trafosDSS.Name;
@@ -64,10 +65,10 @@ namespace ExecutorOpenDSS.Classes_Principais
 
                     //add
                     _nivelTensaoBarra.Add(trafoName, nivelTensaoPU);
-                }          
+                }
 
                 // itera
-                iTrafo = _trafosDSS.Next;    
+                iTrafo = _trafosDSS.Next;
             }
         }
 
@@ -82,10 +83,10 @@ namespace ExecutorOpenDSS.Classes_Principais
 
             // para cada key value
             foreach (KeyValuePair<string, double> kvp in _nivelTensaoBarra)
-	        {
+            {
                 // TODO tratar retirada \n ultima linha 
                 linha += nomeAlim + "\t" + kvp.Key + "\t" + kvp.Value.ToString() + "\n";
-	        }
+            }
             TxtFile.GravaEmArquivo2(linha, _param.GetNomeArqBarraTrafo(), janela);
         }
 
@@ -114,9 +115,6 @@ namespace ExecutorOpenDSS.Classes_Principais
         // obtem barra da carga por meio da interface de Text
         private string GetTrafoBusName(string trafoName)
         {
-            // OBS: codigo antigo que parou de funcionar
-            //_DSSText.Command = "? transformer." + trafoName + ".Bus";
-
             // query buses do transformador
             _DSSText.Command = "? transformer." + trafoName + ".Buses"; //ok
 

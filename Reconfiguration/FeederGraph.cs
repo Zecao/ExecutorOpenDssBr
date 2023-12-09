@@ -1,4 +1,4 @@
-﻿//#define ENGINE
+﻿#define ENGINE
 #if ENGINE
 using OpenDSSengine;
 #else
@@ -10,8 +10,9 @@ using System.Linq;
 using QuickGraph;
 using QuickGraph.Algorithms;
 using ExecutorOpenDSS.Reconfigurador;
+using ExecutorOpenDSS.AuxClasses;
 
-namespace ExecutorOpenDSS.Classes_Principais
+namespace ExecutorOpenDSS.MainClasses
 {
     class FeederGraph
     {
@@ -23,19 +24,18 @@ namespace ExecutorOpenDSS.Classes_Principais
         // classe dicionario NomeBranchs X Indices
         public DicNomeBranchs _dicNomeBranchs = new DicNomeBranchs();
 
-        // TODO encapsular _dicNomePACs X Indices
         // MAP nomeVertices -> indice
-        public Dictionary<string, string> _mapNomeVertice2Indice;        
+        public Dictionary<string, string> _mapNomeVertice2Indice;
 
         // MAP vertices(fonteXcarga) -> Aresta
-        Dictionary<string, string> _mapIndVertices2Aresta;    
+        Dictionary<string, string> _mapIndVertices2Aresta;
 
         // matriz incidencia Aresta - lista Vertices
-        Dictionary<string, List<string>> _matrizIncidencia;       
+        Dictionary<string, List<string>> _matrizIncidencia;
 
         // Define some weights to the edges
         Dictionary<Edge<string>, double> _edgeCost;
-        
+
         // TODO
         //Func<Edge<string>, double> edgeCost = e => 1; // constant cost
 
@@ -50,7 +50,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         private readonly Text _DSSText;
         private readonly Circuit _DSS_SE;
 
-        public FeederGraph(GeneralParameters par, ObjDSS objDSS )
+        public FeederGraph(GeneralParameters par, ObjDSS objDSS)
         {
             _paramGerais = par;
 
@@ -96,7 +96,7 @@ namespace ExecutorOpenDSS.Classes_Principais
         public void CarregaMapsGrafoAlim()
         {
             // preenche map Nome Branchs 
-            _dicNomeBranchs.PreencheMapNomeBranchs( _paramGerais.GetNomeAlimAtual() );
+            _dicNomeBranchs.PreencheMapNomeBranchs(_paramGerais.GetNomeAlimAtual());
 
             // preenche map Nome Vertices
             PreencheMapNomeVertices();
@@ -119,10 +119,7 @@ namespace ExecutorOpenDSS.Classes_Principais
 
             // para todos os elementos da matriz de incidencia
             foreach (KeyValuePair<string, List<string>> kvp in _matrizIncidencia)
-            {  
-                // aresta
-                string sAresta1;
-
+            {
                 // vertices
                 string vertice1 = (kvp.Value)[0];
                 string vertice2 = (kvp.Value)[1];
@@ -136,7 +133,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                 // Custo de todas as arestas eh 1
                 _edgeCost.Add(aresta, 1);
             }
-    
+
         }
 
         // Carrega arquivo matriz incidencia 
@@ -149,9 +146,9 @@ namespace ExecutorOpenDSS.Classes_Principais
             List<string[]> matrizInc = XLSXFile.LeCSV(nomeArqVertices);
 
             //
-            _matrizIncidencia = new Dictionary<string, List<string> >();
-            _mapIndVertices2Aresta = new Dictionary<string, string> ();
-            
+            _matrizIncidencia = new Dictionary<string, List<string>>();
+            _mapIndVertices2Aresta = new Dictionary<string, string>();
+
             //OBS: comeca a contar de 1, porque 0 eh o cabecalho (nome da coluna) exportado pelo OpenDSS
             for (int i = 1; i < matrizInc.Count(); i++)
             {
@@ -166,7 +163,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                 {
 
                     // adiciona vertice na matriz de incidencia
-                    _matrizIncidencia.Add(sAresta1, new List<string>() { vertice1 });                  
+                    _matrizIncidencia.Add(sAresta1, new List<string>() { vertice1 });
 
                 }
                 else
@@ -209,11 +206,11 @@ namespace ExecutorOpenDSS.Classes_Principais
 
             // TODO verificar
             // se chave NA possui os 2 vertices 
-            if ( ( no1trad != null)&&( no2trad != null) )
+            if ((no1trad != null) && (no2trad != null))
             {
                 ret = MenorCaminhoDijsktra(no1trad, no2trad);
             }
-                        
+
             // 
             return ret;
         }
@@ -234,7 +231,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             // obtem lstChavesNFs do no2 ate o caminho do no1  
             if (tryGetPaths(no2, out path1))
             {
-                _lstNomeChavesNFcam1 = FiltraArestasComChaves(path1);               
+                _lstNomeChavesNFcam1 = FiltraArestasComChaves(path1);
             }
 
             // DEBUG Verifica se segundo caminho eh igual ao primeiro
@@ -258,14 +255,14 @@ namespace ExecutorOpenDSS.Classes_Principais
         private List<string> FiltraArestasComChaves(IEnumerable<Edge<string>> caminho)
         {
             // variavel tmp
-            List<string> lstNomeChavesNFcaminho = new List<string>(); 
+            List<string> lstNomeChavesNFcaminho = new List<string>();
 
             // para cada aresta do caminho
             foreach (Edge<string> aresta in caminho)
             {
                 string indiceVertFonte = aresta.Source;
                 string indiceVertCarga = aresta.Target;
-                
+
                 string lstVertices1 = indiceVertFonte + "." + indiceVertCarga;
                 string lstVertices2 = indiceVertCarga + "." + indiceVertFonte;
 
@@ -275,7 +272,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                 if (_mapIndVertices2Aresta.ContainsKey(lstVertices1) || _mapIndVertices2Aresta.ContainsKey(lstVertices2))
                 {
                     indiceAresta = _mapIndVertices2Aresta[lstVertices1];
-                
+
                     // verifica se pode ser manobrada
                     string nomeChave = _dicNomeBranchs.GetNomeBranchByIndice(indiceAresta);
 
@@ -290,7 +287,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                     }
                 }
 
-                if (_mapIndVertices2Aresta.ContainsKey(lstVertices2)) 
+                if (_mapIndVertices2Aresta.ContainsKey(lstVertices2))
                 {
                     _paramGerais._mWindow.ExibeMsgDisplay("detectada inversao de lista de Vertices");
                 }
@@ -315,7 +312,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             for (int i = 1; i < nomeVertices.Count(); i++)
             {
                 // OBS: subtraio 1 de i, uma vez que na matriz exportada pelo openDSS, o primeiro no eh "0" 
-                _mapNomeVertice2Indice.Add(nomeVertices[i], (i-1).ToString() );
+                _mapNomeVertice2Indice.Add(nomeVertices[i], (i - 1).ToString());
             }
         }
     }

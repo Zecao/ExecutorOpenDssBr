@@ -1,5 +1,5 @@
-﻿using ExecutorOpenDSS.Classes;
-using ExecutorOpenDSS.Classes_Auxiliares;
+﻿using ExecutorOpenDSS.AuxClasses;
+using ExecutorOpenDSS.MainClasses;
 using System.Collections.Generic;
 using System.IO;
 
@@ -13,8 +13,8 @@ namespace ExecutorOpenDSS
         //
         internal TipoDiasMes _objTipoDeDiasDoMes;
 
-        // arquivos resultados
-        public string _nomeArqCurvasDeCarga = "CurvasDeCarga";
+        // txt files for results and reports
+        private readonly string _nomeArqCurvasDeCarga = "CurvasDeCarga";
         private readonly string _arquivoResPerdasHorario = "perdasAlimHorario.txt";
         private readonly string _arquivoResPerdasDiario = "perdasAlimDiario.txt";
         private readonly string _arquivoResPerdasMensal = "perdasAlimMensal.txt";
@@ -24,21 +24,20 @@ namespace ExecutorOpenDSS
         private readonly string _arqBarrasDRPDRC = "BarrasDRPDRC.txt";
         private readonly string _arqBarraTrafo = "BarrasTrafo.txt";
         private readonly string _arqTapsRTs = "TapsRTs.txt";
-        public string _arqDemandaMaxAlim = "demandaMaxAlim_" + "Jan" + ".xlsx";
-        public string _arqTensoesBarramento = "tensoesBarramento.xlsx";
+        private readonly string _arqDemandaMaxAlim = "demandaMaxAlim_" + "Jan" + ".xlsx";
+        //private readonly string _arqTensoesBarramento = "tensoesBarramento.xlsx"; // TODO
         private readonly string _arqLoops = "loops.txt";
-        public string _arqEnergia = "energiaMesAlim.xlsx";
+        private readonly string _arqEnergia = "energiaMesAlim.xlsx";
         private readonly string _arqCargaIsoladas = "CargasIsoladas.txt";
+        private readonly string _arqCapLossesRed = "CapacitorLossesReduction.txt";
 
-        //caminhos
-        private readonly string _pathCurvasTxt;
-
-        // tipo fluxo Normal
-        public string _AlgoritmoFluxo;
+        private readonly string _pathCurvasTxt; //caminhos
+        public readonly string _AlgoritmoFluxo = "Normal"; //tipo fluxo Normal
 
         // paramentros da interface GUI
         internal GUIParameters _parGUI;
 
+        //
         public MainWindow _mWindow;
 
         // gerencia dados de medicao 
@@ -58,14 +57,22 @@ namespace ExecutorOpenDSS
             // preenche variavel _objTipoDeDiasDoMes
             _objTipoDeDiasDoMes = new TipoDiasMes(_parGUI, janelaPrincipal);
 
-            // tipo fluxo
-            _AlgoritmoFluxo = "Normal";
-
             // 
             _medAlim = new FeederMetering(this);
         }
 
         // 
+        internal string GetNomeArqEnergia()
+        {
+            return _parGUI._pathRecursosPerm + _arqEnergia;
+        }
+
+        // 
+        internal string GetNomeArqDemandaMaxAlim()
+        {
+            return _parGUI._pathRecursosPerm + _arqDemandaMaxAlim;
+        }
+
         internal string GetNomeArqBarraTrafoLocal()
         {
             return _parGUI._pathRecursosPerm + _arqCargaIsoladas;
@@ -74,6 +81,11 @@ namespace ExecutorOpenDSS
         internal string GetNomeCompArqLoops()
         {
             return _parGUI._pathRecursosPerm + _arqLoops;
+        }
+
+        internal string GetNomeCompArqCapacitorLossesRed()
+        {
+            return _parGUI._pathRecursosPerm + _arqCapLossesRed;
         }
 
         // grava _mapAlimLoadMult no arquivo excel
@@ -128,21 +140,25 @@ namespace ExecutorOpenDSS
 
         // Deleta Arquivos Resultados
         internal void DeletaArqResultados()
-        {           
-            TxtFile.SafeDelete( GetNomeComp_arquivoResAlimNaoConvergiram() );
-            TxtFile.SafeDelete( GetNomeComp_arquivoResPerdasHorario());
-            TxtFile.SafeDelete( GetNomeComp_arquivoResPerdasDiario());
-            TxtFile.SafeDelete( GetNomeComp_arquivoResPerdasMensal());
-            TxtFile.SafeDelete( GetNomeComp_arquivoResPerdasAnual());
+        {
+            // modo otimiza nao deleta os arquivos de resutlados 
+            if (!_parGUI._otmPorEnergia)
+            {
+                TxtFile.SafeDelete(GetNomeComp_arquivoResAlimNaoConvergiram());
+                TxtFile.SafeDelete(GetNomeComp_arquivoResPerdasHorario());
+                TxtFile.SafeDelete(GetNomeComp_arquivoResPerdasDiario());
+                TxtFile.SafeDelete(GetNomeComp_arquivoResPerdasMensal());
+                TxtFile.SafeDelete(GetNomeComp_arquivoResPerdasAnual());
 
-            TxtFile.SafeDelete(GetNomeComp_arqBarrasDRPDRC());
-            TxtFile.SafeDelete(GetNomeComp_arquivoDRPDRC());
-            TxtFile.SafeDelete(GetNomeArqBarraTrafo());
-            TxtFile.SafeDelete(GetNomeCompArqLoops());
-            TxtFile.SafeDelete(GetNomeArqTapsRTs());
+                TxtFile.SafeDelete(GetNomeComp_arqBarrasDRPDRC());
+                TxtFile.SafeDelete(GetNomeComp_arquivoDRPDRC());
+                TxtFile.SafeDelete(GetNomeArqBarraTrafo());
+                TxtFile.SafeDelete(GetNomeCompArqLoops());
+                TxtFile.SafeDelete(GetNomeArqTapsRTs());
 
-            TxtFile.SafeDelete(GetArqRmatrix());
-            TxtFile.SafeDelete(GetArqXmatrix());
+                TxtFile.SafeDelete(GetArqRmatrix());
+                TxtFile.SafeDelete(GetArqXmatrix());
+            }
         }
 
         public string GetNomeComp_arquivoResPerdasAnual()
@@ -172,7 +188,7 @@ namespace ExecutorOpenDSS
 
         internal string GetNomeArqTapsRTs()
         {
-            return _parGUI._pathRecursosPerm  + _arqTapsRTs;
+            return _parGUI._pathRecursosPerm + _arqTapsRTs;
         }
 
         // nome arquivo Rmatrix
@@ -199,7 +215,7 @@ namespace ExecutorOpenDSS
             return _nomeAlimAtual + "CargaBT_" + _parGUI._mesAbrv3letras + ".dss";
         }
 
-        // OBS: funcao redundante, caso no futuro exporte arquivo de carga com parametros (ex: tipo do modelo de carga) diferente.
+        // 
         internal string GetNomeCargaBTCemig_mes()
         {
             return _nomeAlimAtual + "CargaBT_" + _parGUI._mesAbrv3letras + ".dss";
@@ -269,11 +285,17 @@ namespace ExecutorOpenDSS
         {
             return GetDirAlimentadorDSS(_nomeAlimAtual) + _nomeAlimAtual + ".dss";
         }
-       
+
         // nome arquivo gerador MT
         internal string GetNomeGeradorMT_mes()
         {
             return _nomeAlimAtual + "GeradorMT_" + _parGUI._mesAbrv3letras + ".dss";
+        }
+
+        // nome arquivo gerador BT
+        internal string GetNomeGeradorBT_mes()
+        {
+            return _nomeAlimAtual + "GeradorBT_" + _parGUI._mesAbrv3letras + ".dss";
         }
 
         // get Nome e Path CurvasTxtCompleto
@@ -299,37 +321,21 @@ namespace ExecutorOpenDSS
         {
             return _parGUI._pathRaizGUI + _nomeAlimAtual + "\\";
         }
-        
+
         // get OpenDSS LoadMult parameter
-        public double GetLoadMult()
+        public double GetLoadMultFromXlsxFile()
         {
-            // alimTmp
-            string alimTmp = GetNomeAlimAtual();
+            // loadMult inicial 
+            double loadMult = _medAlim._reqLoadMultMes.GetLoadMult();
 
-            // modo de otimizacao de energia OU potencia 
-            if (_parGUI._otmPorEnergia || _parGUI._otmPorDemMax)
+            if (loadMult.Equals(double.NaN))
             {
-                return _parGUI.loadMultAtual;
-            }
-            // obtem loadMult do map de loadMults
-            else
-            {
-                // TODO verificar se mes foi setado corretamente no modo anual
-                int mes = _parGUI.GetMes();
+                _mWindow.ExibeMsgDisplay(GetNomeAlimAtual() + ": Alimentador não encontrado no arquivo de ajuste");
 
-                // se loadMult existe no map
-                if (_medAlim._reqLoadMultMes._mapAlimLoadMult[mes].ContainsKey(alimTmp))
-                {
-                    return _medAlim._reqLoadMultMes._mapAlimLoadMult[mes][alimTmp];
-                }
-                else
-                {
-                    _mWindow.ExibeMsgDisplay(alimTmp + ": Alimentador não encontrado no arquivo de ajuste");
-
-                    // retorna loadMult Default
-                    return _parGUI.loadMultDefault;
-                }
+                // retorna loadMult Default
+                return _parGUI.loadMultDefault;
             }
+            return loadMult;
         }
     }
 }

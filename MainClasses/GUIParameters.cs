@@ -1,17 +1,17 @@
-﻿using ExecutorOpenDSS.Classes_Auxiliares;
+﻿using ExecutorOpenDSS.AuxClasses;
 using System;
 using System.Globalization;
 
-namespace ExecutorOpenDSS.Classes
+namespace ExecutorOpenDSS.MainClasses
 {
     // Classe que armazena parametros (do usuario) de otmizacao do fluxo de potencia e seus resp. metodos. 
     public class GUIParameters
     {
         //variaveis 
         public string _hora;
-        public string _ano = "2021";
+        public string _ano = "2022";
         public string _mes;
-        public string _tipoDia;
+        public string _tipoDia; // TODO testar
         private int _mesNum;
         public string _tipoFluxo;
         public bool _allowForms;
@@ -37,6 +37,27 @@ namespace ExecutorOpenDSS.Classes
         // expander parameters
         public ExpanderParameters _expanderPar;
 
+        //
+        public string GetCodTipoDia()
+        {
+            //default;
+            string tipoDia = "DU";
+            // so faz associacaose tipo fluxo for igual da daily ou hourly 
+            if (_tipoFluxo.Equals("Daily") || _tipoFluxo.Equals("Hourly"))
+            {
+                switch (_tipoDia)
+                {
+                    case "Sábado":
+                        tipoDia = "SA";
+                        break;
+                    case "Domingo":
+                        tipoDia = "DO";
+                        break;
+                }
+            }
+            return tipoDia;
+        }
+
         // set Mes 
         internal void SetMes(int mes)
         {
@@ -53,8 +74,8 @@ namespace ExecutorOpenDSS.Classes
 
         // get arquivo lista Alimentadores 
         public string GetArqLstAlimentadores()
-        { 
-            return _pathRecursosPerm + _lstAlim; 
+        {
+            return _pathRecursosPerm + _lstAlim;
         }
 
         // Utilizado por feriadosWindow
@@ -113,7 +134,7 @@ namespace ExecutorOpenDSS.Classes
         {
             return _aproximaFluxoMensalPorDU;
         }
-
+        /* // OLD CODE
         // traducao do tipo do dia da combobox para o codigo string necessario
         public void PreencheTipoDia()
         {
@@ -129,6 +150,6 @@ namespace ExecutorOpenDSS.Classes
                     _tipoDia = "SA";
                     break;
             }
-        }
+        }*/
     }
 }

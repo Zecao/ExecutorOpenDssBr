@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using ExecutorOpenDSS.AuxClasses;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ExecutorOpenDSS.Reconfigurador
@@ -6,7 +7,7 @@ namespace ExecutorOpenDSS.Reconfigurador
     class DicNomeBranchs
     {
         private readonly string _Rows = "_Inc_Matrix_Rows.csv";
-        private readonly string _prefix = "alim"; //TODO FIX ME
+        private readonly string _prefix = "alim"; //TODO
 
         // nome Composto (i.e. nome OpenDSS) para Indice 
         public Dictionary<string, string> _mapNomeBranchsXIndice = new Dictionary<string, string>();
@@ -31,7 +32,7 @@ namespace ExecutorOpenDSS.Reconfigurador
             for (int i = 1; i < nomeBranchs.Count(); i++)
             {
                 // OBS: subtraio 1 do indice "i", uma vez que a matriz exportada pelo openDSS, o primeiro branch eh "0" 
-                _mapNomeBranchsXIndice.Add(nomeBranchs[i],      (i - 1).ToString());
+                _mapNomeBranchsXIndice.Add(nomeBranchs[i], (i - 1).ToString());
                 _mapIndiceXNomeBranchs.Add((i - 1).ToString(), nomeBranchs[i]);
             }
         }

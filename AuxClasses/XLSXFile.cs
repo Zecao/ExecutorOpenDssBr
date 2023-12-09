@@ -4,13 +4,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace ExecutorOpenDSS
+namespace ExecutorOpenDSS.AuxClasses
 {
+    /* Author: Daniel Rocha
+    * */
     class XLSXFile
     {
 
         //
-        public static List<string[]>LeCSV(string fileName, char separador=',')
+        public static List<string[]> LeCSV(string fileName, char separador = ',')
         {
             // verifica existencia de arquivo
             if (File.Exists(fileName))
@@ -34,7 +36,7 @@ namespace ExecutorOpenDSS
             if (File.Exists(fileName))
             {
                 var linhas = File.ReadLines(fileName).ToList();
-                
+
                 return linhas;
             }
             else
@@ -64,7 +66,7 @@ namespace ExecutorOpenDSS
                     ExcelWorksheet plan = package.Workbook.Worksheets.First();
                     int ultimaLinha = plan.Dimension.End.Row;
                     int ultimaColuna = plan.Dimension.End.Column;
-                    double[,] resultado = new Double[ultimaLinha,ultimaColuna];
+                    double[,] resultado = new Double[ultimaLinha, ultimaColuna];
                     for (int linha = 1; linha <= ultimaLinha; linha++)
                     {
                         for (int coluna = 1; coluna <= ultimaColuna; coluna++)
@@ -73,14 +75,15 @@ namespace ExecutorOpenDSS
                             {
                                 resultado[linha - 1, coluna - 1] = double.Parse(plan.Cells[linha, coluna].Value.ToString());
                             }
-                            catch {
+                            catch
+                            {
                                 resultado[linha - 1, coluna - 1] = Double.NaN;
                             }
                         }
                     }
                     resultado = EliminaNan(resultado);
                     return resultado;
-                }  
+                }
             }
             else
             {
@@ -156,7 +159,7 @@ namespace ExecutorOpenDSS
                     {
                         try
                         {
-                            resultado[linha - 1] = plan.Cells[linha,1].Value.ToString();
+                            resultado[linha - 1] = plan.Cells[linha, 1].Value.ToString();
                         }
                         catch { }
 
@@ -197,7 +200,7 @@ namespace ExecutorOpenDSS
                     ultimaLinha = ultimaLinha < linhaFinal ? ultimaLinha : linhaFinal;
                     int ultimaColuna = plan.Dimension.End.Column;
                     ultimaColuna = ultimaColuna < colunaFinal ? ultimaColuna : colunaFinal;
-                    string[,] resultado = new String[ultimaLinha-linhaInicial+1, ultimaColuna-colunaInicial+1];
+                    string[,] resultado = new String[ultimaLinha - linhaInicial + 1, ultimaColuna - colunaInicial + 1];
                     for (int linha = linhaInicial; linha <= ultimaLinha; linha++)
                     {
                         for (int coluna = colunaInicial; coluna <= ultimaColuna; coluna++)
@@ -226,7 +229,7 @@ namespace ExecutorOpenDSS
             List<List<double>> aux2 = new List<List<double>>();
             int linhas = entrada.GetLength(0);
             int colunas = entrada.GetLength(1);
-            int cont=0;
+            int cont = 0;
             for (int linha = 0; linha < linhas; linha++)
             {
                 temp = new List<double>();
@@ -268,14 +271,14 @@ namespace ExecutorOpenDSS
             {
                 for (int linha = 0; linha < linhas; linha++)
                 {
-                    saida[linha,coluna] = aux2[coluna][linha];
+                    saida[linha, coluna] = aux2[coluna][linha];
                 }
             }
             return saida;
         }
 
         //
-        public static Dictionary<string, double> XLSX2Dictionary(string nomeArquivoCompleto, int coluna = 2 )
+        public static Dictionary<string, double> XLSX2Dictionary(string nomeArquivoCompleto, int coluna = 2)
         {
             Dictionary<string, double> saida = new Dictionary<string, double>();
 
@@ -283,7 +286,7 @@ namespace ExecutorOpenDSS
             if (File.Exists(nomeArquivoCompleto))
             {
                 var file = new FileInfo(nomeArquivoCompleto);
-                
+
                 // TODO opcao de executar com o arquivo aberto
                 using (var package = new ExcelPackage(file))
                 {
@@ -310,7 +313,7 @@ namespace ExecutorOpenDSS
             }
         }
 
-        
+
         internal static void GravaDictionaryExcel(FileInfo file, Dictionary<string, double> mapAlimLoadMult)
         {
             using (var package = new ExcelPackage(file))

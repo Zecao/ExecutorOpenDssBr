@@ -11,7 +11,7 @@ namespace ExecutorOpenDSS
         {
             //Variável que armazenará a lista com os alimentadores
             List<string> alimentadores = new List<string>();
-            
+
             //Bloco que trata o arquivo, abrindo e fechando-o
             if (File.Exists(arquivo))
             {
@@ -43,7 +43,7 @@ namespace ExecutorOpenDSS
             {
                 throw new FileNotFoundException("Arquivo " + arquivo + " não encontrado.");
             }
-            
+
         }
     }
 }

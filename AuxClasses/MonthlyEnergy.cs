@@ -1,32 +1,45 @@
 ﻿using System.Collections.Generic;
 
-namespace ExecutorOpenDSS.Classes_Auxiliares
+namespace ExecutorOpenDSS.AuxClasses
 {
     class MonthlyEnergy
     {
-        public GeneralParameters _paramGeraisDSS;
+        public readonly GeneralParameters _paramGerais;
 
-        // map (mes,alim) X alim       
+        // map (alim_mes,energia)       
         public Dictionary<string, double> _mapDadosEnergiaMes = new Dictionary<string, double>();
+
+        //booleanas para o controle se arquivo Excel foi carregado       
+        public bool _reqEnergiaMesCarregado = false;
 
         public MonthlyEnergy(GeneralParameters par)
         {
-            _paramGeraisDSS = par;
+            _paramGerais = par;
         }
 
         // Load map from Excel file with month energy measurements 
         public void CarregaMapEnergiaMesAlim()
         {
-            string nomeArqEnergiaCompl = _paramGeraisDSS._parGUI._pathRecursosPerm + _paramGeraisDSS._arqEnergia;
+            _paramGerais._mWindow.ExibeMsgDisplay("Carregando arquivo de requisitos de energia...");
+
+            CarregaMapEnergiaMesAlimPvt();
+
+            _reqEnergiaMesCarregado = true;
+        }
+
+        // Load map from Excel file with month energy measurements 
+        internal void CarregaMapEnergiaMesAlimPvt()
+        {
+            string nomeArqEnergiaCompl = _paramGerais.GetNomeArqEnergia();
 
             string[,] energiaMes = XLSXFile.LeTudo(nomeArqEnergiaCompl);
 
             // para cada alim
             // OBS: nAlim comeca em 1 por causa do cabecalho
-            for (int nAlim = 1; nAlim < energiaMes.GetLength(0); nAlim ++  )
+            for (int nAlim = 1; nAlim < energiaMes.GetLength(0); nAlim++)
             {
                 // alim 
-                string alim = energiaMes[nAlim,0];
+                string alim = energiaMes[nAlim, 0];
 
                 // DEBUG
                 /*
@@ -38,7 +51,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
                 // carrega requisitos para todos os meses
                 for (int mes = 1; mes < 13; mes++)
                 {
-                    double energia = double.Parse(energiaMes[nAlim,mes]);
+                    double energia = double.Parse(energiaMes[nAlim, mes]);
 
                     // chave tmp
                     string chave = mes.ToString() + "_" + alim;
@@ -47,6 +60,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
                     _mapDadosEnergiaMes.Add(chave, energia);
                 }
             }
+
         }
 
         // obtem a referencia de energia para um dado mes

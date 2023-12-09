@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Xml.Linq;
 
-namespace ExecutorOpenDSS.Classes_Auxiliares
+namespace ExecutorOpenDSS.AuxClasses
 {
     public class ExpanderParameters
     {
@@ -10,7 +10,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
         public bool _calcTensaoBarTrafo = false;
         public bool _verifCargaIsolada = false;
         public bool _incluirCapMT = false;
-        public bool _modeloCargaCemig = false;
+        public bool _feederReport = false;
         public bool _verifTapsRTs = false;
         public string _strBatchEdit = ""; //batchEdit opendDss style string
         public bool _allowForms = false;
@@ -23,7 +23,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
             _calcTensaoBarTrafo = jan.calcTensaoBarTrafoCheckBox.IsChecked.Value;
             _verifCargaIsolada = jan.verifCargaIsolada.IsChecked.Value;
             _incluirCapMT = jan.IncluiCapMTCheckBox.IsChecked.Value;
-            _modeloCargaCemig = jan.ModeloCargaCemig.IsChecked.Value;
+            _feederReport = jan.FeederReport.IsChecked.Value;
             _verifTapsRTs = jan.verifTapsRTs.IsChecked.Value;
             _strBatchEdit = jan.TBBatchEdit.Text;
             _allowForms = jan.AllowFormsCheckBox.IsChecked.Value;
@@ -37,7 +37,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
             _calcTensaoBarTrafo = Convert.ToBoolean(raiz.Element("CalcTensaoBarTrafo").Value);
             _verifCargaIsolada = Convert.ToBoolean(raiz.Element("VerifCargaIsolada").Value);
             _incluirCapMT = Convert.ToBoolean(raiz.Element("IncluirCapMT").Value);
-            _modeloCargaCemig = Convert.ToBoolean(raiz.Element("ModeloCargaCemig").Value);
+            _feederReport = Convert.ToBoolean(raiz.Element("FeederReport").Value);
             _verifTapsRTs = Convert.ToBoolean(raiz.Element("RelatorioTapsRTs").Value);
             _strBatchEdit = raiz.Element("StringBatchEdit").Value;
             _allowForms = Convert.ToBoolean(raiz.Element("AllowForms").Value);
@@ -51,10 +51,10 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
             janela.calculaPUOtm.IsChecked = _calcDRPDRC;
             janela.calculaDRPDRCCheckBox.IsChecked = _otimizaPUSaidaSE;
             janela.calcTensaoBarTrafoCheckBox.IsChecked = _calcTensaoBarTrafo;
-            janela.verifCargaIsolada.IsChecked = _verifCargaIsolada; 
+            janela.verifCargaIsolada.IsChecked = _verifCargaIsolada;
             janela.IncluiCapMTCheckBox.IsChecked = _incluirCapMT;
-            janela.ModeloCargaCemig.IsChecked = _modeloCargaCemig;
-            janela.verifTapsRTs.IsChecked = _modeloCargaCemig;
+            janela.FeederReport.IsChecked = _feederReport;
+            janela.verifTapsRTs.IsChecked = _verifTapsRTs;
             janela.TBBatchEdit.Text = _strBatchEdit;
             janela.AllowFormsCheckBox.IsChecked = _allowForms;
         }

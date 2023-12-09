@@ -1,8 +1,9 @@
-﻿using System;
+﻿using ExecutorOpenDSS.AuxClasses;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ExecutorOpenDSS.Classes_Principais
+namespace ExecutorOpenDSS.MainClasses
 {
     class LoopAnalysis
     {
@@ -34,8 +35,11 @@ namespace ExecutorOpenDSS.Classes_Principais
             // Carrega arquivos DSS so MT
             _fluxoSoMT = new DailyFlow(_paramGerais, "DU", true);
 
+            // TODO testar
+            bool ret = _fluxoSoMT.LoadStringListwithDSSCommands();
+
             // SE executou fluxo snap
-            if (_fluxoSoMT.ExecutaFluxoSnap() )
+            if (_fluxoSoMT.ExecutaFluxoSnap())
             {
                 // verifica cancelamento usuario 
                 if (_paramGerais._mWindow._cancelarExecucao)
@@ -45,7 +49,7 @@ namespace ExecutorOpenDSS.Classes_Principais
 
                 //
                 AnaliseLoops2();
-            }            
+            }
 
         }
 

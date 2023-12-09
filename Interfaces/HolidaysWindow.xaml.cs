@@ -1,4 +1,4 @@
-﻿using ExecutorOpenDSS.Classes;
+﻿using ExecutorOpenDSS.MainClasses;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -23,7 +23,7 @@ namespace ExecutorOpenDSS.Interfaces
             _parGUI = parGUI;
 
             // obtem informacoes do arquivo de veriados
-            GetFeriadosArq(_parGUI._ano);
+            GetFeriadosArq();
 
             // 
             this.Title = "Feriados de " + _parGUI._ano;
@@ -31,7 +31,7 @@ namespace ExecutorOpenDSS.Interfaces
 
         private void SalvarButton_Click(object sender, RoutedEventArgs e)
         {
-            SetFeriadosArq(_parGUI._ano);
+            SetFeriadosArq();
             this.Close();
         }
 
@@ -62,7 +62,7 @@ namespace ExecutorOpenDSS.Interfaces
         }
 
         //Pega os feriados do ano
-        public void GetFeriadosArq(string ano)
+        public void GetFeriadosArq()
         {
             //
             string nomeArqFeriados = _parGUI.GetNomeArquivoFeriadosCompleto();
@@ -84,14 +84,13 @@ namespace ExecutorOpenDSS.Interfaces
                     this.novembroTextBox.Text = file.ReadLine();
                     this.dezembroTextBox.Text = file.ReadLine();
                 }
-            }            
+            }
         }
 
         //Grava arquivo com os feriados
-        public void SetFeriadosArq(string ano)
+        public void SetFeriadosArq()
         {
             // nome arquivo feriados
-            //string nomeArqFeriados = pathRecursosPerm + "Feriados" + ano + ".txt";
             string nomeArqFeriados = _parGUI.GetNomeArquivoFeriadosCompleto();
 
             using (StreamWriter file = new StreamWriter(nomeArqFeriados, false))

@@ -1,11 +1,11 @@
-//#define ENGINE
+#define ENGINE
 #if ENGINE
 using OpenDSSengine;
 #else
 using dss_sharp;
 #endif
 
-namespace ExecutorOpenDSS.Classes_Principais
+namespace ExecutorOpenDSS.MainClasses
 {
     class Switch
     {
@@ -98,9 +98,11 @@ namespace ExecutorOpenDSS.Classes_Principais
                 // 
                 dSSCircuit.SetActiveElement(aresta);
 
-                // #if ENGINE
-                //bool ehChave = true;
+#if ENGINE
+                bool ehChave = false; //TODO
+#else
                 bool ehChave = dSSCircuit.Lines.IsSwitch;
+#endif
 
                 return ehChave;
             }
@@ -136,7 +138,7 @@ namespace ExecutorOpenDSS.Classes_Principais
             // fecha objeto
             _estaAberta = false;
         }
-        
+
         // nome composto adicionando prefixo do OpenDSS
         public string GetNomeCompostoChave()
         {

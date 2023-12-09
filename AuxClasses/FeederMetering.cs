@@ -1,16 +1,12 @@
 ﻿using System.Collections.Generic;
 
-namespace ExecutorOpenDSS.Classes_Auxiliares
+namespace ExecutorOpenDSS.AuxClasses
 {
-
     public class FeederMetering
     {
-        public GeneralParameters _paramGerais;
+        public readonly GeneralParameters _paramGerais;
 
         //booleanas para o controle se arquivo Excel foi carregado
-        public bool _reqEnergiaMesCarregado = false;
-
-        //public bool _mapTensaoBarramentoCarregado = false;
         public bool _reqDemandaMaxCarregado = false;
 
         // map demanda max X alim
@@ -37,39 +33,36 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
 
             // Carrega map com os valores dos loadMult por alimentador
             _reqLoadMultMes = new MonthLoadMult(_paramGerais);
-                 
-            // carrega arquivo de requisito uma unica vez
-            if ((_paramGerais._mWindow._parGUI._otmPorEnergia) && (!_reqEnergiaMesCarregado))
-            {
-                _paramGerais._mWindow.ExibeMsgDisplay("Carregando arquivo de requisitos de energia...");
 
+            // carrega arquivo de requisito uma unica vez
+            if ((_paramGerais._parGUI._otmPorEnergia) && (!_reqEnergiaMes._reqEnergiaMesCarregado))
+            {
                 // Carrega map com valores de energia mes do alimentador
                 _reqEnergiaMes.CarregaMapEnergiaMesAlim();
-
-                _reqEnergiaMesCarregado = true;
             }
 
             // carrega maps conforme necessidade
-            if ((_paramGerais._mWindow._parGUI._otmPorDemMax) && (!_reqDemandaMaxCarregado))
+            if ((_paramGerais._parGUI._otmPorDemMax) && (!_reqDemandaMaxCarregado))
             {
-                _paramGerais._mWindow.ExibeMsgDisplay("Carregando arquivo de LoadMults demanda...");
-
-                // Carrega map com valores de demanda maxima do alimentador
-                _paramGerais._medAlim.CarregaMapDemandaMaxAlim();
-
-                _reqDemandaMaxCarregado = true;
+                // Carrega map com valores de Demanda mes do alimentador
+                _paramGerais._medAlim.CarregaMapDemandaEnergiaMesAlim();
             }
         }
 
-        // Load map from Excel file with demand values
-        private void CarregaMapDemandaMaxAlim( )
+        // 
+        internal void CarregaMapDemandaEnergiaMesAlim()
         {
-            // TODO refactory 
-            string nomeArquivoCompleto = _paramGerais._parGUI._pathRecursosPerm + _paramGerais._arqDemandaMaxAlim;
+            _paramGerais._mWindow.ExibeMsgDisplay("Carregando arquivo de LoadMults demanda...");
 
-            _paramGerais._medAlim._mapDadosDemanda = XLSXFile.XLSX2Dictionary(nomeArquivoCompleto);
+            // Carrega map com valores de demanda maxima do alimentador
+            string nomeArquivoCompleto = _paramGerais.GetNomeArqDemandaMaxAlim();
+
+            _mapDadosDemanda = XLSXFile.XLSX2Dictionary(nomeArquivoCompleto);
+
+            _reqDemandaMaxCarregado = true;
         }
 
+        //
         internal void AtualizaMapAlimLoadMult(double loadMult)
         {
             _reqLoadMultMes.AtualizaMapAlimLoadMult(_paramGerais.GetNomeAlimAtual(), loadMult, _paramGerais._parGUI.GetMes());

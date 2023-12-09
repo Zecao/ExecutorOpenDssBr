@@ -1,6 +1,5 @@
-﻿using ExecutorOpenDSS.Classes;
-using ExecutorOpenDSS.Classes_Principais;
-using ExecutorOpenDSS.Interfaces;
+﻿using ExecutorOpenDSS.Interfaces;
+using ExecutorOpenDSS.MainClasses;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -42,20 +41,20 @@ namespace ExecutorOpenDSS
             // tem q ser inicializado antes dos componentes
             InitializeComponent();
 
+            _cancelarExecucao = false;
+
             //Inicializa os valores da interface
-            InicializaValores();
+            ReadXMLConfigurationFile();
 
             // prenche variaveis de classe 
-            _displayDispatcher = display.Dispatcher; //OBS: devi vir antes new GeneralParameters
+            _displayDispatcher = display.Dispatcher;
             _mainWindowDispatcher = this.Dispatcher;
 
-            // copia variaveis MainWindow
-            _parGUI.CopiaVariaveis(this);
+            // OLD CODE
+            // preenche tipoDia de acordo com GUI
+            //_parGUI.PreencheTipoDia();
 
-            //
-            _parGUI.PreencheTipoDia();
-
-            //
+            // preenche 
             _paramGerais = new GeneralParameters(this);
         }
 
@@ -88,7 +87,7 @@ namespace ExecutorOpenDSS
         }
 
         //
-        public string DispPvt(string str, string mensagem)
+        private string DispPvt(string str, string mensagem)
         {
             //Verifica se o display está em branco.
             if (str.Equals(""))
@@ -110,21 +109,18 @@ namespace ExecutorOpenDSS
             //Desabilita a interface
             StatusUI(false);
 
-            //FIX ME 
-            //_indiceArq = 0;
-
             //limpa display
             display.Text = "";
 
             //
-            GravaConfig();
+            Write_XMLConfigurationFile();
 
             // Roda worker_ExecutaFluxo em background
             Task.Run((Action)Worker_ExecutaFluxo);
         }
 
         // Executa Fluxo potencia
-        void Worker_ExecutaFluxo()
+        private void Worker_ExecutaFluxo()
         {
             //
             _inicio = DateTime.Now;
@@ -134,9 +130,6 @@ namespace ExecutorOpenDSS
 
             //Lê os alimentadores e armazena a lista de alimentadores 
             List<string> alimentadores = CemigFeeders.GetTodos(_parGUI.GetArqLstAlimentadores());
-
-            // carrega dados de medicoes
-            _paramGerais._medAlim.CarregaDados();
 
             // instancia classe ExecutaFluxo
             RunPowerFlow executaFluxoObj = new RunPowerFlow(_paramGerais);
@@ -190,7 +183,7 @@ namespace ExecutorOpenDSS
 
         //Reabilita a interface. 
         //Como a interface está em outro processo, é necessário utilizar um Dispatcher
-        private void ReabilitaInterface() 
+        private void ReabilitaInterface()
         {
             SetButtonDelegate setar = new SetButtonDelegate(SetButton);
             _mainWindowDispatcher.BeginInvoke(setar);
@@ -212,7 +205,7 @@ namespace ExecutorOpenDSS
 
                     //1. desabilita a combobox do tipo de dia
                     tipoDiaComboBox.IsEnabled = false;
-                  
+
                     //2. desabilita check-box RELACIONADOS otimiza LoadMult Energia
                     otimizaEnergiaCheckBox.IsEnabled = false;
                     otimizaEnergiaCheckBox.IsChecked = false;
@@ -347,7 +340,7 @@ namespace ExecutorOpenDSS
                     break;
             }
         }
-               
+
         //Verifica se o ano é válido
         private void AnoTB_LostFocus(object sender, RoutedEventArgs e)
         {
@@ -357,7 +350,8 @@ namespace ExecutorOpenDSS
                 int ano = Int32.Parse(anoTextBox.Text);
 
                 //Se o ano for menor ou igual a 0 ou maior que 3000, lança uma exceção de índice fora do intervalo
-                if(ano<=0||ano>3000){
+                if (ano <= 0 || ano > 3000)
+                {
                     throw new IndexOutOfRangeException();
                 }
 
@@ -373,10 +367,10 @@ namespace ExecutorOpenDSS
                 anoTextBox.BorderBrush = Brushes.Red;
 
                 //Exibe uma caixa de mensagem avisando que o ano é inválido
-                MessageBox.Show("Ano inválido","Erro!");
+                MessageBox.Show("Ano inválido", "Erro!");
             }
         }
-              
+
         //Função executada quando a TextBox caminhoDSS perde o foco.
         //Valida o caminho.
         private void CaminhoDSSTB_LostFocus(object sender, RoutedEventArgs e)
@@ -386,7 +380,7 @@ namespace ExecutorOpenDSS
                 //Verifica se o caminhoDSS termina com "\". Caso contrário, acrescenta
                 caminhoDSSTextBox.Text = caminhoDSSTextBox.Text.Last() == '\\' ? caminhoDSSTextBox.Text : caminhoDSSTextBox.Text + '\\';
             }
-            
+
             //Verifica se o caminho existe
             if (Directory.Exists(caminhoDSSTextBox.Text))
             {
@@ -452,9 +446,9 @@ namespace ExecutorOpenDSS
                 MessageBox.Show("Valor inválido inserido", "Erro!");
             }
         }
-        
+
         //Desabilita/habilita a interface
-        public void StatusUI(bool status)
+        private void StatusUI(bool status)
         {
             ExecutaButton.IsEnabled = status;
             anoTextBox.IsEnabled = status;
@@ -463,7 +457,7 @@ namespace ExecutorOpenDSS
             caminhoDSSTextBox.IsEnabled = status;
             caminhoPermTextBox.IsEnabled = status;
             caminhoDSSBrowserButton.IsEnabled = status;
-            otimizaCheckBox.IsEnabled = status;          
+            otimizaCheckBox.IsEnabled = status;
             usarTensoesBarramentoCheckBox.IsEnabled = status;
             tensaoSaidaBarTextBox.IsEnabled = status;
             otimizaEnergiaCheckBox.IsEnabled = status;
@@ -471,17 +465,16 @@ namespace ExecutorOpenDSS
             incrementoAjusteTextBox.IsEnabled = status;
             loadMultAltTextBox.IsEnabled = status;
             horaTextBox.IsEnabled = status;
-            AllowFormsCheckBox.IsEnabled = status;
+            //AllowFormsCheckBox.IsEnabled = status; //TODO
 
-            //
             CancelaButton.IsEnabled = !status;
-        }        
-        
+        }
+
         //Finalização do processo
-        public void FinalizaProcesso(bool cancelamento)
+        private void FinalizaProcesso(bool cancelamento)
         {
             if (cancelamento)
-            {   
+            {
                 ExibeMsgDisplay("Execução abortada.");
             }
             else
@@ -500,18 +493,19 @@ namespace ExecutorOpenDSS
             // Grava Log
             GravaLog();
         }
-        
-        //Inicializa valores da interface
-        private void InicializaValores()
-        {
-            _cancelarExecucao = false;
 
+        //Inicializa valores da interface
+        private void ReadXMLConfigurationFile()
+        {
             string arqConfig = AppDomain.CurrentDomain.BaseDirectory + "Configuracoes.xml";
-            XMLConfigurationFile.GetConfiguracoes(this, arqConfig);           
+            XMLConfigurationFile.GetConfiguracoes(this, arqConfig);
+
+            // copia variaveis MainWindow
+            _parGUI.CopiaVariaveis(this);
         }
-        
+
         //Grava configurações
-        public void GravaConfig()
+        private void Write_XMLConfigurationFile()
         {
             // preenche variaveis da GUI antes da exeucao
             _parGUI.CopiaVariaveis(this);
@@ -527,7 +521,7 @@ namespace ExecutorOpenDSS
             InicializaLog();
 
             GetDisplayDelegate getDisplay = new GetDisplayDelegate(GetDisplay);
-            
+
             // TODO fix me: erro se Log.txt nao existir
             using (StreamWriter file = new StreamWriter(_logName, true))
             {
@@ -535,48 +529,50 @@ namespace ExecutorOpenDSS
                 file.Write(str);
             }
         }
-        
+
         // Inicializa o arquivo de log "apendando" uma linha com um separador, dividindo o log anterior do atual
         private void InicializaLog()
         {
             //Define o nome do arquivo de log
             _logName = AppDomain.CurrentDomain.BaseDirectory + "Log.txt";
-            
+
             //Apaga o arquivo de log existente
-            TxtFile.SafeDelete(_logName);            
-        }     
+            AuxClasses.TxtFile.SafeDelete(_logName);
+        }
 
         //Funções para setar o texto do display
-        public delegate void UpdateDisplayDelegate(string texto);
+        private delegate void UpdateDisplayDelegate(string texto);
 
         //Funções para pegar o texto do display
-        public delegate string GetDisplayDelegate();
-        
+        private delegate string GetDisplayDelegate();
+
         //Funções para habilitar/desabilitar a interface
-        public delegate void SetButtonDelegate();
+        private delegate void SetButtonDelegate();
 
+        //OLD CODE
         //Exibir caixa de mensagem
-        public delegate bool MensagemDelegate(string texto, string titulo = "");
+        //public delegate bool MensagemDelegate(string texto, string titulo = "");
 
-        public void UpdateDisplay(string texto)
+        private void UpdateDisplay(string texto)
         {
             display.Text = texto;
             display.ScrollToEnd();
         }
 
         //
-        public string GetDisplay()
+        private string GetDisplay()
         {
             return display.Text;
         }
 
         //
-        public void SetButton()
+        private void SetButton()
         {
             StatusUI(true);
         }
 
         //
+        /* // TODO DEL
         public bool Mensagem(string texto, string titulo = "Aviso")
         {
             MessageBoxButton botoes = MessageBoxButton.YesNo;
@@ -588,8 +584,9 @@ namespace ExecutorOpenDSS
             else
             {
                 return false;
-            }            
+            }
         }
+        */
 
         //
         private void OtimizaCheckBox_Checked(object sender, RoutedEventArgs e)
@@ -609,7 +606,7 @@ namespace ExecutorOpenDSS
             incrementoAjusteTextBox.IsEnabled = false;
             loadMultAltTextBox.IsEnabled = false;
 
-            otimizaCheckBox.IsChecked = false;         
+            otimizaCheckBox.IsChecked = false;
         }
 
         private void OtimizaEnergiaCheckBox_Checked(object sender, RoutedEventArgs e)
@@ -701,12 +698,12 @@ namespace ExecutorOpenDSS
                 ExibeMsgDisplay("Nova hora definida");
             }
         }
-       
+
         // Atualiza classe com mes escolhido
         private void MesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             _parGUI._mes = mesComboBox.SelectedItem.ToString();
-            _parGUI.SetMes( mesComboBox.SelectedIndex + 1 );
+            _parGUI.SetMes(mesComboBox.SelectedIndex + 1);
             _parGUI._mesAbrv3letras = _parGUI._mes.Substring(0, 3);
         }
 
@@ -723,7 +720,7 @@ namespace ExecutorOpenDSS
             _inicio = DateTime.Now;
 
             // grava configuracoes
-            GravaConfig();
+            Write_XMLConfigurationFile();
 
             // Roda worker_ExecutaFluxo em background
             Task.Run((Action)Worker_NormallyOpenSwitchAnalisys);
@@ -738,40 +735,63 @@ namespace ExecutorOpenDSS
             //Lê os alimentadores e armazena a lista de alimentadores 
             List<string> lstAlimentadores = CemigFeeders.GetTodos(_parGUI.GetArqLstAlimentadores());
 
-            // load xlsx loadmults and xlsx Energy/month
-            _paramGerais._medAlim.CarregaDados();
-
             // instancia classe AnaliseChavesNAs
-            NOSwitchAnalysis analiseChavesNAs = new NOSwitchAnalysis( _paramGerais, lstAlimentadores);
+            NOSwitchAnalysis analiseChavesNAs = new NOSwitchAnalysis(_paramGerais, lstAlimentadores);
 
             // Fim 
             ExibeMsgDisplay("Fim análise chaves NAs");
-
-            // OLD CODE FIX Reabilita interface
-            //ReabilitaInterface();
 
             // Finaliza processo
             FinalizaProcesso(false);
         }
 
+        private void CargaReligadores_Click(object sender, RoutedEventArgs e)
+        {
+            // data final para calculo do tempo de execucao
+            _inicio = DateTime.Now;
+
+            //Mensagem de Início
+            ExibeMsgDisplay("Início criação arquivos .csv das cargas dos religadores...");
+
+            // grava configuracoes
+            Write_XMLConfigurationFile();
+
+            // Roda worker_CargaReligadores em background
+            Task.Run((Action)Worker_CargaReligadores);
+        }
+
+        // Executa Fluxo potencia
+        private void Worker_CargaReligadores()
+        {
+            //Lê os alimentadores e armazena a lista de alimentadores 
+            List<string> alimentadores = CemigFeeders.GetTodos(_parGUI.GetArqLstAlimentadores());
+
+            // instancia classe ExecutaFluxo
+            RunPowerFlow executaFluxoObj = new RunPowerFlow(_paramGerais);
+            executaFluxoObj.GeraCargaReligadores(alimentadores);
+
+            //Finalização do processo
+            FinalizaProcesso(false);
+
+            // Reabilita interface
+            ReabilitaInterface();
+        }
+
+        // TODO 
         private void AnaliseLoops_Click(object sender, RoutedEventArgs e)
         {
             // data final para calculo do tempo de execucao
             _inicio = DateTime.Now;
 
-            // TODO verificar necessidade
-            // carrega dados de medicoes
-            // _medAlim.CarregaDados();
-
             // grava configuracoes
-            GravaConfig();
+            Write_XMLConfigurationFile();
 
             // Roda worker_ExecutaFluxo em background
             Task.Run((Action)Worker_ExecutaAnaliseLoops);
         }
 
         // Executa Analise de Loops
-        void Worker_ExecutaAnaliseLoops()
+        private void Worker_ExecutaAnaliseLoops()
         {
             //Mensagem de Início
             ExibeMsgDisplay("Início Analise Loops");
@@ -785,21 +805,18 @@ namespace ExecutorOpenDSS
             // Fim 
             ExibeMsgDisplay("Fim análise de loops");
 
-            // TODO Reabilita interface
-            //ReabilitaInterface();
-
             // Finaliza processo
             FinalizaProcesso(false);
         }
 
-        //
+        // TODO
         private void ComparaManobras_Click(object sender, RoutedEventArgs e)
         {
             // data final para calculo do tempo de execucao
             _inicio = DateTime.Now;
 
             // grava configuracoes
-            GravaConfig();
+            Write_XMLConfigurationFile();
 
             // Roda worker_ComparaManobras em background
             Task.Run((Action)Worker_ComparaManobras);
@@ -814,10 +831,6 @@ namespace ExecutorOpenDSS
             //Lê os alimentadores e armazena a lista de alimentadores 
             //List<string> alimentadores = CemigFeeders.GetTodos(this._parGUI.GetArqLstAlimentadores());
 
-            // TODO eh necessario?
-            // carrega dados de medicoes
-            //_medAlim.CarregaDados();
-
             // instancia classe
             //ComparacaoManobras compManobras = new ComparacaoManobras(paramGerais, alimentadores );
 
@@ -831,5 +844,31 @@ namespace ExecutorOpenDSS
             FinalizaProcesso(false);
         }
 
+        private void PlaceCapacitors_Click(object sender, RoutedEventArgs e)
+        {
+            // grava configuracoes
+            Write_XMLConfigurationFile();
+
+            // Roda worker_ComparaManobras em background
+            Task.Run((Action)Worker_PlaceCapacitors);
+        }
+
+        void Worker_PlaceCapacitors()
+        {
+            // data final para calculo do tempo de execucao
+            _inicio = DateTime.Now;
+
+            //Mensagem de Início
+            ExibeMsgDisplay("Alocação de Banco de Capacitores");
+
+            //Lê os alimentadores e armazena a lista de alimentadores 
+            List<string> alimentadores = CemigFeeders.GetTodos(_parGUI.GetArqLstAlimentadores());
+
+            // instancia classe AnaliseChavesNAs
+            PlaceCapacitors placeCap = new PlaceCapacitors(_paramGerais, alimentadores);
+
+            // Fim 
+            ExibeMsgDisplay("Fim alocação Banco de Capacitores.");
+        }
     }
 }

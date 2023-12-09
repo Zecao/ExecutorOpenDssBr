@@ -1,14 +1,14 @@
-﻿using ExecutorOpenDSS.Classes;
+﻿using ExecutorOpenDSS.MainClasses;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace ExecutorOpenDSS.Classes_Auxiliares
+namespace ExecutorOpenDSS.AuxClasses
 {
     class TipoDiasMes
     {
         public readonly GUIParameters _parGUI;
-        
+
         // armazena dias de feriados do ano
         public List<List<int>> _listaDiasDeFeriadoAno;
 
@@ -17,8 +17,9 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
         public Dictionary<string, int> _quantidadeTipoDia;
 
         public static string GetMesAbrv(int mes)
-        { 
-            switch (mes) {
+        {
+            switch (mes)
+            {
                 case 1:
                     return "Jan";
                 case 2:
@@ -74,7 +75,7 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
 
         //Pega o número de dias do mês, separado por tipo de dia (Dia útil, sábado e domingo e feriado)
         // utiliza Struct _diasDeFeriado para transformar feriados em sabados ou dias util em domingo 
-        public void CarregaQuantidadeTipoDiasMes(int mes)
+        internal void CarregaQuantidadeTipoDiasMes(int mes)
         {
             //Pega o número de dias do mês
             int numDiasMes = GetNumDiasMes(mes);
@@ -110,7 +111,6 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
                             break;
                     }
                 }
-
             }
 
             // Preenche variável da classe
@@ -168,27 +168,23 @@ namespace ExecutorOpenDSS.Classes_Auxiliares
             }
             else
             {
-                // TODO FIX ME
                 // da erro qnd arquivo de feriado nao existe. 
-                janela.ExibeMsgDisplay("Arquivo " + arquivo + " não encontrado");
+                janela.ExibeMsgDisplay("OBS: Criar arquivo de feriados para o ano " + _parGUI._ano + " em \"Mais Opções...\"");
 
-                MainWindow.MensagemDelegate mensagem = new MainWindow.MensagemDelegate(janela.Mensagem);
-
-                // TODO desabilitei pq a ausencia de feriado nao eh erro grave
-                //janela._cancelarExecucao = true;
-
-                // TODO FIX ME
-                feriados[0].Add(1);
-                feriados[2].Add(1);
-                feriados[3].Add(1);
-                feriados[4].Add(1);
-                feriados[5].Add(1);
-                feriados[6].Add(1);
-                feriados[7].Add(1);
-                feriados[8].Add(1);
-                feriados[9].Add(1);
-                feriados[10].Add(1);
-                feriados[11].Add(1);
+                // default brazilian holidays 
+                feriados[0].Add(25);  // 01/01
+                //feriados[1].Add(0); // fev
+                //feriados[2].Add(0); // mar
+                feriados[3].Add(21);  // 21/04
+                feriados[4].Add(1);   // 01/05
+                //feriados[5].Add(0); // jun
+                //feriados[6].Add(0); // jul
+                //feriados[7].Add(0); // ago
+                feriados[8].Add(7);   // 07/09
+                feriados[9].Add(12);  // 12/10
+                feriados[10].Add(2);  // 02/11
+                feriados[10].Add(15); // 15/11
+                feriados[11].Add(25); // 25/12
             }
             return feriados;
         }

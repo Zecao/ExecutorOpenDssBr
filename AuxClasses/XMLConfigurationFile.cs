@@ -1,36 +1,42 @@
-﻿using ExecutorOpenDSS.Classes_Auxiliares;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
+﻿using ExecutorOpenDSS.AuxClasses;
 using System;
 using System.IO;
 using System.Xml.Linq;
 
 namespace ExecutorOpenDSS
 {
+    /* Author: Daniel Rocha
+    * */
     class XMLConfigurationFile
     {
-        //Lê o arquivo XML com as configurações
+        //Le o arquivo XML com as configuracoes
         public static bool GetConfiguracoes(MainWindow janela, string arquivo)
         {
             //Verifica se o arquivo existe
-            if(File.Exists(arquivo)) 
+            if (File.Exists(arquivo))
             {
                 try
                 {
                     //Lê o XML
                     XDocument xDoc = XDocument.Load(arquivo);
-                    
+
                     //Pega o elemento root
                     XElement raiz = xDoc.Root;
-                   
+
                     //Define o caminho
                     janela.caminhoDSSTextBox.Text = raiz.Element("CaminhoMensais").Value;
 
                     //Define o caminho recursos permanentes
-                    janela.caminhoPermTextBox.Text = raiz.Element("CaminhoRecPerm").Value;                    
-                   
+                    janela.caminhoPermTextBox.Text = raiz.Element("CaminhoRecPerm").Value;
+
                     //Define o tipo de fluxo
                     janela.tipoFluxoComboBox.Text = raiz.Element("TipoFluxo").Value;
-                   
+
+                    if (raiz.Element("TipoFluxo").Value.Equals("Yearly"))
+                    {
+                        janela.mesComboBox.IsEnabled = false;
+                    }
+
                     //Define o tipo de dia
                     janela.tipoDiaComboBox.Text = raiz.Element("TipoDia").Value;
 
@@ -47,11 +53,11 @@ namespace ExecutorOpenDSS
                     janela.simplificaMesComDUCheckBox.IsChecked = Convert.ToBoolean(raiz.Element("SimplificaMesComDUCheckBox").Value);
 
                     //Define checkbox Otimiza Energia 
-                    janela.otimizaCheckBox.IsChecked = Convert.ToBoolean( raiz.Element("OtmChecked").Value );
+                    janela.otimizaCheckBox.IsChecked = Convert.ToBoolean(raiz.Element("OtmChecked").Value);
 
                     //Define o incremento do ajuste
-                    janela.incrementoAjusteTextBox.Text = raiz.Element("IncrementoAjuste").Value;                                   
-                                        
+                    janela.incrementoAjusteTextBox.Text = raiz.Element("IncrementoAjuste").Value;
+
                     //Define o check-box usar tensao barramento
                     janela.usarTensoesBarramentoCheckBox.IsChecked = Convert.ToBoolean(raiz.Element("UsarTensaoBar").Value);
 
@@ -61,14 +67,11 @@ namespace ExecutorOpenDSS
                     //Adiciona o loadMult alternativo
                     janela.loadMultAltTextBox.Text = raiz.Element("loadMultAlternativo").Value;
 
-                    // AllowFormsCheckBox
-                    janela.AllowFormsCheckBox.IsChecked = Convert.ToBoolean(raiz.Element("AllowForms").Value);
-
                     // Hora usuario
                     janela.horaTextBox.Text = raiz.Element("Hora").Value;
 
                     // Populates Expander parameters
-                   janela._parGUI._expanderPar = new ExpanderParameters(raiz,janela);
+                    janela._parGUI._expanderPar = new ExpanderParameters(raiz, janela);
 
                     return true;
                 }
@@ -77,7 +80,7 @@ namespace ExecutorOpenDSS
                     // TODO
                     return false;
                 }
-                
+
             }
             else
             {
@@ -91,10 +94,10 @@ namespace ExecutorOpenDSS
         {
             //Cria um novo arquivo xml
             XDocument xDoc = new XDocument(new XDeclaration("1.0", "utf-8", "true"));
-            
+
             //Cria o elemento root
             XElement raiz = new XElement("Configuracoes");
-            
+
             //Adiciona o caminho
             raiz.Add(new XElement("CaminhoMensais", janela.caminhoDSSTextBox.Text));
 
@@ -106,13 +109,13 @@ namespace ExecutorOpenDSS
 
             //Adiciona o mês
             raiz.Add(new XElement("Ano", janela.anoTextBox.Text));
-            
+
             //Adiciona se deve permitir mensagens de erro do OpenDSS
             raiz.Add(new XElement("AllowForms", janela.AllowFormsCheckBox.IsChecked.Value));
-            
+
             //Adiciona o tipo de fluxo
             raiz.Add(new XElement("TipoFluxo", janela.tipoFluxoComboBox.Text));
-            
+
             //Adiciona o tipo de dia
             raiz.Add(new XElement("TipoDia", janela.tipoDiaComboBox.Text));
 
@@ -139,13 +142,13 @@ namespace ExecutorOpenDSS
 
             // Adiciona Hora usuario
             raiz.Add(new XElement("Hora", janela.horaTextBox.Text));
-                        
+
             //Adiciona calculaDRPDRCCheckBox
             raiz.Add(new XElement("CalculaDRPDRC", janela._parGUI._expanderPar._calcDRPDRC));
-            
+
             //Adiciona _otimizaPUSaidaSE
-            raiz.Add(new XElement("CalculaPUOtm", janela._parGUI._expanderPar._otimizaPUSaidaSE ));
-                        
+            raiz.Add(new XElement("CalculaPUOtm", janela._parGUI._expanderPar._otimizaPUSaidaSE));
+
             //Adiciona _calcTensaoBarTrafo
             raiz.Add(new XElement("CalcTensaoBarTrafo", janela._parGUI._expanderPar._calcTensaoBarTrafo));
 
@@ -155,14 +158,20 @@ namespace ExecutorOpenDSS
             //Adiciona IncluirCapMT
             raiz.Add(new XElement("IncluirCapMT", janela._parGUI._expanderPar._incluirCapMT));
 
-            //Adiciona ModeloCargaCemig
-            raiz.Add(new XElement("ModeloCargaCemig", janela._parGUI._expanderPar._modeloCargaCemig));
+            //Adiciona ModeloCargaCemig //OLD CODE
+            // raiz.Add(new XElement("ModeloCargaCemig", janela._parGUI._expanderPar._modeloCargaCemig));
+
+            //Adiciona _sumarioAlim
+            raiz.Add(new XElement("sumarioAlim", janela._parGUI._expanderPar._feederReport));
 
             //Adiciona RelatorioTapsRTs
             raiz.Add(new XElement("RelatorioTapsRTs", janela._parGUI._expanderPar._verifTapsRTs));
 
             //Adiciona o StringBatchEdit 
             raiz.Add(new XElement("StringBatchEdit", janela._parGUI._expanderPar._strBatchEdit));
+
+            //Adiciona o StringBatchEdit 
+            raiz.Add(new XElement("FeederReport", janela._parGUI._expanderPar._feederReport));
 
             //Adiciona o root ao XML
             xDoc.Add(raiz);

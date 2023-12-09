@@ -1,4 +1,4 @@
-﻿//#define ENGINE
+﻿#define ENGINE
 #if ENGINE
 using OpenDSSengine;
 #else
@@ -7,8 +7,9 @@ using dss_sharp;
 
 using System;
 using System.Collections.Generic;
+using ExecutorOpenDSS.AuxClasses;
 
-namespace ExecutorOpenDSS.Classes_Principais
+namespace ExecutorOpenDSS.MainClasses
 {
     class IsolatedLoads
     {
@@ -23,8 +24,8 @@ namespace ExecutorOpenDSS.Classes_Principais
             _circuit = cir;
             _param = paramGerais;
 
-            string[] _arrayCargasIsoladas = cir.Topology.AllIsolatedLoads; 
-                       
+            string[] _arrayCargasIsoladas = cir.Topology.AllIsolatedLoads;
+
             //
             _lstCargasIsoladas = new List<string>(_arrayCargasIsoladas);
         }
@@ -45,7 +46,7 @@ namespace ExecutorOpenDSS.Classes_Principais
                 foreach (string carga in _lstCargasIsoladas)
                 {
                     // evita plotagem do null em _lstCargasIsoladas
-                    if (carga== null)
+                    if (carga == null)
                         break;
 
                     // TODO tratar retirada \n ultima linha 
