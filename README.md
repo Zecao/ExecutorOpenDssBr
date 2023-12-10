@@ -1,17 +1,17 @@
 # ExecutorOpenDssBr
-This project is a C# [OpenDSS](http://smartgrid.epri.com/SimulationTool.aspx) customization to batch calculate the power flow of brazilian eletricity distribution feeders. The feeders \*.dss files - see [FeederExample](https://github.com/Zecao/ExecutorOpenDssBr/tree/master/FeederExample) directory - are very similar to the ones created by the GeoPerdas.EXE software from the brazilian energy regulatory agency [ANEEL](http://aneel.gov.br/). But in this case, the .dss files were created using the project [ExportadorGeoPerdasDSS](https://github.com/Zecao/ExportadorGeoPerdasDSS), a simple **GeoPerdas** database reader also created by me. 
+This project is a C# [OpenDSS](http://smartgrid.epri.com/SimulationTool.aspx) customization to batch calculate the power flow of Brazilian electricity distribution feeders. The feeders \*.dss files - see [FeederExample](https://github.com/Zecao/ExecutorOpenDssBr/tree/master/FeederExample) directory - are very similar to the ones created by the GeoPerdas.EXE software from the Brazilian energy regulatory agency [ANEEL](http://aneel.gov.br/). But in this case, the .dss files were created using the project [ExportadorGeoPerdasDSS](https://github.com/Zecao/ExportadorGeoPerdasDSS), a simple **GeoPerdas** database reader also created by me. 
 
 Objectives of this project:
 1. Alternative to using the official software of ANEEL, **GeoPerdas.EXE**, with the following benefits:
 - faster execution time compared with **GeoPerdas.EXE**. 
-- easier to detect and correct errors in the .dss files. BTW, I always try to converge 100% of feeders before run the official GeoPerdas.EXE.
+- easier to detect and correct errors in the .dss files. BTW, I always try to converge 100% of feeders before running the official GeoPerdas.EXE.
 
 2. Simulation of parameters and their effects on all feeders. Some examples:
 - inclusion of capacitor banks.
-- modelling of reclosers and fuses (SAIDI, SAIFI calculation).
-- analisys of changing the power factor of loads. For example, simulation with metered power factor.
+- modeling of reclosers and fuses (SAIDI, SAIFI calculation).
+- analysis of changing the power factor of loads. For example, simulation with metered power factor.
 - zero sequence impedances on the lines.
-- analisys of other load models.
+- analysis of other load models.
 
 3. Report generation.
 Currently, the following reports were developed (yet in a crude model, i.e. a .txt file is generated and later treated in a spreadsheet).
@@ -21,7 +21,7 @@ Currently, the following reports were developed (yet in a crude model, i.e. a .t
 - tap of voltage regulator banks.
 
 **Usage**: 
-1. The directory **FeederExample** contains 2 subdirectories: 1. **ABDD201** with a 13.8 kV feeder *.dss files created by the data base exporter [ExportadorGeoPerdasDSS](https://github.com/Zecao/ExportadorGeoPerdasDSS) and; 2. the subdirectory **Recursos** which contains some resources files such as the *linecode* and the *load profiles* files (I've included these files in a separated subdirectory, as they are usually the same for all feeders).
+1. The directory **FeederExample** contains 2 subdirectories: 1. **ABDD201** with a 13.8 kV feeder *.dss files created by the database exporter [ExportadorGeoPerdasDSS](https://github.com/Zecao/ExportadorGeoPerdasDSS) and; 2. the subdirectory **Recursos** which contains some resources files such as the *linecode* and the *load profiles* files (I've included these files in a separated subdirectory, as they are usually the same for all feeders).
 
 2. You must configure the GUI TextBox "*Caminho dos recursos permanentes*" with the "*Recursos*" subdirectory and the GUI TextBox "*Caminho dos arquivos dos alimentadores \*.dss*" with the root subdirectory.
 
@@ -34,6 +34,6 @@ In addition to **OpenDSSengine.dll** the project uses the following dlls from ot
 - Dlls from [QuickGraph 3.6](https://archive.codeplex.com/?p=quickgraph). 
 
 **Language** 
-Most of the code are in portuguese, but I'm making an effort (in every new release) to translate some code to english.
+Most of the code is in Portuguese, but I'm making an effort (in every new release) to translate some code into English.
 
 Ezequiel C. Pereira
