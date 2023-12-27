@@ -6,8 +6,6 @@ using System.Linq;
 
 namespace ExecutorOpenDSS.AuxClasses
 {
-    /* Author: Daniel Rocha
-    * */
     class XLSXFile
     {
 
@@ -314,7 +312,7 @@ namespace ExecutorOpenDSS.AuxClasses
         }
 
 
-        internal static void GravaDictionaryExcel(FileInfo file, Dictionary<string, double> mapAlimLoadMult)
+        public static void GravaDictionaryExcel(FileInfo file, Dictionary<string, double> mapAlimLoadMult)
         {
             using (var package = new ExcelPackage(file))
             {

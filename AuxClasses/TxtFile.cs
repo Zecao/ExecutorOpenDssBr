@@ -4,8 +4,6 @@ using System.IO;
 
 namespace ExecutorOpenDSS.AuxClasses
 {
-    /* Author: Daniel Rocha
-     * */
     class TxtFile
     {
         //Verifica se o arquivo existe antes de deletá-lo

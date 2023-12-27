@@ -10,13 +10,13 @@ namespace ExecutorOpenDSS.AuxClasses
         public bool _reqDemandaMaxCarregado = false;
 
         // map demanda max X alim
-        internal Dictionary<string, double> _mapDadosDemanda;
+        public Dictionary<string, double> _mapDadosDemanda;
 
         // map energia injetada X alim
-        internal MonthlyEnergy _reqEnergiaMes;
+        public MonthlyEnergy _reqEnergiaMes;
 
         // Load MultMes
-        internal MonthLoadMult _reqLoadMultMes;
+        public MonthLoadMult _reqLoadMultMes;
 
         //contrutor
         public FeederMetering(GeneralParameters par)
@@ -50,7 +50,7 @@ namespace ExecutorOpenDSS.AuxClasses
         }
 
         // 
-        internal void CarregaMapDemandaEnergiaMesAlim()
+        private void CarregaMapDemandaEnergiaMesAlim()
         {
             _paramGerais._mWindow.ExibeMsgDisplay("Carregando arquivo de LoadMults demanda...");
 
@@ -63,7 +63,7 @@ namespace ExecutorOpenDSS.AuxClasses
         }
 
         //
-        internal void AtualizaMapAlimLoadMult(double loadMult)
+        public void AtualizaMapAlimLoadMult(double loadMult)
         {
             _reqLoadMultMes.AtualizaMapAlimLoadMult(_paramGerais.GetNomeAlimAtual(), loadMult, _paramGerais._parGUI.GetMes());
         }

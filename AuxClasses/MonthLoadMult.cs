@@ -2,7 +2,7 @@
 
 namespace ExecutorOpenDSS.AuxClasses
 {
-    class MonthLoadMult
+    public class MonthLoadMult
     {
         // map energia injetada X alim
         public Dictionary<int, Dictionary<string, double>> _mapAlimLoadMult = new Dictionary<int, Dictionary<string, double>>();
@@ -37,7 +37,7 @@ namespace ExecutorOpenDSS.AuxClasses
         }
 
         //
-        internal double GetLoadMult()
+        public double GetLoadMult()
         {
             // mes
             int mes = _paramGerais._parGUI.GetMes();

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace ExecutorOpenDSS
 {
-    class CemigFeeders
+    public class CemigFeeders
     {
         //Pega a lista com todos os alimentadores
         public static List<string> GetTodos(string arquivo)
@@ -45,5 +46,31 @@ namespace ExecutorOpenDSS
             }
 
         }
+
+        // funcao de CemigFeeder.cs
+        public static string AddAposAndCommasForSQL(List<string> lst)
+        {
+            string retString;
+
+            // inicializacao 
+            retString = "'";
+
+            // para cada alimentador da lista
+            foreach (string alim in lst)
+            {
+                retString += alim;
+
+                if (string.Equals(alim, lst.Last()))
+                {
+                    retString += "'";
+                }
+                else
+                {
+                    retString += "','";
+                }
+            }
+            return retString;
+        }
+
     }
 }

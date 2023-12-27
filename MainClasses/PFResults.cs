@@ -1,4 +1,4 @@
-﻿#define ENGINE
+﻿//#define ENGINE
 #if ENGINE
 using OpenDSSengine;
 #else
@@ -13,12 +13,12 @@ using System.Linq;
 namespace ExecutorOpenDSS.MainClasses
 {
     // Class Power Flow results
-    class PFResults
+    public class PFResults
     {
         // membros
         public bool _convergiuBool;
         public MyEnergyMeter _energyMeter;
-        private Dictionary<string, double> _lossesMap; // = new Dictionary<string, double>(); 
+        private Dictionary<string, double> _lossesMap; 
 
         //Construtor por copia 
         public PFResults(PFResults rf)
@@ -35,8 +35,7 @@ namespace ExecutorOpenDSS.MainClasses
             _energyMeter.loadMultAlim = loadMult;
         }
 
-
-        // formata resultado do fluco para console
+        // formata resultado do fluxo para console
         public string GetResultadoFluxoToConsole(string nomeAlim, ObjDSS oDSS, string tipoDia = "DU")
         {
             //nivel pu
@@ -163,20 +162,20 @@ namespace ExecutorOpenDSS.MainClasses
             _energyMeter.MaxkWLosses = perdasMax;
         }
 
-        //get Energia
+        //get Energy
         public double GetEnergia()
         {
             return _energyMeter.KWh;
         }
 
-        //get Energia
+        //get Energy
         public string GetActiveAndReactiveEnergy()
         {
             string ret = _energyMeter.KWh.ToString() + "\t" + _energyMeter.kVAr_h.ToString();
             return ret;
         }
 
-        // get Geracao
+        // get Geration
         public double GetMaxKW()
         {
             return _energyMeter.MaxkW;
@@ -438,7 +437,7 @@ namespace ExecutorOpenDSS.MainClasses
         */
 
         // verifica convergencia, de acordo com 3 criterios
-        internal bool VerificaConvergencia()
+        private bool VerificaConvergencia()
         {
             // verifica se excedeu a geracao maxima
             if (ExcedeuGeracaoMaxima() || ExcedeuRequisitoMaximo())
@@ -453,7 +452,7 @@ namespace ExecutorOpenDSS.MainClasses
         }
 
         //calcula resultado ano
-        internal void CalculaResAno(List<PFResults> lstResultadoFluxo, string alim, string arquivo, MainWindow jan)
+        public void CalculaResAno(List<PFResults> lstResultadoFluxo, string alim, string arquivo, MainWindow jan)
         {
             // obtem 1mês
             PFResults res1 = lstResultadoFluxo.First();

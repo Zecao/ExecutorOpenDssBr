@@ -1,4 +1,4 @@
-﻿#define ENGINE
+﻿//#define ENGINE
 #if ENGINE
 #else
 using dss_sharp;
@@ -10,11 +10,12 @@ using System.Collections.Generic;
 
 namespace ExecutorOpenDSS
 {
-    class RunPowerFlow
+    public class RunPowerFlow
     {
         public GeneralParameters _paramGerais;
         public DailyFlow _fluxoDiario;
         public MonthlyPowerFlow _fluxoMensal;
+        private readonly List<string> _lstFeeders;
 
         public RunPowerFlow(GeneralParameters par)
         {
@@ -24,21 +25,21 @@ namespace ExecutorOpenDSS
             // carrega dados de medicoes
             _paramGerais._medAlim.CarregaDados();
 
+            //Lê os alimentadores e armazena a lista de alimentadores 
+            _lstFeeders = CemigFeeders.GetTodos(_paramGerais._parGUI.GetArqLstAlimentadores());
+
             //Executa o Fluxo
             _paramGerais._mWindow.ExibeMsgDisplay("Executando Fluxo...");
         }
 
         // 
-        public void GeraCargaReligadores(List<string> lstAlimentadoresCemig)
+        public void GeraCargaReligadores()
         {
-            //Limpa Arquivos
-            _paramGerais.DeletaArqResultados();
-
             // 
             RecloserTracer recloser = new RecloserTracer(_paramGerais);
 
             //Roda Fluxo para cada alimentador
-            foreach (string nomeAlim in lstAlimentadoresCemig)
+            foreach (string nomeAlim in _lstFeeders)
             {
                 // Verifica se foi solicitado o cancelamento.
                 if (_paramGerais._mWindow._cancelarExecucao)
@@ -53,28 +54,34 @@ namespace ExecutorOpenDSS
 
                 //cria objeto fluxo diario
                 _fluxoDiario = new DailyFlow(_paramGerais, tipoDia);
+                
                 // TODO testar
                 bool ret = _fluxoDiario.LoadStringListwithDSSCommands();
 
-                //solves snap PF first
-                Snap();
-
+                if (ret)
+                {
+                    //solves snap PF first
+                    Snap();
+                }
                 // 
                 ret = recloser.TraceAllReclosers(_fluxoDiario._oDSS);
 
-                recloser.GravaCargaMTBTIP_CSV();
+                if (ret)
+                {
+                    recloser.GravaCargaMTBTIP_CSV();
+                }
             }
 
         }
 
         // executa modo Snap
-        public void ExecutesSnap(List<string> lstAlimentadoresCemig)
+        public void ExecutesSnap()
         {
             //Limpa Arquivos
             _paramGerais.DeletaArqResultados();
 
             //Roda Fluxo para cada alimentador
-            foreach (string nomeAlim in lstAlimentadoresCemig)
+            foreach (string nomeAlim in _lstFeeders)
             {
                 // Verifica se foi solicitado o cancelamento.
                 if (_paramGerais._mWindow._cancelarExecucao)
@@ -89,19 +96,23 @@ namespace ExecutorOpenDSS
 
                 //cria objeto fluxo diario
                 _fluxoDiario = new DailyFlow(_paramGerais, tipoDia);
+
                 // TODO testar
                 bool ret = _fluxoDiario.LoadStringListwithDSSCommands();
 
-                //Execução com otimização demanda energia
-                if (_paramGerais._parGUI._otmPorDemMax)
+                if (ret)
                 {
-                    Otimiza();
-                }
-                //Execução padrão
-                else
-                {
-                    Snap();
-                }
+                    //Execução com otimização demanda energia
+                    if (_paramGerais._parGUI._otmPorDemMax)
+                    {
+                        Otimiza();
+                    }
+                    //Execução padrão
+                    else
+                    {
+                        Snap();
+                    }
+                }  
             }
 
             // TODO testar
@@ -113,19 +124,19 @@ namespace ExecutorOpenDSS
         }
 
         // executes monthly power flow
-        public void ExecutesMonthlyPowerFlow(List<string> lstAlimentadoresCemig)
+        public void ExecutesMonthlyPowerFlow()
         {
             //Limpa Arquivos
             _paramGerais.DeletaArqResultados();
 
             // return condition
-            if (lstAlimentadoresCemig.Count == 0)
+            if (_lstFeeders.Count == 0)
             {
                 _paramGerais._mWindow.ExibeMsgDisplay("Lista de alimentadores vazia!");
             }
 
             //Roda fluxo para cada alimentador
-            foreach (string alim in lstAlimentadoresCemig)
+            foreach (string alim in _lstFeeders)
             {
                 if (_paramGerais._mWindow._cancelarExecucao)
                 {
@@ -172,7 +183,7 @@ namespace ExecutorOpenDSS
         }
 
         // Run snap Power Flow 
-        internal void Snap()
+        private void Snap()
         {
             //Verifica se foi solicitado o cancelamento.
             if (_paramGerais._mWindow._cancelarExecucao) { return; }
@@ -196,7 +207,7 @@ namespace ExecutorOpenDSS
         }
 
         // Optimise OpenDSS loadMult parameter 
-        internal void Otimiza()
+        private void Otimiza()
         {
             // Verifica se foi solicitado o cancelamento.
             if (_paramGerais._mWindow._cancelarExecucao) { return; }
@@ -209,7 +220,7 @@ namespace ExecutorOpenDSS
         }
 
         // Otimiza Pvt
-        internal double OtimizaPvt()
+        private double OtimizaPvt()
         {
             //set Nome Alim atual 
             string alimTmp = _paramGerais.GetNomeAlimAtual();
@@ -259,7 +270,7 @@ namespace ExecutorOpenDSS
         }
 
         // Run daily Power Flow
-        public void ExecutesDailyPowerFlow(List<string> lstAlimentadoresCemig)
+        public void ExecutesDailyPowerFlow()
         {
             //Limpa arquivos
             _paramGerais.DeletaArqResultados();
@@ -272,7 +283,7 @@ namespace ExecutorOpenDSS
             }
 
             //Roda o fluxo para cada alimentador
-            foreach (string nomeAlim in lstAlimentadoresCemig)
+            foreach (string nomeAlim in _lstFeeders)
             {
                 //Verifica se foi solicitado o cancelamento.
                 if (_paramGerais._mWindow._cancelarExecucao)
@@ -297,26 +308,21 @@ namespace ExecutorOpenDSS
                 }
 
                 // Executa fluxo diário openDSS
-                ret = _fluxoDiario.ExecutaFluxoDiario();
+                _fluxoDiario.ExecutaFluxoDiario();
             }
         }
 
         //Monthly power flow
-        internal void Mensal()
+        private bool Mensal()
         {
             // Executa Fluxo Mensal 
             bool ret = _fluxoMensal.ExecutaFluxoMensal();
 
-            /* // TODO comentado, pois pode ocorrer de nao achar o alimentador
-            // se nao convergiu 
-            if (!ret)
-            {
-                _paramGerais._mWindow.ExibeMsgDisplay(_paramGerais.GetNomeAlimAtual() + " alimentador não convergiu!");
-            }*/
+            return ret;
         }
 
         // Fluxo anual
-        public void ExecutesAnnualPowerFlow(List<string> lstAlimentadoresCemig)
+        public void ExecutesAnnualPowerFlow()
         {
             //Limpa Arquivos
             _paramGerais.DeletaArqResultados();
@@ -325,7 +331,7 @@ namespace ExecutorOpenDSS
             _paramGerais._parGUI._modoAnual = true;
 
             //Roda fluxo para cada alimentador
-            foreach (string alim in lstAlimentadoresCemig)
+            foreach (string alim in _lstFeeders)
             {
                 // atribui alim 
                 _paramGerais.SetNomeAlimAtual(alim);
@@ -383,7 +389,7 @@ namespace ExecutorOpenDSS
         }
 
         //Optimise substation voltage level
-        internal void OtimizaPUSaidaSE()
+        private void OtimizaPUSaidaSE()
         {
             // 
             double puSaidaSE = 0.96;
@@ -408,7 +414,7 @@ namespace ExecutorOpenDSS
         }
 
         // Optimise OpenDSS loadMult parameter 
-        internal double OtimizaLoadMultPvt(double loadMult)
+        private double OtimizaLoadMultPvt(double loadMult)
         {
             // alimTmp
             string alimTmp = _paramGerais.GetNomeAlimAtual();
@@ -477,7 +483,7 @@ namespace ExecutorOpenDSS
         }
 
         // Optimise OpenDSS loadMult parameter accordingly with month energy measurement
-        internal double OtimizaLoadMultEnergiaPvt(string alimentador, double loadMult)
+        private double OtimizaLoadMultEnergiaPvt(string alimentador, double loadMult)
         {
             // obtem referência de EnergiaMes (medição do MECE)
             double refEnergiaMes = _paramGerais._medAlim._reqEnergiaMes.GetRefEnergia(alimentador, _paramGerais._parGUI.GetMes());
@@ -539,7 +545,7 @@ namespace ExecutorOpenDSS
 
         // condicao de saida da funcao
         // energia simulada (energiaMes) esta proxima da energia medida (refEnergiaMes)
-        internal bool VerificaEnergiaSimulada(double refEnergiaMes)
+        private bool VerificaEnergiaSimulada(double refEnergiaMes)
         {
             // se aproximacao de energia estiver dentro do limite de precisao ja calculado, ignora nova otimizacao
             if (GetDiferencaEnergia(refEnergiaMes) < _paramGerais._parGUI.GetPrecisao())
@@ -550,7 +556,7 @@ namespace ExecutorOpenDSS
         }
 
         //obtem diferenca de energia de acordo com o modo
-        internal double GetDiferencaEnergia(double refEnergiaMes)
+        private double GetDiferencaEnergia(double refEnergiaMes)
         {
             double delta;
 
@@ -560,7 +566,7 @@ namespace ExecutorOpenDSS
         }
 
         // ajusta loadMult incrementalmente
-        internal double AjustaLoadMult(double refEnergiaMes, double loadMult, int sentidoBusca = 1)
+        private double AjustaLoadMult(double refEnergiaMes, double loadMult, int sentidoBusca = 1)
         {
             // contador fluxo de potência
             // OBS: considera a execução acima
@@ -644,7 +650,7 @@ namespace ExecutorOpenDSS
         }
 
         // ExecutaFluxoMensalOtm
-        internal bool ExecutaFluxoMensalOtm(double loadMult, bool recarga = true)
+        private bool ExecutaFluxoMensalOtm(double loadMult, bool recarga = true)
         {
             /* // OLD CODE 17/05/2023 test
             // adiciona loadMult ao paramento gerais           
@@ -666,7 +672,7 @@ namespace ExecutorOpenDSS
         }
 
         // run snap power flow 
-        internal double ExecutaFluxoSnapOtm(double loadMult)
+        private double ExecutaFluxoSnapOtm(double loadMult)
         {
             // altera o loadMult
             _paramGerais._parGUI.loadMultAtual = loadMult;

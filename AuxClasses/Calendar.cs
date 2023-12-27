@@ -5,7 +5,7 @@ using System.IO;
 
 namespace ExecutorOpenDSS.AuxClasses
 {
-    class TipoDiasMes
+    public class TipoDiasMes
     {
         public readonly GUIParameters _parGUI;
 
@@ -75,7 +75,7 @@ namespace ExecutorOpenDSS.AuxClasses
 
         //Pega o número de dias do mês, separado por tipo de dia (Dia útil, sábado e domingo e feriado)
         // utiliza Struct _diasDeFeriado para transformar feriados em sabados ou dias util em domingo 
-        internal void CarregaQuantidadeTipoDiasMes(int mes)
+        private void CarregaQuantidadeTipoDiasMes(int mes)
         {
             //Pega o número de dias do mês
             int numDiasMes = GetNumDiasMes(mes);

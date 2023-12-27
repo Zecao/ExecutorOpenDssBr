@@ -1,4 +1,4 @@
-﻿#define ENGINE
+﻿//#define ENGINE
 #if ENGINE
 using OpenDSSengine;
 #else
@@ -18,44 +18,46 @@ namespace ExecutorOpenDSS.MainClasses
         private DailyFlow _daily;
 
         private List<string> _lst_3PSwichBus;
-        private List<string> _lst_Results;
+        private readonly List<string> _lst_Results; // TODO
 
         // aux lists
-        private List<string> _lstInjEnergy = new List<string>();
+        private readonly List<string> _lstInjEnergy = new List<string>();
         private List<double> _lstReducao = new List<double>();
         private List<string> _lstBus = new List<string>();
 
         // aux 
         private Dictionary<string, string> _dicAlimXBus = new Dictionary<string, string>();
 
-        public PlaceCapacitors(GeneralParameters paramGerais, List<string> alimentadores)
+        public PlaceCapacitors(GeneralParameters paramGerais)
         {
             _paramGerais = paramGerais;
 
             // Obs: necessario
             _paramGerais._medAlim.CarregaDados();
 
+            //Lê os alimentadores e armazena a lista de alimentadores 
+            List<string> alimentadores = CemigFeeders.GetTodos(_paramGerais._parGUI.GetArqLstAlimentadores());
+
             // Limpa Arquivos
             DeletaArqResultados();
 
             //TODO
-            //_lst_Results = new List<string>();
+            _lst_Results = new List<string>();
 
             // analisa cada alimentador
             foreach (string nomeAlim in alimentadores)
             {
-                // TEST plot voltage profile
-                /*
                 // TODO 
-                _lst_Results = new List<string>();
+                //_lst_Results = new List<string>();
 
                 PlaceCapacitorsPvt(nomeAlim);
                 
                 // TODO saves results
                 SavesResults2File();
-                */
 
-                PlotVoltageProfiles(nomeAlim);
+                // TEST plot voltage profile
+                // TODO criar nova funcao
+                //PlotVoltageProfiles(nomeAlim);
             }
             //TODO saves results
             //SavesResults2File();            
@@ -278,7 +280,7 @@ namespace ExecutorOpenDSS.MainClasses
             };
         }
 
-        private void DeletaArqResultados()
+        public void DeletaArqResultados()
         {
             string nomeArq = _paramGerais.GetNomeCompArqCapacitorLossesRed();
 
@@ -381,10 +383,10 @@ namespace ExecutorOpenDSS.MainClasses
                 //disable capacitors
                 _daily._oDSS._DSSObj.Circuits.SetActiveElement(cName);
                 _daily._oDSS._DSSObj.Circuits.ActiveCktElement.Enabled = false;
-#endif
+
                 // capcont
                 capCont++;
-
+#endif
             }
             return true;
         }
@@ -401,12 +403,13 @@ namespace ExecutorOpenDSS.MainClasses
             int iter = dSSCircuit.Lines.First;
             while (iter != 0)
             {
+
 #if ENGINE
-                bool isSwitch = false;
+                //bool isSwitch = false;
                 throw new NotImplementedException();
 #else
                 bool isSwitch = dSSCircuit.Lines.IsSwitch;
-#endif
+
                 int phases = dSSCircuit.Lines.Phases;
                 string bus = dSSCircuit.Lines.Bus1;
 
@@ -424,6 +427,7 @@ namespace ExecutorOpenDSS.MainClasses
 
                 // goes to next line
                 iter = dSSCircuit.Lines.Next;
+#endif
             }
         }
 

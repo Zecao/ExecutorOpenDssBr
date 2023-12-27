@@ -121,6 +121,7 @@
     <Compile Include="AuxClasses\FeederMetering.cs" />
     <Compile Include="AuxClasses\MonthlyEnergy.cs" />
     <Compile Include="AuxClasses\MonthLoadMult.cs" />
+    <Compile Include="MainClasses\FeederCharacteristiscs.cs" />
     <Compile Include="MainClasses\PlaceCapacitores.cs" />
     <Compile Include="MainClasses\RecloserTracer.cs" />
     <Compile Include="MainClasses\MyEnergyMeter.cs" />

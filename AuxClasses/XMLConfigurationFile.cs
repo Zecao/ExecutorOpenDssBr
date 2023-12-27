@@ -5,8 +5,6 @@ using System.Xml.Linq;
 
 namespace ExecutorOpenDSS
 {
-    /* Author: Daniel Rocha
-    * */
     class XMLConfigurationFile
     {
         //Le o arquivo XML com as configuracoes

@@ -1,4 +1,4 @@
-﻿#define ENGINE
+﻿//#define ENGINE
 #if ENGINE
 using OpenDSSengine;
 #else
@@ -7,7 +7,7 @@ using dss_sharp;
 
 namespace ExecutorOpenDSS.MainClasses
 {
-    class ObjDSS
+    public class ObjDSS
     {
         public DSS _DSSObj;
         public Text _DSSText;
@@ -18,19 +18,6 @@ namespace ExecutorOpenDSS.MainClasses
             //
             _paramGerais = par;
 
-            //
-            InicializaServDSS();
-        }
-
-        // retorna o DSSCircuit 
-        public Circuit GetActiveCircuit()
-        {
-            return _DSSObj.ActiveCircuit;
-        }
-
-        // inicializa serv DSS
-        private void InicializaServDSS()
-        {
             //Inicializa o servidor COM
             _DSSObj = new DSS();
 
@@ -44,6 +31,12 @@ namespace ExecutorOpenDSS.MainClasses
 
             // interface texto
             _DSSText = _DSSObj.Text;
+        }
+
+        // retorna o DSSCircuit 
+        public Circuit GetActiveCircuit()
+        {
+            return _DSSObj.ActiveCircuit;
         }
     }
 }

@@ -10,9 +10,12 @@ namespace ExecutorOpenDSS.MainClasses
         private readonly GeneralParameters _paramGerais;
         private DailyFlow _fluxoSoMT;
 
-        public LoopAnalysis(GeneralParameters paramGerais, List<string> alimentadores)
+        public LoopAnalysis(GeneralParameters paramGerais)
         {
             _paramGerais = paramGerais;
+
+            //Lê os alimentadores e armazena a lista de alimentadores 
+            List<string> alimentadores = CemigFeeders.GetTodos(_paramGerais._parGUI.GetArqLstAlimentadores());
 
             //Limpa Arquivos
             _paramGerais.DeletaArqResultados();
@@ -38,8 +41,13 @@ namespace ExecutorOpenDSS.MainClasses
             // TODO testar
             bool ret = _fluxoSoMT.LoadStringListwithDSSCommands();
 
+            if (ret)
+            {
+                ret = _fluxoSoMT.ExecutaFluxoSnap();
+            }
+
             // SE executou fluxo snap
-            if (_fluxoSoMT.ExecutaFluxoSnap())
+            if (ret)
             {
                 // verifica cancelamento usuario 
                 if (_paramGerais._mWindow._cancelarExecucao)

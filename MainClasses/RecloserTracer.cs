@@ -1,4 +1,4 @@
-﻿#define ENGINE
+﻿//#define ENGINE
 #if ENGINE
 using OpenDSSengine;
 #else
@@ -14,7 +14,7 @@ using System.Text;
 
 namespace ExecutorOpenDSS.MainClasses
 {
-    internal class RecloserTracer
+    public class RecloserTracer
     {
         // servidor SGBD
         private readonly string _banco = "GEOPERDAS_2023"; // GEOPERDAS_2022 GEOPERDAS_2021 GEOPERDAS_2020 GEOPERDAS_2019 
@@ -37,7 +37,7 @@ namespace ExecutorOpenDSS.MainClasses
         private string _sqlIP;
         private string _sqlGeradorMT;
         private string _sqlGeradorBT;
-        private GeneralParameters _par;
+        private readonly GeneralParameters _par;
         private List<string> _lstReclosers;
         private StringBuilder _sqlQueries;
 
@@ -451,7 +451,7 @@ namespace ExecutorOpenDSS.MainClasses
             //
             if (_lstSegmentosMT.Count > 0)
             {
-                string segMT = AddAposAndCommasForSQL(_lstSegmentosMT);
+                string segMT = CemigFeeders.AddAposAndCommasForSQL(_lstSegmentosMT);
 
                 _sqlCargaMT = "select '" + recloser + "' as Relig,sum(nUCMT)as'nUCMT',sum(S01_MWh)as'S01_MWh',sum(S02_MWh)as'S02_MWh',sum(S03_MWh)as'S03_MWh'," +
                     "sum(S04_MWh)as'S04_MWh',sum(S05_MWh)as'S05_MWh',sum(S06_MWh)as'S06_MWh',sum(S07_MWh)as'S07_MWh'," +
@@ -493,7 +493,7 @@ namespace ExecutorOpenDSS.MainClasses
             }
             if (_lstRamais.Count > 0)
             {
-                string ramais = AddAposAndCommasForSQL(_lstRamais);
+                string ramais = CemigFeeders.AddAposAndCommasForSQL(_lstRamais);
 
                 //obs: o join tem q ser feito no rbt.CodPonAcopl2 pq os ramais de entrada foram exportados
                 _sqlCargaBT = "Select '" + recloser + "' as Relig,count(CodConsBT) as 'nUCBT',sum(EnerMedid01_MWh)as'S01_MWh',sum(EnerMedid02_MWh)as'S02_MWh'," +
@@ -514,7 +514,7 @@ namespace ExecutorOpenDSS.MainClasses
             }
             if (_lstSegmentosBT.Count > 0)
             {
-                string segmentosBT = AddAposAndCommasForSQL(_lstSegmentosBT);
+                string segmentosBT = CemigFeeders.AddAposAndCommasForSQL(_lstSegmentosBT);
 
                 //obs: o join tem q ser feito no sbt.CodPonAcopl2 pq os cabos de IP foram exportados
                 _sqlIP = "Select '" + recloser + "' as Relig,count(CodConsBT) as 'nIP',sum(EnerMedid01_MWh)as'S01_MWh',sum(EnerMedid02_MWh)as'S02_MWh'," +
@@ -528,6 +528,7 @@ namespace ExecutorOpenDSS.MainClasses
             return true;
         }
 
+        /*
         // TODO funcao de CemigFeeder.cs
         private static string AddAposAndCommasForSQL(List<string> lst)
         {
@@ -551,7 +552,7 @@ namespace ExecutorOpenDSS.MainClasses
                 }
             }
             return retString;
-        }
+        }*/
 
         //
         private bool Get_MVandLVLines_CodIDs(string recloser)

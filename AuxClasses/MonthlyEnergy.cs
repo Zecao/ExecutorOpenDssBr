@@ -2,7 +2,7 @@
 
 namespace ExecutorOpenDSS.AuxClasses
 {
-    class MonthlyEnergy
+    public class MonthlyEnergy
     {
         public readonly GeneralParameters _paramGerais;
 
@@ -28,7 +28,7 @@ namespace ExecutorOpenDSS.AuxClasses
         }
 
         // Load map from Excel file with month energy measurements 
-        internal void CarregaMapEnergiaMesAlimPvt()
+        private void CarregaMapEnergiaMesAlimPvt()
         {
             string nomeArqEnergiaCompl = _paramGerais.GetNomeArqEnergia();
 

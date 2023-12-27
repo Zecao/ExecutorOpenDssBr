@@ -46,7 +46,7 @@ namespace ExecutorOpenDSS.AuxClasses
             Data2GUI(jan);
         }
 
-        internal void Data2GUI(MainWindow janela)
+        private void Data2GUI(MainWindow janela)
         {
             janela.calculaPUOtm.IsChecked = _calcDRPDRC;
             janela.calculaDRPDRCCheckBox.IsChecked = _otimizaPUSaidaSE;

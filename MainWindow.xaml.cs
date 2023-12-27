@@ -128,9 +128,6 @@ namespace ExecutorOpenDSS
             //Mensagem de Início
             ExibeMsgDisplay("Início");
 
-            //Lê os alimentadores e armazena a lista de alimentadores 
-            List<string> alimentadores = CemigFeeders.GetTodos(_parGUI.GetArqLstAlimentadores());
-
             // instancia classe ExecutaFluxo
             RunPowerFlow executaFluxoObj = new RunPowerFlow(_paramGerais);
 
@@ -139,34 +136,34 @@ namespace ExecutorOpenDSS
                 //Executa o Fluxo Snap
                 case "Snap":
 
-                    executaFluxoObj.ExecutesSnap(alimentadores);
+                    executaFluxoObj.ExecutesSnap();
 
                     break;
 
                 //Executa o fluxo diário
                 case "Daily":
 
-                    executaFluxoObj.ExecutesDailyPowerFlow(alimentadores);
+                    executaFluxoObj.ExecutesDailyPowerFlow();
 
                     break;
 
                 //Executa o fluxo diário
                 case "Hourly":
 
-                    executaFluxoObj.ExecutesDailyPowerFlow(alimentadores);
+                    executaFluxoObj.ExecutesDailyPowerFlow();
                     break;
 
                 //Executa o fluxo mensal
                 case "Monthly":
 
-                    executaFluxoObj.ExecutesMonthlyPowerFlow(alimentadores);
+                    executaFluxoObj.ExecutesMonthlyPowerFlow();
 
                     break;
 
                 //Executa o fluxo mensal
                 case "Yearly":
 
-                    executaFluxoObj.ExecutesAnnualPowerFlow(alimentadores);
+                    executaFluxoObj.ExecutesAnnualPowerFlow();
 
                     break;
 
@@ -549,10 +546,6 @@ namespace ExecutorOpenDSS
         //Funções para habilitar/desabilitar a interface
         private delegate void SetButtonDelegate();
 
-        //OLD CODE
-        //Exibir caixa de mensagem
-        //public delegate bool MensagemDelegate(string texto, string titulo = "");
-
         private void UpdateDisplay(string texto)
         {
             display.Text = texto;
@@ -570,23 +563,6 @@ namespace ExecutorOpenDSS
         {
             StatusUI(true);
         }
-
-        //
-        /* // TODO DEL
-        public bool Mensagem(string texto, string titulo = "Aviso")
-        {
-            MessageBoxButton botoes = MessageBoxButton.YesNo;
-            MessageBoxResult resultado = MessageBox.Show(texto, titulo, botoes);
-            if (resultado == MessageBoxResult.Yes)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        */
 
         //
         private void OtimizaCheckBox_Checked(object sender, RoutedEventArgs e)
@@ -732,11 +708,8 @@ namespace ExecutorOpenDSS
             //Mensagem de Início
             ExibeMsgDisplay("Início análise chaves NAs");
 
-            //Lê os alimentadores e armazena a lista de alimentadores 
-            List<string> lstAlimentadores = CemigFeeders.GetTodos(_parGUI.GetArqLstAlimentadores());
-
             // instancia classe AnaliseChavesNAs
-            NOSwitchAnalysis analiseChavesNAs = new NOSwitchAnalysis(_paramGerais, lstAlimentadores);
+            new NOSwitchAnalysis(_paramGerais);
 
             // Fim 
             ExibeMsgDisplay("Fim análise chaves NAs");
@@ -750,7 +723,6 @@ namespace ExecutorOpenDSS
             // data final para calculo do tempo de execucao
             _inicio = DateTime.Now;
 
-            //Mensagem de Início
             ExibeMsgDisplay("Início criação arquivos .csv das cargas dos religadores...");
 
             // grava configuracoes
@@ -763,12 +735,11 @@ namespace ExecutorOpenDSS
         // Executa Fluxo potencia
         private void Worker_CargaReligadores()
         {
-            //Lê os alimentadores e armazena a lista de alimentadores 
-            List<string> alimentadores = CemigFeeders.GetTodos(_parGUI.GetArqLstAlimentadores());
-
             // instancia classe ExecutaFluxo
             RunPowerFlow executaFluxoObj = new RunPowerFlow(_paramGerais);
-            executaFluxoObj.GeraCargaReligadores(alimentadores);
+
+            // 
+            executaFluxoObj.GeraCargaReligadores();
 
             //Finalização do processo
             FinalizaProcesso(false);
@@ -796,11 +767,8 @@ namespace ExecutorOpenDSS
             //Mensagem de Início
             ExibeMsgDisplay("Início Analise Loops");
 
-            //Lê os alimentadores e armazena a lista de alimentadores 
-            List<string> alimentadores = CemigFeeders.GetTodos(_parGUI.GetArqLstAlimentadores());
-
             // instancia classe AnaliseChavesNAs
-            LoopAnalysis analiseLoops = new LoopAnalysis(_paramGerais, alimentadores);
+            new LoopAnalysis(_paramGerais);
 
             // Fim 
             ExibeMsgDisplay("Fim análise de loops");
@@ -861,14 +829,35 @@ namespace ExecutorOpenDSS
             //Mensagem de Início
             ExibeMsgDisplay("Alocação de Banco de Capacitores");
 
-            //Lê os alimentadores e armazena a lista de alimentadores 
-            List<string> alimentadores = CemigFeeders.GetTodos(_parGUI.GetArqLstAlimentadores());
-
             // instancia classe AnaliseChavesNAs
-            PlaceCapacitors placeCap = new PlaceCapacitors(_paramGerais, alimentadores);
+            new PlaceCapacitors(_paramGerais);
 
             // Fim 
             ExibeMsgDisplay("Fim alocação Banco de Capacitores.");
+        }
+
+        private void Worker_ResumoAlim()
+        {
+            // data final para calculo do tempo de execucao
+            _inicio = DateTime.Now;
+
+            //Mensagem de Início
+            ExibeMsgDisplay("Início de Resumo de Alimentadores");
+
+            // instancia classe AnaliseChavesNAs
+            new FeederCharacteristiscs(_paramGerais);
+
+            // Fim 
+            ExibeMsgDisplay("Fim Resumo de Alimentadores.");
+        }
+
+        private void ResumoAlim_Click(object sender, RoutedEventArgs e)
+        {
+            // grava configuracoes
+            Write_XMLConfigurationFile();
+
+            // Roda worker_ComparaManobras em background
+            Task.Run((Action)Worker_ResumoAlim);
         }
     }
 }

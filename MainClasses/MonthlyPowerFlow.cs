@@ -1,4 +1,4 @@
-#define ENGINE
+ //#define ENGINE
 #if ENGINE
 #else
 using dss_sharp;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace ExecutorOpenDSS.MainClasses
 {
-    class MonthlyPowerFlow
+    public class MonthlyPowerFlow
     {
         public int _nFP = 0;
         public DailyFlow _fluxoDU;
@@ -92,13 +92,13 @@ namespace ExecutorOpenDSS.MainClasses
         }
 
         // TODO
-        internal List<string> GetBarrasDRPDRC()
+        private List<string> GetBarrasDRPDRC()
         {
             return _fluxoDU.GetBarrasDRPDRC();
         }
 
         // obtem objetoDSS
-        internal ObjDSS GetObjDSS()
+        public ObjDSS GetObjDSS()
         {
             return _fluxoDU._oDSS;
         }
@@ -135,13 +135,15 @@ namespace ExecutorOpenDSS.MainClasses
         }
 
         // Fluxo mensal simplificado (numDiasDoMes X fluxoDiaUtil)
-        internal bool ExecutaFluxoMensalAproximacaoDU(double loadMult = 0, bool recarga = true)
+        public bool ExecutaFluxoMensalAproximacaoDU(double loadMult = 0, bool recarga = true)
         {
             //Executa fluxo diário openDSS
             bool ret = _fluxoDU.ExecutaFluxoDiario(loadMult, recarga);
-            // TODO testar
-            ret = _fluxoDU.LoadStringListwithDSSCommands();
 
+            if (ret)
+            {
+                ret = _fluxoDU.LoadStringListwithDSSCommands();
+            }
             //
             SetEnergiaPerdasFluxoSimples();
 
@@ -149,7 +151,7 @@ namespace ExecutorOpenDSS.MainClasses
         }
 
         // Fluxo mensal simplificado (numDiasDoMes X fluxoDiaUtil)
-        internal bool ExecutaFluxoMensalAproximacaoDU_SemRecarga()
+        public bool ExecutaFluxoMensalAproximacaoDU_SemRecarga()
         {
             //Executa fluxo diário openDSS
             bool ret = _fluxoDU.ExecutaFluxoDiario_SemRecarga(null);
@@ -160,7 +162,7 @@ namespace ExecutorOpenDSS.MainClasses
             return ret;
         }
 
-        internal void SetEnergiaPerdasFluxoSimples()
+        private void SetEnergiaPerdasFluxoSimples()
         {
             // incrementa contador de fluxo
             _nFP++;
@@ -180,7 +182,7 @@ namespace ExecutorOpenDSS.MainClasses
             return _arrayCargasIsoladas.GetLength(0);
         }
 
-        internal bool LoadStringListwithDSSCommands()
+        public bool LoadStringListwithDSSCommands()
         {
             // if the dss files does not exist (for some reason)
             if (!_fluxoDU.LoadStringListwithDSSCommands() || !_fluxoSA.LoadStringListwithDSSCommands() || !_fluxoDO.LoadStringListwithDSSCommands())

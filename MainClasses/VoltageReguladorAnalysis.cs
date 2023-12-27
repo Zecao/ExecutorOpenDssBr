@@ -1,4 +1,4 @@
-﻿#define ENGINE
+﻿//#define ENGINE
 #if ENGINE
 using OpenDSSengine;
 #else
@@ -17,7 +17,7 @@ namespace ExecutorOpenDSS.MainClasses
         private readonly Transformers _trafosDSS;
         private readonly List<string> _tapsRT;
         private readonly GeneralParameters _param;
-        private Dictionary<string, List<int>> _VRB_tapPerhour;
+        private readonly Dictionary<string, List<int>> _VRB_tapPerhour;
         private List<string> _VRBtapCounter;
 
         //constructor 

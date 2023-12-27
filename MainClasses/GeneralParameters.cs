@@ -1,5 +1,6 @@
 ﻿using ExecutorOpenDSS.AuxClasses;
 using ExecutorOpenDSS.MainClasses;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -11,7 +12,7 @@ namespace ExecutorOpenDSS
         private string _nomeAlimAtual;
 
         //
-        internal TipoDiasMes _objTipoDeDiasDoMes;
+        public TipoDiasMes _objTipoDeDiasDoMes;
 
         // txt files for results and reports
         private readonly string _nomeArqCurvasDeCarga = "CurvasDeCarga";
@@ -30,12 +31,13 @@ namespace ExecutorOpenDSS
         private readonly string _arqEnergia = "energiaMesAlim.xlsx";
         private readonly string _arqCargaIsoladas = "CargasIsoladas.txt";
         private readonly string _arqCapLossesRed = "CapacitorLossesReduction.txt";
+        private readonly string _arqResumoAlim = "ResumoAlim.txt";
 
         private readonly string _pathCurvasTxt; //caminhos
         public readonly string _AlgoritmoFluxo = "Normal"; //tipo fluxo Normal
 
         // paramentros da interface GUI
-        internal GUIParameters _parGUI;
+        public GUIParameters _parGUI;
 
         //
         public MainWindow _mWindow;
@@ -62,34 +64,38 @@ namespace ExecutorOpenDSS
         }
 
         // 
-        internal string GetNomeArqEnergia()
+        public string GetNomeArqEnergia()
         {
             return _parGUI._pathRecursosPerm + _arqEnergia;
         }
 
         // 
-        internal string GetNomeArqDemandaMaxAlim()
+        public string GetNomeArqDemandaMaxAlim()
         {
             return _parGUI._pathRecursosPerm + _arqDemandaMaxAlim;
         }
 
-        internal string GetNomeArqBarraTrafoLocal()
+        public string GetNomeArqBarraTrafoLocal()
         {
             return _parGUI._pathRecursosPerm + _arqCargaIsoladas;
         }
 
-        internal string GetNomeCompArqLoops()
+        public string GetNomeCompArqLoops()
         {
             return _parGUI._pathRecursosPerm + _arqLoops;
         }
 
-        internal string GetNomeCompArqCapacitorLossesRed()
+        public string GetNomeCompArqCapacitorLossesRed()
         {
             return _parGUI._pathRecursosPerm + _arqCapLossesRed;
         }
+        public string GetNomeCompArqResumoAlim()
+        {
+            return _parGUI._pathRecursosPerm + _arqResumoAlim;
+        }
 
         // grava _mapAlimLoadMult no arquivo excel
-        internal void GravaMapAlimLoadMultExcel()
+        public void GravaMapAlimLoadMultExcel()
         {
             //Novo arquivo de ajuste
             string arqAjuste = "Ajuste_" + _parGUI._mesAbrv3letras + ".xlsx";
@@ -110,7 +116,7 @@ namespace ExecutorOpenDSS
         }
 
         // obtem o nome do arquivo de perdas
-        internal string GetNomeArquivoPerdas()
+        public string GetNomeArquivoPerdas()
         {
             string tipoFluxo = _parGUI._tipoFluxo;
 
@@ -139,7 +145,7 @@ namespace ExecutorOpenDSS
         }
 
         // Deleta Arquivos Resultados
-        internal void DeletaArqResultados()
+        public void DeletaArqResultados()
         {
             // modo otimiza nao deleta os arquivos de resutlados 
             if (!_parGUI._otmPorEnergia)
@@ -186,84 +192,78 @@ namespace ExecutorOpenDSS
             return _parGUI._pathRecursosPerm + _arquivoResAlimNaoConvergiram;
         }
 
-        internal string GetNomeArqTapsRTs()
+        public string GetNomeArqTapsRTs()
         {
             return _parGUI._pathRecursosPerm + _arqTapsRTs;
         }
 
         // nome arquivo Rmatrix
-        internal string GetArqRmatrix()
+        public string GetArqRmatrix()
         {
             return _parGUI._pathRecursosPerm + "\\Rmatrix.txt";
         }
 
         // nome arquivo Xmatrix
-        internal string GetArqXmatrix()
+        public string GetArqXmatrix()
         {
             return _parGUI._pathRecursosPerm + "\\Xmatrix.txt";
         }
 
         // nome arquivo condutor
-        internal string GetNomeArqCondutor()
+        public string GetNomeArqCondutor()
         {
             return _parGUI._pathRecursosPerm + "Condutores.dss";
         }
 
         //
-        internal string GetNomeCargaBT_mes()
+        public string GetNomeCargaBT_mes()
         {
             return _nomeAlimAtual + "CargaBT_" + _parGUI._mesAbrv3letras + ".dss";
         }
 
-        // 
-        internal string GetNomeCargaBTCemig_mes()
-        {
-            return _nomeAlimAtual + "CargaBT_" + _parGUI._mesAbrv3letras + ".dss";
-        }
-
-        internal string GetNomeCargaMT_mes()
+        public string GetNomeCargaMT_mes()
         {
             return _nomeAlimAtual + "CargaMT_" + _parGUI._mesAbrv3letras + ".dss";
         }
 
         //Seta nome do alim atual
-        internal void SetNomeAlimAtual(string nome)
+        public void SetNomeAlimAtual(string nome)
         {
             _nomeAlimAtual = nome;
         }
 
         //Get _nomeAlimAtual 
-        internal string GetNomeAlimAtual()
+        public string GetNomeAlimAtual()
         {
             return _nomeAlimAtual;
         }
 
         // Seta tensao saidaSE
-        internal void SetTensaoSaidaSE(string nome)
+        public void SetTensaoSaidaSE(string nome)
         {
             _parGUI._tensaoSaidaBarUsuario = nome;
         }
 
         // get nome do arquivo DRPDRC
-        internal string GetNomeComp_arquivoDRPDRC()
+        public string GetNomeComp_arquivoDRPDRC()
         {
             return _parGUI._pathRecursosPerm + _arquivoDRPDRC;
         }
 
         // get nome do arquivo DRPDRC
-        internal string GetNomeComp_arqBarrasDRPDRC()
+        public string GetNomeComp_arqBarrasDRPDRC()
         {
             return _parGUI._pathRecursosPerm + _arqBarrasDRPDRC;
         }
 
         // get nome do arquivo BarraTraf
-        internal string GetNomeArqBarraTrafo()
+        public string GetNomeArqBarraTrafo()
         {
             return _parGUI._pathRecursosPerm + _arqBarraTrafo;
         }
 
         // get dataPath OpenDSS
-        internal string GetDataPathAlimOpenDSS()
+        public string GetDataPathAlimOpenDSS()
         {
             return _parGUI._pathRaizGUI + _nomeAlimAtual;
         }
@@ -281,43 +281,43 @@ namespace ExecutorOpenDSS
         }
 
         // get nome arquivo alimentador DSS 
-        internal string GetNomeArquivoAlimentadorDSS()
+        public string GetNomeArquivoAlimentadorDSS()
         {
             return GetDirAlimentadorDSS(_nomeAlimAtual) + _nomeAlimAtual + ".dss";
         }
 
         // nome arquivo gerador MT
-        internal string GetNomeGeradorMT_mes()
+        public string GetNomeGeradorMT_mes()
         {
             return _nomeAlimAtual + "GeradorMT_" + _parGUI._mesAbrv3letras + ".dss";
         }
 
         // nome arquivo gerador BT
-        internal string GetNomeGeradorBT_mes()
+        public string GetNomeGeradorBT_mes()
         {
             return _nomeAlimAtual + "GeradorBT_" + _parGUI._mesAbrv3letras + ".dss";
         }
 
         // get Nome e Path CurvasTxtCompleto
-        internal string GetNomeEPathCurvasTxtCompleto(string tipoDia)
+        public string GetNomeEPathCurvasTxtCompleto(string tipoDia)
         {
             return _pathCurvasTxt + _nomeArqCurvasDeCarga + tipoDia + ".dss";
         }
 
         // get nome arquivo capacitor
-        internal string GetNomeCapacitorMT()
+        public string GetNomeCapacitorMT()
         {
             return _nomeAlimAtual + "CapacitorMT.dss";
         }
 
         // nome completo arquivo AnualD.dss
-        internal string GetNomeArquivoB()
+        public string GetNomeArquivoB()
         {
             return _nomeAlimAtual + "AnualB.dss";
         }
 
         // diretorio alimenta
-        internal string GetDiretorioAlim()
+        public string GetDiretorioAlim()
         {
             return _parGUI._pathRaizGUI + _nomeAlimAtual + "\\";
         }

@@ -1,17 +1,18 @@
 ﻿using ExecutorOpenDSS.AuxClasses;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using System;
 using System.Globalization;
 
 namespace ExecutorOpenDSS.MainClasses
 {
-    // Classe que armazena parametros (do usuario) de otmizacao do fluxo de potencia e seus resp. metodos. 
+    // Class to store user parameters
     public class GUIParameters
     {
         //variaveis 
         public string _hora;
         public string _ano = "2022";
         public string _mes;
-        public string _tipoDia; // TODO testar
+        public string _tipoDia;
         private int _mesNum;
         public string _tipoFluxo;
         public bool _allowForms;
@@ -20,10 +21,10 @@ namespace ExecutorOpenDSS.MainClasses
         public bool _usarTensoesBarramento;
         public string _tensaoSaidaBarUsuario;
         public bool _otmPorDemMax = false; // 
-        public bool _otmPorEnergia = false; // booleanda que seta o tipo de otimizacao (Potencia ou Energia)
-        private readonly double _precisao = 500; // Precisao % do ajuste
-        private float _incremento = 1.05F; // Passo % do incremento
-        private bool _aproximaFluxoMensalPorDU = false; //booleana que seta decide o tipo de fluxo Mensal
+        public bool _otmPorEnergia = false; // boolean to set the type of optimization (Power or Energy)
+        private readonly double _precisao = 500; // adjustment accuracy %
+        private float _incremento = 1.05F; // increment step %
+        private bool _aproximaFluxoMensalPorDU = false; // booleana to set the type of power flow 
         public bool _modoAnual = false;
         public bool _modoHorario = false;
         public double _loadMultAlternativo; // loadMult alternativo inserido pelo usuário
@@ -59,7 +60,7 @@ namespace ExecutorOpenDSS.MainClasses
         }
 
         // set Mes 
-        internal void SetMes(int mes)
+        public void SetMes(int mes)
         {
             _mesNum = mes;
 
@@ -67,7 +68,7 @@ namespace ExecutorOpenDSS.MainClasses
             _mesAbrv3letras = TipoDiasMes.GetMesAbrv(mes);
         }
 
-        internal int GetMes()
+        public int GetMes()
         {
             return _mesNum;
         }
@@ -125,12 +126,12 @@ namespace ExecutorOpenDSS.MainClasses
             return _incremento;
         }
 
-        internal double GetPrecisao()
+        public double GetPrecisao()
         {
             return _precisao;
         }
 
-        internal bool GetAproximaFluxoMensalPorDU()
+        public bool GetAproximaFluxoMensalPorDU()
         {
             return _aproximaFluxoMensalPorDU;
         }
