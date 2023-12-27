@@ -1,3 +1,1 @@
-This is the output folder for Windows x64 binaries. The libraries and DLLs should appear here after the build process.
-
-Files with the `.lib` extension are MSVC import libraries, while with `.a` extension are GCC import libraries.
+This is the folder for .dll used in this project.
