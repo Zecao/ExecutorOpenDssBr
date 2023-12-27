@@ -28,7 +28,7 @@ Currently, the following reports were developed (yet in a crude model, i.e. a .t
 3. The list of feeders to be executed must be in the file *lstAlimentadores.m*.
 
 **External projects**
-In addition to **OpenDSSengine.dll** the project uses the following dlls from other projects (all of them included):
+In addition to **OpenDSSengine.dll** the project uses the following dlls from other projects (all of them included in the Lib folder):
 - OpenDSS Extensions from Unicamp (dss_capi, dss_sharp, libklusolvex, libwinpthread dlls)
 - **EEPlus.dll**: which allows Excel files to be read in the C#;
 - Dlls from [QuickGraph 3.6](https://archive.codeplex.com/?p=quickgraph). 
