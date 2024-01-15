@@ -74,59 +74,57 @@ namespace ExecutorOpenDSS.MainClasses
             _paramGerais._parGUI._tipoFluxo = "Hourly";
 
             // Carrega arquivos DSS so MT
-            _daily = new DailyFlow(_paramGerais, "DU", true);
+            _daily = new DailyFlow(_paramGerais, true);
 
-            bool ret = _daily.LoadStringListwithDSSCommands();
+            bool ret = _daily.LoadDSSObj();            
 
             if (ret)
             {
-                ret = _daily.LoadDSSObj();
+
+                // Sig.ExecutaFluxoDiario(double loadMult = 0, bool recarga = true, bool plot = true)
+
+                ret = _daily.ExecutaFluxoDiario(1, true, true, "13"); 
             }
 
             if (ret)
             {
-                ret = _daily.ExecutaFluxoDiario_SemRecarga("13", 1);
+                _daily._oDSS._DSSObj.Text.Command = "plot profile phases=all";
             }
 
             if (ret)
             {
-                _daily._oDSS._DSSText.Command = "plot profile phases=all";
+                ret = _daily.ExecutaFluxoDiario(1, false, true, "19");
             }
 
             if (ret)
             {
-                ret = _daily.ExecutaFluxoDiario_SemRecarga("19", 1);
-            }
-
-            if (ret)
-            {
-                _daily._oDSS._DSSText.Command = "plot profile phases=all";
+                _daily._oDSS._DSSObj.Text.Command = "plot profile phases=all";
             }
 
             //
             string bus = _dicAlimXBus[alim];
 
             double basekv = _daily._oDSS._DSSObj.ActiveCircuit.Vsources.BasekV;
-            _daily._oDSS._DSSText.Command = "new capacitor." + "c1" + " bus1=bmt" + bus + ".1.2.3.0,Phases=3,Conn=LN,Kvar=300,Kv=" + basekv;
+            _daily._oDSS._DSSObj.Text.Command = "new capacitor." + "c1" + " bus1=bmt" + bus + ".1.2.3.0,Phases=3,Conn=LN,Kvar=300,Kv=" + basekv;
 
             if (ret)
             {
-                ret = _daily.ExecutaFluxoDiario_SemRecarga("13", 1);
+                ret = _daily.ExecutaFluxoDiario(1, false, true, "13");
             }
 
             if (ret)
             {
-                _daily._oDSS._DSSText.Command = "plot profile phases=all";
+                _daily._oDSS._DSSObj.Text.Command = "plot profile phases=all";
             }
 
             if (ret)
             {
-                ret = _daily.ExecutaFluxoDiario_SemRecarga("19", 1);
+                ret = _daily.ExecutaFluxoDiario(1, false, true, "19");
             }
 
             if (ret)
             {
-                _daily._oDSS._DSSText.Command = "plot profile phases=all";
+                _daily._oDSS._DSSObj.Text.Command = "plot profile phases=all";
             }
         }
 
@@ -293,15 +291,9 @@ namespace ExecutorOpenDSS.MainClasses
             _paramGerais.SetNomeAlimAtual(nomeAlim);
 
             // Carrega arquivos DSS so MT
-            _daily = new DailyFlow(_paramGerais, "DU", true);
+            _daily = new DailyFlow(_paramGerais, true);
 
-
-            bool ret = _daily.LoadStringListwithDSSCommands();
-
-            if (ret)
-            {
-                ret = _daily.ExecutaFluxoDiario();
-            }
+            bool ret = _daily.ExecutaFluxoDiario();            
 
             // Se executou fluxo
             if (ret)
@@ -358,7 +350,7 @@ namespace ExecutorOpenDSS.MainClasses
                 // gets bus for capacitor placemente
                 string capCommand = "new capacitor." + cName + " bus1=" + bus + ",Phases=3,Conn=LN,Kvar=300,Kv=" + basekv;
 
-                _daily._oDSS._DSSText.Command = capCommand;
+                _daily._oDSS._DSSObj.Text.Command = capCommand;
 
                 // run Power Flow
                 ret = _daily.ExecutaFluxoDiario(1, false, false);//loadMUlt,reload

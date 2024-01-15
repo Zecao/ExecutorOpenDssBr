@@ -98,9 +98,14 @@ namespace ExecutorOpenDSS.MainClasses
         }
 
         // obtem objetoDSS
-        public ObjDSS GetObjDSS()
+        public ObjDSS Get_DSSObj()
         {
             return _fluxoDU._oDSS;
+        }
+
+        public Text Get_DSSText()
+        {
+            return _fluxoDU._oDSS._DSSObj.Text;
         }
 
         // Executa fluxo mensal
@@ -140,21 +145,22 @@ namespace ExecutorOpenDSS.MainClasses
             //Executa fluxo diário openDSS
             bool ret = _fluxoDU.ExecutaFluxoDiario(loadMult, recarga);
 
-            if (ret)
-            {
-                ret = _fluxoDU.LoadStringListwithDSSCommands();
-            }
             //
             SetEnergiaPerdasFluxoSimples();
 
             return ret;
         }
 
+        // TODO acho q da p/ simplficar
         // Fluxo mensal simplificado (numDiasDoMes X fluxoDiaUtil)
         public bool ExecutaFluxoMensalAproximacaoDU_SemRecarga()
         {
+
+            bool ret = _fluxoDU.ExecutaFluxoDiario(1, false);
+
+            // OLD CODE
             //Executa fluxo diário openDSS
-            bool ret = _fluxoDU.ExecutaFluxoDiario_SemRecarga(null);
+            //bool ret = _fluxoDU.ExecuteDailyPF_SemRecarga(null);
 
             //
             SetEnergiaPerdasFluxoSimples();
@@ -182,7 +188,8 @@ namespace ExecutorOpenDSS.MainClasses
             return _arrayCargasIsoladas.GetLength(0);
         }
 
-        public bool LoadStringListwithDSSCommands()
+        // TODO
+        public bool CheckIfDSSFilesExist()
         {
             // if the dss files does not exist (for some reason)
             if (!_fluxoDU.LoadStringListwithDSSCommands() || !_fluxoSA.LoadStringListwithDSSCommands() || !_fluxoDO.LoadStringListwithDSSCommands())

@@ -83,7 +83,7 @@ namespace ExecutorOpenDSS.MainClasses
             bool ret = PutEnergyMetersOnReclosers();
 
             // 2. Solves again because new energyMeters
-            _oDSS._DSSText.Command = "Solve";
+            _oDSS._DSSObj.Text.Command = "Solve";
 
             // 3. for each recloser
             foreach (string recloser in _lstReclosers)
@@ -419,13 +419,8 @@ namespace ExecutorOpenDSS.MainClasses
             // Put EnergyMeters
             foreach (string recloser in _lstReclosers)
             {
-                _oDSS._DSSText.Command = "New energymeter." + recloser + " element=Line." + recloser + ",terminal=1";
+                _oDSS._DSSObj.Text.Command = "New energymeter." + recloser + " element=Line." + recloser + ",terminal=1";
 
-                /*
-                meters.Name = recloser.Replace("Line.ctrr", "");
-                meters.MeteredElement = recloser;
-                meters.MeteredTerminal = 1;
-                */
             }
             // DEBUG
             //Meters meters = _oDSS._DSSObj.ActiveCircuit.Meters;

@@ -308,6 +308,7 @@ namespace ExecutorOpenDSS.AuxClasses
             else
             {
                 throw new FileNotFoundException("Arquivo " + nomeArquivoCompleto + " não encontrado.");
+
             }
         }
 

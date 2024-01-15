@@ -1,7 +1,7 @@
-﻿using ExecutorOpenDSS.Interfaces;
+﻿#define no_reconf
+using ExecutorOpenDSS.Interfaces;
 using ExecutorOpenDSS.MainClasses;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -14,7 +14,7 @@ using System.Windows.Media;
 namespace ExecutorOpenDSS
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for MainWindow.xamlNO
     /// </summary>
     ///
 
@@ -49,10 +49,6 @@ namespace ExecutorOpenDSS
             // prenche variaveis de classe 
             _displayDispatcher = display.Dispatcher;
             _mainWindowDispatcher = this.Dispatcher;
-
-            // OLD CODE
-            // preenche tipoDia de acordo com GUI
-            //_parGUI.PreencheTipoDia();
 
             // preenche 
             _paramGerais = new GeneralParameters(this);
@@ -705,15 +701,20 @@ namespace ExecutorOpenDSS
         // Executa NormallyOpenSwitchAnalisys
         void Worker_NormallyOpenSwitchAnalisys()
         {
-            //Mensagem de Início
-            ExibeMsgDisplay("Início análise chaves NAs");
-
-            // instancia classe AnaliseChavesNAs
-            new NOSwitchAnalysis(_paramGerais);
-
             // Fim 
-            ExibeMsgDisplay("Fim análise chaves NAs");
+            ExibeMsgDisplay("Não implementado!");
+            /*
+             *  //Mensagem de Início
+                ExibeMsgDisplay("Início análise chaves NAs");
 
+                // instancia classe AnaliseChavesNAs
+                new NOSwitchAnalysis(_paramGerais);
+
+                // Fim 
+                ExibeMsgDisplay("Fim análise chaves NAs");
+
+
+            */
             // Finaliza processo
             FinalizaProcesso(false);
         }
@@ -845,7 +846,7 @@ namespace ExecutorOpenDSS
             ExibeMsgDisplay("Início de Resumo de Alimentadores");
 
             // instancia classe AnaliseChavesNAs
-            new FeederCharacteristiscs(_paramGerais);
+            new FeederSummary(_paramGerais);
 
             // Fim 
             ExibeMsgDisplay("Fim Resumo de Alimentadores.");

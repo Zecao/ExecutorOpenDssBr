@@ -16,7 +16,6 @@ namespace ExecutorOpenDSS.MainClasses
         private static int _numClientesDRP;
         private static int _numClientesDRC;
         private static int _numClientesOK;
-        //private static int _numBarras; //OLD CODE
         private static int _numClientesTotal;
         private static int _numClientesIP;
         private readonly Circuit _circuit;
@@ -32,7 +31,6 @@ namespace ExecutorOpenDSS.MainClasses
             _loadsDSS = cir.Loads;
             _DSSText = txt;
 
-            //_numBarras = cir.NumBuses; //OLD CODE
             _numClientesTotal = _loadsDSS.Count;
             _numClientesDRP = 0;
             _numClientesDRC = 0;

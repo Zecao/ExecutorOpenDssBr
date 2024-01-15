@@ -7,6 +7,7 @@ using dss_sharp;
 using ExecutorOpenDSS.MainClasses;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace ExecutorOpenDSS
 {
@@ -19,14 +20,21 @@ namespace ExecutorOpenDSS
 
         public RunPowerFlow(GeneralParameters par)
         {
-            // variaveis de classe
             _paramGerais = par;
 
-            // carrega dados de medicoes
+            // load metering files (Excel)
             _paramGerais._medAlim.CarregaDados();
 
-            //Lê os alimentadores e armazena a lista de alimentadores 
-            _lstFeeders = CemigFeeders.GetTodos(_paramGerais._parGUI.GetArqLstAlimentadores());
+            try
+            {
+                //Lê os alimentadores e armazena a lista de alimentadores 
+                _lstFeeders = CemigFeeders.GetTodos(_paramGerais._parGUI.GetArqLstAlimentadores());
+            }
+            catch (FileNotFoundException e)
+            {
+                _paramGerais._mWindow.ExibeMsgDisplay(e.Message);
+                return;
+            }
 
             //Executa o Fluxo
             _paramGerais._mWindow.ExibeMsgDisplay("Executando Fluxo...");
@@ -50,21 +58,19 @@ namespace ExecutorOpenDSS
                 // atribui novo alimentador
                 _paramGerais.SetNomeAlimAtual(nomeAlim);
 
-                string tipoDia = _paramGerais._parGUI.GetCodTipoDia();
-
                 //cria objeto fluxo diario
-                _fluxoDiario = new DailyFlow(_paramGerais, tipoDia);
+                _fluxoDiario = new DailyFlow(_paramGerais);
                 
+                /* OLDCODE12
                 // TODO testar
                 bool ret = _fluxoDiario.LoadStringListwithDSSCommands();
+                */
 
-                if (ret)
-                {
-                    //solves snap PF first
-                    Snap();
-                }
+                //solves snap PF first
+                Snap();
+
                 // 
-                ret = recloser.TraceAllReclosers(_fluxoDiario._oDSS);
+                bool ret = recloser.TraceAllReclosers(_fluxoDiario._oDSS);
 
                 if (ret)
                 {
@@ -92,27 +98,19 @@ namespace ExecutorOpenDSS
                 // atribui novo alimentador
                 _paramGerais.SetNomeAlimAtual(nomeAlim);
 
-                string tipoDia = _paramGerais._parGUI.GetCodTipoDia();
-
                 //cria objeto fluxo diario
-                _fluxoDiario = new DailyFlow(_paramGerais, tipoDia);
+                _fluxoDiario = new DailyFlow(_paramGerais);
 
-                // TODO testar
-                bool ret = _fluxoDiario.LoadStringListwithDSSCommands();
-
-                if (ret)
+                //Execução com otimização demanda energia
+                if (_paramGerais._parGUI._otmPorDemMax)
                 {
-                    //Execução com otimização demanda energia
-                    if (_paramGerais._parGUI._otmPorDemMax)
-                    {
-                        Otimiza();
-                    }
-                    //Execução padrão
-                    else
-                    {
-                        Snap();
-                    }
-                }  
+                    Otimiza();
+                }
+                //Execução padrão
+                else
+                {
+                    Snap();
+                }                
             }
 
             // TODO testar
@@ -150,7 +148,7 @@ namespace ExecutorOpenDSS
                 _fluxoMensal = new MonthlyPowerFlow(_paramGerais);
 
                 // if the dss files does not exist
-                if (!_fluxoMensal.LoadStringListwithDSSCommands())
+                if (!_fluxoMensal.CheckIfDSSFilesExist())
                 {
                     continue;
                 }
@@ -236,14 +234,13 @@ namespace ExecutorOpenDSS
                 return _paramGerais._parGUI._loadMultAlternativo;
             }
 
-            /* // OLD CODE
             // OBS: condicao de retorno: Skipa alimentadores com loadMult igual a zero se loadMult == 0 
             if (loadMultInicial == 0)
             {
                 _paramGerais._mWindow.ExibeMsgDisplay(alimTmp + ": Alimentador não otimizado! LoadMult=0");
 
                 return loadMultInicial;  
-            }*/
+            }
 
             // OBS: condicao de retorno: Skipa alimentadores com loadMult > 10 
             if ((loadMultInicial > 10) || (loadMultInicial < 0.1))
@@ -294,18 +291,8 @@ namespace ExecutorOpenDSS
                 // atribui nomeAlim
                 _paramGerais.SetNomeAlimAtual(nomeAlim);
 
-                string tipoDia = _paramGerais._parGUI.GetCodTipoDia();
-
                 //cria objeto fluxo diario
-                _fluxoDiario = new DailyFlow(_paramGerais, tipoDia);
-
-                // TODO testar
-                bool ret = _fluxoDiario.LoadStringListwithDSSCommands();
-
-                if (!ret)
-                {
-                    continue;
-                }
+                _fluxoDiario = new DailyFlow(_paramGerais);
 
                 // Executa fluxo diário openDSS
                 _fluxoDiario.ExecutaFluxoDiario();
@@ -652,11 +639,6 @@ namespace ExecutorOpenDSS
         // ExecutaFluxoMensalOtm
         private bool ExecutaFluxoMensalOtm(double loadMult, bool recarga = true)
         {
-            /* // OLD CODE 17/05/2023 test
-            // adiciona loadMult ao paramento gerais           
-            _paramGerais._parGUI.loadMultAtual = loadMult;
-            */
-
             // fluxo mensal aproximado
             if (_paramGerais._parGUI.GetAproximaFluxoMensalPorDU())
             {
@@ -674,9 +656,6 @@ namespace ExecutorOpenDSS
         // run snap power flow 
         private double ExecutaFluxoSnapOtm(double loadMult)
         {
-            // altera o loadMult
-            _paramGerais._parGUI.loadMultAtual = loadMult;
-
             // Chama fluxo snap
             Snap();
 

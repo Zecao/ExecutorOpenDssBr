@@ -121,7 +121,7 @@
     <Compile Include="AuxClasses\FeederMetering.cs" />
     <Compile Include="AuxClasses\MonthlyEnergy.cs" />
     <Compile Include="AuxClasses\MonthLoadMult.cs" />
-    <Compile Include="MainClasses\FeederCharacteristiscs.cs" />
+    <Compile Include="MainClasses\FeederSummary.cs" />
     <Compile Include="MainClasses\PlaceCapacitores.cs" />
     <Compile Include="MainClasses\RecloserTracer.cs" />
     <Compile Include="MainClasses\MyEnergyMeter.cs" />
@@ -139,12 +139,8 @@
     <Compile Include="MainClasses\LoopAnalysis.cs" />
     <Compile Include="MainClasses\VoltageReguladorAnalysis.cs" />
     <Compile Include="MainClasses\ObjDSS.cs" />
-    <Compile Include="Reconfiguration\NOSwitchAnalysis.cs" />
-    <Compile Include="Reconfiguration\Switch.cs" />
     <Compile Include="MainClasses\DailyPowerFlow.cs" />
     <Compile Include="MainClasses\MonthlyPowerFlow.cs" />
-    <Compile Include="Reconfiguration\DicNomeBranchs.cs" />
-    <Compile Include="Reconfiguration\FeederGraph.cs" />
     <Compile Include="MainClasses\GUIParameters.cs" />
     <Compile Include="MainClasses\PFResults.cs" />
     <Compile Include="AuxClasses\XMLConfigurationFile.cs" />

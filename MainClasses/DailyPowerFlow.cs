@@ -20,57 +20,52 @@ namespace ExecutorOpenDSS.MainClasses
         private readonly string _nomeAlim;
         private readonly string _tipoDiaCrv;
         private List<string> _lstCommandsDSS;
+        private bool _dssFound;
         public PFResults _resFluxo;
         private readonly List<int> _lstOfIndexModeloDeCarga = new List<int>();
         private readonly Dictionary<string, List<int>> _VRB_tapPerhour = new Dictionary<string, List<int>>();
 
         // constructor without ObjDSS parameter
-        public DailyFlow(GeneralParameters paramGerais, string tipoDia = "DU", bool soMT = false)
+        public DailyFlow(GeneralParameters paramGerais, bool soMT = false)
         {
+            // seta variavel
+            _soMT = soMT;
+
             // variaveis da classe
             _paramGerais = paramGerais;
+
+            // nome alim
+            _nomeAlim = paramGerais.GetNomeAlimAtual();
+
+            // Sets day type (week day, saturday, sunday)
+            _tipoDiaCrv = paramGerais._parGUI.GetCodTipoDia();
 
             //
             _oDSS = new ObjDSS(paramGerais);
 
-            // TODO FIX ME da pau quando executa a segunda vez
-            // OBS: datapath setado por alim
-            string temp = _paramGerais.GetDataPathAlimOpenDSS();
-            _oDSS._DSSObj.DataPath = temp;
+            _dssFound = LoadStringListwithDSSCommands();
+        }
+
+
+        // constructor with ObjDSS parameter (used by monthly PF)
+        public DailyFlow(GeneralParameters paramGerais, ObjDSS oDSS, string tipoDia = "DU", bool soMT = false)
+        {
+            // seta variavel
+            _soMT = soMT;
+
+            // variaveis da classe
+            _paramGerais = paramGerais;
 
             // nome alim
             _nomeAlim = _paramGerais.GetNomeAlimAtual();
 
-            // seta variavel
-            _soMT = soMT;
-
-            // Sets day type (week day, saturday, sunday)
+            // Sets day type (week day, saturday, sunday) 
             _tipoDiaCrv = tipoDia;
-        }
-
-
-        // constructor with ObjDSS parameter
-        public DailyFlow(GeneralParameters paramGerais, ObjDSS oDSS, string tipoDia = "DU", bool soMT = false)
-        {
-            // variaveis da classe
-            _paramGerais = paramGerais;
 
             //
             _oDSS = oDSS;
 
-            // TO DO FIX ME da pau quando executa a segunda vez
-            // OBS: datapath setado por alim
-            string temp = _paramGerais.GetDataPathAlimOpenDSS();
-            _oDSS._DSSObj.DataPath = temp;
-
-            // nome alim
-            _nomeAlim = _paramGerais.GetNomeAlimAtual();
-
-            // seta variavel
-            _soMT = soMT;
-
-            // Sets day type (week day, saturday, sunday) 
-            _tipoDiaCrv = tipoDia;
+            _dssFound = LoadStringListwithDSSCommands();
         }
 
         /*
@@ -92,9 +87,9 @@ namespace ExecutorOpenDSS.MainClasses
         */
         public void RemoveMonophaseLineSegments()
         {
-            _oDSS._DSSText.Command = "Set ReduceOption=Laterals KeepLoad=No";
-            _oDSS._DSSText.Command = "Reduce";
-            _oDSS._DSSText.Command = "BuildY";
+            _oDSS._DSSObj.Text.Command = "Set ReduceOption=Laterals KeepLoad=No";
+            _oDSS._DSSObj.Text.Command = "Reduce";
+            _oDSS._DSSObj.Text.Command = "BuildY";
         }
 
         //
@@ -445,53 +440,11 @@ namespace ExecutorOpenDSS.MainClasses
             return true;
         }
 
-        // Executa fluxo diario OU horario caso seja passado string hora
-        public bool ExecutaFluxoDiario(double loadMult = 0, bool recarga = true, bool plot = true)
-        {
-            //Verifica se foi solicitado o cancelamento.
-            if (_paramGerais._mWindow._cancelarExecucao)
-            {
-                return false;
-            }
-
-            bool ret;
-
-            // modo semrecarga para otimizacao load Mult
-            if (recarga)
-            {
-                // carrega objeto OpenDSS
-                ret = LoadDSSObj();
-
-                if (!ret)
-                {
-                    _paramGerais._mWindow.ExibeMsgDisplay("Erro carregamento alimentador " + _nomeAlim);
-                }
-            }
-
-            if (_paramGerais._parGUI._expanderPar._verifTapsRTs)
-            {
-                ret = ExecutaDaily_PF_hourByhour();
-            }
-            else
-            {
-                // ExecutaFluxoDiario_SemRecarga
-                ret = ExecutaFluxoDiario_SemRecarga(null, loadMult);
-            }
-
-            if (ret && plot)
-            {
-                //Plota perdas na tela
-                _paramGerais._mWindow.ExibeMsgDisplay(_resFluxo.GetResultadoFluxoToConsole(_paramGerais.GetNomeAlimAtual(), _oDSS, _tipoDiaCrv));
-            }
-
-            return ret;
-        }
-
         // Executa fluxo horario caso seja passado string hora
         public bool ExecutaFluxoHorario_SemRecarga(string hora = null)
         {
             // variavel de retorno;
-            bool ret = ExecutaFluxoDiario_SemRecarga(hora);
+            bool ret = ExecuteDailyPF_SemRecarga(hora);
 
             return ret;
         }
@@ -508,13 +461,19 @@ namespace ExecutorOpenDSS.MainClasses
             // carrega objeto OpenDSS
             foreach (string comando in _lstCommandsDSS)
             {
-                _oDSS._DSSText.Command = comando;
+                _oDSS._DSSObj.Text.Command = comando;
             }
             return true;
         }
 
         public bool ExecutaFluxoSnap()
         {
+            //return cond.
+            if (!_dssFound)
+            {
+                return false;
+            }
+
             // carrega alimentador no objDSS
             bool ret = LoadDSSObj();
 
@@ -555,12 +514,6 @@ namespace ExecutorOpenDSS.MainClasses
             // realiza ajuste das cargas 
             double loadMult = _paramGerais.GetLoadMultFromXlsxFile();
 
-            if (loadMult == 0)
-            {
-                _paramGerais._mWindow.ExibeMsgDisplay("LoadMult igual a 0");
-                return false;
-            }
-
             DSSSolution.LoadMult = loadMult;
 
             // usuario escolheu tensao barramento
@@ -574,7 +527,7 @@ namespace ExecutorOpenDSS.MainClasses
             //_oDSS._DSSText.Command = "Set Algorithm = " + _paramGerais._AlgoritmoFluxo;
 
             // seta modo snap.
-            _oDSS._DSSText.Command = "Set mode=snap";
+            _oDSS._DSSObj.Text.Command = "Set mode=snap";
 
 #if ENGINE
             DSSSolution.Solve();
@@ -595,7 +548,7 @@ namespace ExecutorOpenDSS.MainClasses
                 // TODO verificar se precisa do take p/ snsp
                 // OBS: its not necessary to use take in energy meters.                 
                 // Obtem dados para o medidor 
-                _oDSS._DSSText.Command = "energymeter.carga.action=take";
+                _oDSS._DSSObj.Text.Command = "energymeter.carga.action=take";
 
                 // Obtem valores de pot e energia dos medidores 
                 bool ret = GetValoresEnergyMeter(loadMult);
@@ -608,8 +561,58 @@ namespace ExecutorOpenDSS.MainClasses
             return false;
         }
 
-        // Run daily PowerFlow (pvt)
-        public bool ExecutaFluxoDiario_SemRecarga(string hora, double loadMult = 0)
+        // Executa fluxo diario OU horario caso seja passado string hora
+        public bool ExecutaFluxoDiario(double loadMult = 0, bool recarga = true, bool plot = true, string hora=null)
+        {
+            //return cond.
+            if (!_dssFound)
+            {
+                return false;
+            }
+
+            //if user cancel the processing
+            if (_paramGerais._mWindow._cancelarExecucao)
+            {
+                return false;
+            }
+
+            bool ret;
+
+            // the flag recarga controls the reloading of dss txt files to OpenDSS obj. In the loadmult process does not need to reload.
+            if (recarga)
+            {
+                // carrega objeto OpenDSS
+                ret = LoadDSSObj();
+
+                if (!ret)
+                {
+                    _paramGerais._mWindow.ExibeMsgDisplay("Erro carregamento alimentador " + _nomeAlim);
+                }
+            }
+
+            // executes a daily PF hour by hour (to compute taps changes)
+            if (_paramGerais._parGUI._expanderPar._verifTapsRTs)
+            {
+                ret = ExecutaDaily_PF_hourByhour();
+            }
+            else
+            {
+                // ExecutaFluxoDiario_SemRecarga
+                ret = ExecuteDailyPF_SemRecarga(hora, loadMult);
+            }
+
+            if (ret && plot)
+            {
+                //Plota perdas na tela
+                _paramGerais._mWindow.ExibeMsgDisplay(_resFluxo.GetResultadoFluxoToConsole(_paramGerais.GetNomeAlimAtual(), _oDSS, _tipoDiaCrv));
+            }
+
+            return ret;
+        }
+
+        // Run daily PowerFlow
+        // 
+        private bool ExecuteDailyPF_SemRecarga(string hora, double loadMult = 0)
         {
             //% Interfaces
             Circuit DSSCircuit = _oDSS._DSSObj.ActiveCircuit;
@@ -621,14 +624,8 @@ namespace ExecutorOpenDSS.MainClasses
             {
                 loadMult = _paramGerais.GetLoadMultFromXlsxFile();
 
-                if (loadMult == 0)
-                {
-                    _paramGerais._mWindow.ExibeMsgDisplay("LoadMult igual a 0");
-                    return false;
-                }
             }
 
-            // 
             DSSSolution.LoadMult = loadMult;
 
             // usuario escolheu tensao barramento
@@ -641,11 +638,11 @@ namespace ExecutorOpenDSS.MainClasses
             switch (_paramGerais._parGUI._tipoFluxo)
             {
                 case "Hourly":
-                    _oDSS._DSSText.Command = "Set mode=daily,hour=" + hora + ",number=1,stepsize=1h";
+                    _oDSS._DSSObj.Text.Command = "Set mode=daily,hour=" + hora + ",number=1,stepsize=1h";
                     break;
 
                 default: // "daily"
-                    _oDSS._DSSText.Command = "Set mode=daily,hour=0,number=24,stepsize=1h";
+                    _oDSS._DSSObj.Text.Command = "Set mode=daily,hour=0,number=24,stepsize=1h";
                     break;
             }
 
@@ -694,16 +691,10 @@ namespace ExecutorOpenDSS.MainClasses
         }
         
         // Run daily PowerFlow (pvt)
-        public bool ExecutaDaily_PF_hourByhour()
+        private bool ExecutaDaily_PF_hourByhour()
         {
-            //get loadMult da struct paramGerais
+            //get loadMult
             double loadMult = _paramGerais.GetLoadMultFromXlsxFile();
-
-            if (loadMult == 0)
-            {
-                _paramGerais._mWindow.ExibeMsgDisplay("LoadMult igual a 0");
-                return false;
-            }
 
             _oDSS.GetActiveCircuit().Solution.LoadMult = loadMult;
 
@@ -714,13 +705,14 @@ namespace ExecutorOpenDSS.MainClasses
             }
 
             // Begin
-            _oDSS._DSSText.Command = "Set mode=daily,hour=0,number=1,stepsize=1h";
+            _oDSS._DSSObj.Text.Command = "Set mode=daily,hour=0,number=1,stepsize=1h";
+
             bool ret;
 
             for (int i = 0; i < 24; i++)
             {
 #if ENGINE
-
+                _oDSS.GetActiveCircuit().Solution.Solve();
 #else
                 try
                 {
@@ -824,12 +816,12 @@ namespace ExecutorOpenDSS.MainClasses
             if (_paramGerais._parGUI._expanderPar._calcTensaoBarTrafo)
             {
                 // obtem indices de tensao nos trafos
-                TransformerVoltageLevelAnalysis obj2 = new TransformerVoltageLevelAnalysis(_oDSS._DSSText, _oDSS._DSSObj.ActiveCircuit, _paramGerais);
+                TransformerVoltageLevelAnalysis obj2 = new TransformerVoltageLevelAnalysis(_oDSS._DSSObj.Text, _oDSS._DSSObj.ActiveCircuit, _paramGerais);
                 obj2.PlotaNiveisTensaoBarras(_paramGerais._mWindow);
             }
 
             // verifica cargas isoladas
-            if (_paramGerais._parGUI._expanderPar._verifCargaIsolada || _paramGerais._parGUI._expanderPar._feederReport)
+            if (_paramGerais._parGUI._expanderPar._verifCargaIsolada || _paramGerais._parGUI._expanderPar._isolatedLoadsReport)
             {
                 //analise cargas isoladas
                 IsolatedLoads obj = new IsolatedLoads(_oDSS._DSSObj.ActiveCircuit, _paramGerais);
@@ -1014,6 +1006,11 @@ namespace ExecutorOpenDSS.MainClasses
             // preenche saida com as perdas do alimentador e verifica se dados estao corretos (ie. convergencia)
             bool ret = _resFluxo.GetPerdasAlim(_oDSS._DSSObj.ActiveCircuit);
 
+            if (!ret)
+            { 
+                _paramGerais._mWindow.ExibeMsgDisplay(_nomeAlim + " resultados suspeitos EnergyMeter!");
+            }
+
             /* // TODO verificar se precisa desta funcao
             // verifica geracao das usinas (i.e. se estao conectadas)
             VerifGerUsinasGDMT();
@@ -1033,8 +1030,8 @@ namespace ExecutorOpenDSS.MainClasses
                 {
                     string[] nomeGen = _oDSS.GetActiveCircuit().Generators.AllNames;
 
-                    //
-                    string[] genRegisterNames = _oDSS.GetActiveCircuit().Generators.RegisterNames;
+                    // DEBUG
+                    //string[] genRegisterNames = _oDSS.GetActiveCircuit().Generators.RegisterNames;
 
                     // para cada gerador
                     double[] genRegisterValues = _oDSS.GetActiveCircuit().Generators.RegisterValues;

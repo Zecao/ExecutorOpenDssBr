@@ -10,7 +10,7 @@ namespace ExecutorOpenDSS.AuxClasses
         public bool _calcTensaoBarTrafo = false;
         public bool _verifCargaIsolada = false;
         public bool _incluirCapMT = false;
-        public bool _feederReport = false;
+        public bool _isolatedLoadsReport = false;
         public bool _verifTapsRTs = false;
         public string _strBatchEdit = ""; //batchEdit opendDss style string
         public bool _allowForms = false;
@@ -23,7 +23,6 @@ namespace ExecutorOpenDSS.AuxClasses
             _calcTensaoBarTrafo = jan.calcTensaoBarTrafoCheckBox.IsChecked.Value;
             _verifCargaIsolada = jan.verifCargaIsolada.IsChecked.Value;
             _incluirCapMT = jan.IncluiCapMTCheckBox.IsChecked.Value;
-            _feederReport = jan.FeederReport.IsChecked.Value;
             _verifTapsRTs = jan.verifTapsRTs.IsChecked.Value;
             _strBatchEdit = jan.TBBatchEdit.Text;
             _allowForms = jan.AllowFormsCheckBox.IsChecked.Value;
@@ -37,7 +36,6 @@ namespace ExecutorOpenDSS.AuxClasses
             _calcTensaoBarTrafo = Convert.ToBoolean(raiz.Element("CalcTensaoBarTrafo").Value);
             _verifCargaIsolada = Convert.ToBoolean(raiz.Element("VerifCargaIsolada").Value);
             _incluirCapMT = Convert.ToBoolean(raiz.Element("IncluirCapMT").Value);
-            _feederReport = Convert.ToBoolean(raiz.Element("FeederReport").Value);
             _verifTapsRTs = Convert.ToBoolean(raiz.Element("RelatorioTapsRTs").Value);
             _strBatchEdit = raiz.Element("StringBatchEdit").Value;
             _allowForms = Convert.ToBoolean(raiz.Element("AllowForms").Value);
@@ -53,7 +51,6 @@ namespace ExecutorOpenDSS.AuxClasses
             janela.calcTensaoBarTrafoCheckBox.IsChecked = _calcTensaoBarTrafo;
             janela.verifCargaIsolada.IsChecked = _verifCargaIsolada;
             janela.IncluiCapMTCheckBox.IsChecked = _incluirCapMT;
-            janela.FeederReport.IsChecked = _feederReport;
             janela.verifTapsRTs.IsChecked = _verifTapsRTs;
             janela.TBBatchEdit.Text = _strBatchEdit;
             janela.AllowFormsCheckBox.IsChecked = _allowForms;

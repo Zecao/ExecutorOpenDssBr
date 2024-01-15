@@ -28,10 +28,8 @@ namespace ExecutorOpenDSS.MainClasses
         public bool _modoAnual = false;
         public bool _modoHorario = false;
         public double _loadMultAlternativo; // loadMult alternativo inserido pelo usuário
+        public bool _usarLoadMult = true;
 
-        // variaveis temporaria nao presentes na GUI
-        public double loadMultDefault = 1; // LoadMult retornado qnd alim nao eh encontrado no arquivo de ajuste.
-        public double loadMultAtual = 1;
         public string _mesAbrv3letras;
         private readonly string _lstAlim = "lstAlimentadores.m"; // TODO 
 
@@ -135,22 +133,5 @@ namespace ExecutorOpenDSS.MainClasses
         {
             return _aproximaFluxoMensalPorDU;
         }
-        /* // OLD CODE
-        // traducao do tipo do dia da combobox para o codigo string necessario
-        public void PreencheTipoDia()
-        {
-            switch (_tipoDia)
-            {
-                case "Dia útil":
-                    _tipoDia = "DU";
-                    break;
-                case "Domingo":
-                    _tipoDia = "DO";
-                    break;
-                case "Sábado":
-                    _tipoDia = "SA";
-                    break;
-            }
-        }*/
     }
 }

@@ -122,7 +122,7 @@
                 <CheckBox DockPanel.Dock="Top" x:Name="calculaDRPDRCCheckBox" Content="Gerar Relatório Clientes com DRP e DRC" HorizontalAlignment="Left" VerticalAlignment="Top" Height="23" Margin="10,10,0,0"   />
                 <CheckBox DockPanel.Dock="Top" x:Name="calcTensaoBarTrafoCheckBox" Content="Gerar Relatório Tensão Barra Trafos" HorizontalAlignment="Left" VerticalAlignment="Top" Height="23" Margin="10,0,0,0"   />
                 <CheckBox DockPanel.Dock="Top" x:Name="verifCargaIsolada" Content="Gerar Relatório Cargas Isoladas" HorizontalAlignment="Left" VerticalAlignment="Top" Height="23" Margin="10,0,0,0"   />
-                <CheckBox DockPanel.Dock="Top" x:Name="FeederReport" Content="Gerar Relatório Sumário Alimentador" HorizontalAlignment="Left" VerticalAlignment="Top" Height="23" Margin="10,0,0,0"   />
+                <!--CheckBox DockPanel.Dock="Top" x:Name="FeederReport" Content="Gerar Relatório Sumário Alimentador" HorizontalAlignment="Left" VerticalAlignment="Top" Height="23" Margin="10,0,0,0"   /-->
                 <CheckBox DockPanel.Dock="Top" x:Name="verifTapsRTs" Content="Gerar Relatório Comutação Taps RTs" HorizontalAlignment="Left" VerticalAlignment="Top" Height="23" Margin="10,0,0,0"  />
                 <CheckBox DockPanel.Dock="Top" x:Name="calculaPUOtm" Content="Calcular PU saída SE ótimo" HorizontalAlignment="Left" VerticalAlignment="Top" Height="23" Margin="10,0,0,0"   />
                 <CheckBox DockPanel.Dock="Top" x:Name="IncluiCapMTCheckBox" Content="Incluir Capacitores de MT" HorizontalAlignment="Left" VerticalAlignment="Top" Height="23" Margin="10,0,0,0"   />

@@ -36,15 +36,9 @@ namespace ExecutorOpenDSS.MainClasses
             _paramGerais.SetNomeAlimAtual(nomeAlim);
 
             // Carrega arquivos DSS so MT
-            _fluxoSoMT = new DailyFlow(_paramGerais, "DU", true);
+            _fluxoSoMT = new DailyFlow(_paramGerais, true);
 
-            // TODO testar
-            bool ret = _fluxoSoMT.LoadStringListwithDSSCommands();
-
-            if (ret)
-            {
-                ret = _fluxoSoMT.ExecutaFluxoSnap();
-            }
+            bool ret = _fluxoSoMT.ExecutaFluxoSnap();
 
             // SE executou fluxo snap
             if (ret)

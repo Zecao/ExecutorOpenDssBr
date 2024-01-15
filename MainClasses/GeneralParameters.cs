@@ -325,17 +325,14 @@ namespace ExecutorOpenDSS
         // get OpenDSS LoadMult parameter
         public double GetLoadMultFromXlsxFile()
         {
-            // loadMult inicial 
-            double loadMult = _medAlim._reqLoadMultMes.GetLoadMult();
-
-            if (loadMult.Equals(double.NaN))
+            //
+            if (_parGUI._usarLoadMult)
             {
-                _mWindow.ExibeMsgDisplay(GetNomeAlimAtual() + ": Alimentador não encontrado no arquivo de ajuste");
-
-                // retorna loadMult Default
-                return _parGUI.loadMultDefault;
+                // loadMult inicial 
+                return ( _medAlim._reqLoadMultMes.GetLoadMult() );
             }
-            return loadMult;
+
+            return 1.0;
         }
     }
 }

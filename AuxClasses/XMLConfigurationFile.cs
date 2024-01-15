@@ -159,8 +159,8 @@ namespace ExecutorOpenDSS
             //Adiciona ModeloCargaCemig //OLD CODE
             // raiz.Add(new XElement("ModeloCargaCemig", janela._parGUI._expanderPar._modeloCargaCemig));
 
-            //Adiciona _sumarioAlim
-            raiz.Add(new XElement("sumarioAlim", janela._parGUI._expanderPar._feederReport));
+            //Adiciona _sumarioAlim // OLD CODE
+            //raiz.Add(new XElement("sumarioAlim", janela._parGUI._expanderPar._feederReport));
 
             //Adiciona RelatorioTapsRTs
             raiz.Add(new XElement("RelatorioTapsRTs", janela._parGUI._expanderPar._verifTapsRTs));
@@ -168,8 +168,8 @@ namespace ExecutorOpenDSS
             //Adiciona o StringBatchEdit 
             raiz.Add(new XElement("StringBatchEdit", janela._parGUI._expanderPar._strBatchEdit));
 
-            //Adiciona o StringBatchEdit 
-            raiz.Add(new XElement("FeederReport", janela._parGUI._expanderPar._feederReport));
+            //Adiciona o StringBatchEdit // OLD CODE
+            //raiz.Add(new XElement("FeederReport", janela._parGUI._expanderPar._feederReport));
 
             //Adiciona o root ao XML
             xDoc.Add(raiz);
