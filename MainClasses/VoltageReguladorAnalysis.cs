@@ -1,9 +1,8 @@
-﻿//#define ENGINE
-#if ENGINE
+﻿/* #if ENGINE
 using OpenDSSengine;
 #else
 using dss_sharp;
-#endif
+#endif */
 
 using System.Collections.Generic;
 using ExecutorOpenDSS.AuxClasses;
@@ -13,15 +12,15 @@ namespace ExecutorOpenDSS.MainClasses
 {
     class VoltageReguladorAnalysis
     {
-        private readonly Circuit _circuit;
-        private readonly Transformers _trafosDSS;
+        private readonly dynamic _circuit;
+        private readonly dynamic _trafosDSS;
         private readonly List<string> _tapsRT;
         private readonly GeneralParameters _param;
         private readonly Dictionary<string, List<int>> _VRB_tapPerhour;
         private List<string> _VRBtapCounter;
 
         //constructor 
-        public VoltageReguladorAnalysis(Circuit cir, GeneralParameters paramGerais, Dictionary<string, List<int>> VRB_tapPerhour)
+        public VoltageReguladorAnalysis(dynamic cir, GeneralParameters paramGerais, Dictionary<string, List<int>> VRB_tapPerhour)
         {
             _circuit = cir;
             _trafosDSS = cir.Transformers;
@@ -85,6 +84,9 @@ namespace ExecutorOpenDSS.MainClasses
         // calcula tensao barra trafos 
         public void GetTapRTs()
         {
+            // Obs: necessario setar classe ativa 
+            _circuit.SetActiveClass("transformer");
+
             int iTrafo = _trafosDSS.First;
 
             // para cada carga

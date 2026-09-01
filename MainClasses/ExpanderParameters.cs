@@ -46,8 +46,8 @@ namespace ExecutorOpenDSS.AuxClasses
 
         private void Data2GUI(MainWindow janela)
         {
-            janela.calculaPUOtm.IsChecked = _calcDRPDRC;
-            janela.calculaDRPDRCCheckBox.IsChecked = _otimizaPUSaidaSE;
+            janela.calculaPUOtm.IsChecked = _otimizaPUSaidaSE;
+            janela.calculaDRPDRCCheckBox.IsChecked = _calcDRPDRC;            
             janela.calcTensaoBarTrafoCheckBox.IsChecked = _calcTensaoBarTrafo;
             janela.verifCargaIsolada.IsChecked = _verifCargaIsolada;
             janela.IncluiCapMTCheckBox.IsChecked = _incluirCapMT;

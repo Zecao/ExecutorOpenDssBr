@@ -5,7 +5,7 @@ using System.IO;
 
 namespace ExecutorOpenDSS.AuxClasses
 {
-    public class TipoDiasMes
+    public class MyCalendar
     {
         public readonly GUIParameters _parGUI;
 
@@ -49,7 +49,7 @@ namespace ExecutorOpenDSS.AuxClasses
         }
 
         // Construtor
-        public TipoDiasMes(GUIParameters _par, MainWindow jan)
+        public MyCalendar(GUIParameters _par, MainWindow jan)
         {
             _parGUI = _par;
 

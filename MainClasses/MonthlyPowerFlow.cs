@@ -1,10 +1,11 @@
- //#define ENGINE
-#if ENGINE
+/* #if ENGINE
+using OpenDSSengine;
 #else
 using dss_sharp;
-#endif
+#endif*/
 
 using System.Collections.Generic;
+//using Text = dss_sharp.Text;
 
 namespace ExecutorOpenDSS.MainClasses
 {
@@ -103,7 +104,7 @@ namespace ExecutorOpenDSS.MainClasses
             return _fluxoDU._oDSS;
         }
 
-        public Text Get_DSSText()
+        public dynamic Get_DSSText()
         {
             return _fluxoDU._oDSS._DSSObj.Text;
         }
@@ -146,24 +147,10 @@ namespace ExecutorOpenDSS.MainClasses
             bool ret = _fluxoDU.ExecutaFluxoDiario(loadMult, recarga);
 
             //
-            SetEnergiaPerdasFluxoSimples();
-
-            return ret;
-        }
-
-        // TODO acho q da p/ simplficar
-        // Fluxo mensal simplificado (numDiasDoMes X fluxoDiaUtil)
-        public bool ExecutaFluxoMensalAproximacaoDU_SemRecarga()
-        {
-
-            bool ret = _fluxoDU.ExecutaFluxoDiario(1, false);
-
-            // OLD CODE
-            //Executa fluxo diário openDSS
-            //bool ret = _fluxoDU.ExecuteDailyPF_SemRecarga(null);
-
-            //
-            SetEnergiaPerdasFluxoSimples();
+            if (ret)
+            {
+                SetEnergiaPerdasFluxoSimples();
+            }            
 
             return ret;
         }

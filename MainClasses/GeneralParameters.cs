@@ -12,7 +12,7 @@ namespace ExecutorOpenDSS
         private string _nomeAlimAtual;
 
         //
-        public TipoDiasMes _objTipoDeDiasDoMes;
+        public MyCalendar _objTipoDeDiasDoMes;
 
         // txt files for results and reports
         private readonly string _nomeArqCurvasDeCarga = "CurvasDeCarga";
@@ -57,7 +57,7 @@ namespace ExecutorOpenDSS
             _pathCurvasTxt = _parGUI._pathRecursosPerm + "NovasCurvasTxt\\";
 
             // preenche variavel _objTipoDeDiasDoMes
-            _objTipoDeDiasDoMes = new TipoDiasMes(_parGUI, janelaPrincipal);
+            _objTipoDeDiasDoMes = new MyCalendar(_parGUI, janelaPrincipal);
 
             // 
             _medAlim = new FeederMetering(this);
@@ -155,13 +155,11 @@ namespace ExecutorOpenDSS
                 TxtFile.SafeDelete(GetNomeComp_arquivoResPerdasDiario());
                 TxtFile.SafeDelete(GetNomeComp_arquivoResPerdasMensal());
                 TxtFile.SafeDelete(GetNomeComp_arquivoResPerdasAnual());
-
                 TxtFile.SafeDelete(GetNomeComp_arqBarrasDRPDRC());
                 TxtFile.SafeDelete(GetNomeComp_arquivoDRPDRC());
                 TxtFile.SafeDelete(GetNomeArqBarraTrafo());
                 TxtFile.SafeDelete(GetNomeCompArqLoops());
                 TxtFile.SafeDelete(GetNomeArqTapsRTs());
-
                 TxtFile.SafeDelete(GetArqRmatrix());
                 TxtFile.SafeDelete(GetArqXmatrix());
             }
@@ -271,7 +269,7 @@ namespace ExecutorOpenDSS
         // get nome arquivo ajuste de acordo com o mes
         public string GetNomeArqAjuste(int mes)
         {
-            return _parGUI._pathRecursosPerm + "Ajuste_" + TipoDiasMes.GetMesAbrv(mes) + ".xlsx";
+            return _parGUI._pathRecursosPerm + "Ajuste_" + MyCalendar.GetMesAbrv(mes) + ".xlsx";
         }
 
         // Get fedeer *.dss string directory

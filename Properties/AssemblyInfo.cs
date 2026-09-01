@@ -8,9 +8,9 @@ using System.Windows;
 [assembly: AssemblyTitle("ConversorOpenDSS")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("CEMIG")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ConversorOpenDSS")]
-[assembly: AssemblyCopyright("Copyright © CEMIG 2015")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

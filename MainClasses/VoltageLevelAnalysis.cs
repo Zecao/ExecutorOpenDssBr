@@ -1,13 +1,13 @@
-﻿//#define ENGINE
-#if ENGINE
+﻿/* #if ENGINE
 using OpenDSSengine;
 #else
 using dss_sharp;
-#endif
+#endif */
 
 using System;
 using System.Collections.Generic;
 using ExecutorOpenDSS.AuxClasses;
+using ExecutorOpenDSS.Engine;
 
 namespace ExecutorOpenDSS.MainClasses
 {
@@ -18,20 +18,17 @@ namespace ExecutorOpenDSS.MainClasses
         private static int _numClientesOK;
         private static int _numClientesTotal;
         private static int _numClientesIP;
-        private readonly Circuit _circuit;
-        private readonly Loads _loadsDSS;
-        private readonly Text _DSSText;
+        private readonly dynamic _circuit;
+        private readonly dynamic _DSSText;
 
         public static List<string> _lstBarrasDRCeDRP = new List<string>();
 
-        //construtor 
-        public VoltageLevelAnalysis(Circuit cir, Text txt)
+        public VoltageLevelAnalysis(dynamic cir, dynamic txt)
         {
             _circuit = cir;
-            _loadsDSS = cir.Loads;
             _DSSText = txt;
 
-            _numClientesTotal = _loadsDSS.Count;
+            _numClientesTotal = _circuit.Loads.Count;
             _numClientesDRP = 0;
             _numClientesDRC = 0;
             _numClientesIP = 0;
@@ -65,19 +62,13 @@ namespace ExecutorOpenDSS.MainClasses
         // verificaNivelTensaoBarra
         // OBS: necessario receber o kVcarga, uma vez que o kvBase da barra eh alterado com a mudanca nos 
         // taps dos transformadores
-        private void VerificaNivelTensaoBarra(string nomeBarra, double kVcarga)
+        private void VerificaNivelTensaoBarra(string nomeBarra, double kVcarga, int numPhases)
         {
             // seta activebus a barra da carga 
             _circuit.SetActiveBus(nomeBarra);
 
-            /*// DEBUG
-            if (nomeBarra.Equals("r1200553.1.2.0"))
-            {
-                int debug=0;
-            }*/
-
             // obtem a barra, apos ativada
-            Bus barraDSS = _circuit.ActiveBus;
+            dynamic barraDSS = _circuit.ActiveBus;
 
             // array de tensoes
             double[] tensaoPU = barraDSS.VMagAngle;
@@ -89,11 +80,20 @@ namespace ExecutorOpenDSS.MainClasses
                 return;
             }
 
+            double tensoaFaseApu;
+
             // tensao fase A em pu
-            double tensoaFaseApu = tensaoFaseA / (kVcarga * 1000 / Math.Sqrt(3));
+            if (numPhases == 1)
+            {
+                tensoaFaseApu = tensaoFaseA / (kVcarga * 1000 );
+            }
+            else
+            {
+                tensoaFaseApu = tensaoFaseA / (kVcarga * 1000 / Math.Sqrt(3));
+            }         
 
             //BT OBS: assume que qquer tensao abaixo de 500Volts eh BT
-            if (Math.Round(kVcarga, 3) <= 0.220)
+            if (Math.Round(kVcarga, 3) <= 0.240)
             {
                 VerificaNivelTensaoBarraBT(tensoaFaseApu, nomeBarra);
             }
@@ -106,8 +106,8 @@ namespace ExecutorOpenDSS.MainClasses
         // verificaNivelTensaoBarraBT e incrementa contador de clientes
         private void VerificaNivelTensaoBarraBT(double tensaoPU, string nomeBarra)
         {
-            //DRC para cada carga, checa o tensao
-            if (tensaoPU < 0.8661)
+            //DRC < 191/220 V
+            if (tensaoPU < 0.868)
             {
                 _numClientesDRC++;
                 _lstBarrasDRCeDRP.Add(nomeBarra + "\t" + tensaoPU.ToString());
@@ -115,7 +115,7 @@ namespace ExecutorOpenDSS.MainClasses
                 return;
             }
             //DRP para cada carga, checa o tensao
-            if ((tensaoPU < 0.9213) && (tensaoPU >= 0.8661))
+            if ((tensaoPU < 0.9213) && (tensaoPU >= 0.868))
             {
                 _numClientesDRP++;
                 _lstBarrasDRCeDRP.Add(nomeBarra + "\t" + tensaoPU.ToString());
@@ -191,34 +191,29 @@ namespace ExecutorOpenDSS.MainClasses
             TxtFile.GravaListArquivoTXT(lstStr, nomeArq, paramGerais._mWindow);
         }
 
-        // ajusta numero de clientes totais, subtraindo os clientes de IP
-        private void AjustaNumClientes()
-        {
-            _numClientesTotal -= _numClientesIP;
-        }
-
         // CalculaNumClientesDRPDRC
         public void CalculaNumClientesDRPDRC()
         {
             // nomeBarra
             string nomeBarra;
 
-            // para cada carga
-            for (int i = 1; i <= _loadsDSS.Count; i++)
+            // OBS: necessario p/ correto funcionamento do iterador, Next e etc.
+            _circuit.SetActiveClass("load");
+
+            int iter = _circuit.Loads.First;
+            
+            // work around
+            for (int i = 1; i <= _circuit.Loads.Count; i++)
             {
-                /*
-                ///DEBUG
-                if (i == 48)
-                {
-                    int debug = 0;
-                }*/
-
                 // go to the load "i"
-                _loadsDSS.idx = i;
-
+                _circuit.Loads.idx = i;
+            
+            /*
+            while ( iter != 0)
+            { */
+            
                 // obtem nome da carga
-                string loadName = _loadsDSS.Name;
-                double kVcarga = _loadsDSS.kV;
+                string loadName = _circuit.Loads.Name;
 
                 // se load name comeca com LU = iluminacao publica
                 if (loadName.Contains("ip"))
@@ -228,15 +223,41 @@ namespace ExecutorOpenDSS.MainClasses
 
                     continue;
                 }
+                int numFases;
+                // numFases
+                if (EngineConfig.OpenDSSengine)
+                {
+                    _DSSText.Command = "? Load." + loadName + ".Phases";
+                    numFases = int.Parse(_DSSText.Result);
+                }
+                else 
+                {
+                // #if !ENGINE OLD CODE
+
+                    // TODO testar 
+                    numFases = _circuit.Loads.Phases;
+
+                    _DSSText.Command = "? Load." + loadName + ".Phases";
+                    int numFases2 = int.Parse(_DSSText.Result);
+
+                    if (numFases != numFases2)
+                    {
+                        // TODO tratar discrepancia
+                        throw new Exception();
+                    }
+
+                // #endif
+                }
 
                 // nome Barra
                 nomeBarra = GetLoadBusName(loadName);
 
                 // verifica nivel tensao
-                VerificaNivelTensaoBarra(nomeBarra, kVcarga);
+                VerificaNivelTensaoBarra(nomeBarra, _circuit.Loads.kV, numFases);                
+                
+                // iter 
+                iter = _circuit.Loads.Next;                              
             }
-            // ajusta numero de clientes
-            AjustaNumClientes();
 
             // calcula numero de clientes faixa adequada
             CalculaNumClientesFaixaAdequada();
@@ -245,6 +266,10 @@ namespace ExecutorOpenDSS.MainClasses
         // calcula numclientes Faixa adequada
         private void CalculaNumClientesFaixaAdequada()
         {
+            // ajusta numero de clientes excluindo pontos de IP
+            _numClientesTotal -= _numClientesIP;
+
+            //
             _numClientesOK = _numClientesTotal - _numClientesDRP - _numClientesDRC;
         }
     }

@@ -1,15 +1,13 @@
-﻿//#define ENGINE
-#if ENGINE
+﻿/* #if ENGINE
 using OpenDSSengine;
 #else
 using dss_sharp;
-#endif
+#endif */
 
 using ExecutorOpenDSS.AuxClasses;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Text;
 
 namespace ExecutorOpenDSS.MainClasses
@@ -17,7 +15,7 @@ namespace ExecutorOpenDSS.MainClasses
     public class RecloserTracer
     {
         // servidor SGBD
-        private readonly string _banco = "GEOPERDAS_2023"; // GEOPERDAS_2022 GEOPERDAS_2021 GEOPERDAS_2020 GEOPERDAS_2019 
+        private readonly string _banco = "GEOPERDAS_2023"; //
         private readonly string _schemaDB = "geo2023.";
         private readonly string _dataSource = @"PWNBS-PERTEC01\PTEC"; //@"sa-corp-sql0";
 
@@ -60,6 +58,9 @@ namespace ExecutorOpenDSS.MainClasses
             TxtFile.SafeDelete(GetNomeArqGeradorMT());
             TxtFile.SafeDelete(GetNomeArqGeradorBT());
 
+
+
+            // TODO
             _arqCargaMT = new StringBuilder();
             _arqCargaBT = new StringBuilder();
             _arqCargaIP = new StringBuilder();
@@ -70,8 +71,10 @@ namespace ExecutorOpenDSS.MainClasses
             _connBuilder.DataSource = _dataSource;
             _connBuilder.InitialCatalog = _banco;
             _connBuilder.IntegratedSecurity = false;
-            _connBuilder.UserID = "U_DBPERTEC01";
-            _connBuilder.Password = "294vd!@49s$$3208tD#SS";
+            //_connBuilder.UserID = "U_DBPERTEC01";
+            //_connBuilder.Password = "294vd!@49s$$3208tD#SS";
+            //_connBuilder.UserID = "U_DBPERTEC01";
+            //_connBuilder.Password = "294vd!@49s$$3208tD#SS";
         }
 
         // sweep feeder returning all buses below an equipment
@@ -88,9 +91,8 @@ namespace ExecutorOpenDSS.MainClasses
             // 3. for each recloser
             foreach (string recloser in _lstReclosers)
             {
-                // 3.0 Gets losses below recloser 
 
-                // 3.1 Gets MV and LV Lines CodIDs below an recloser (or any other element).
+                // 3.1
                 ret = Get_MVandLVLines_CodIDs(recloser);
 
                 string recloserShort = recloser.Replace("ctr", "");
@@ -104,9 +106,83 @@ namespace ExecutorOpenDSS.MainClasses
 
                 // 4. Run queries
                 ret = RunQueriesDB();
+
             }
 
             return ret;
+        }
+
+        //
+        private bool Get_MVandLVLines_CodIDs(string recloser)
+        {
+            dynamic med = GetMeter(recloser);
+
+            string[] allBranchs = med.AllBranchesInZone;
+
+            _lstSegmentosMT = new List<string>();
+            _lstSegmentosBT = new List<string>();
+            _lstRamais = new List<string>();
+
+            // extratifica segmentos MT e BT e ramais. 
+            foreach (string branch in allBranchs)
+            {
+                string branch2;
+                // MV line segment
+                if (branch.Contains("smt"))
+                {
+                    branch2 = branch.Replace("Line.smt_", "");
+                    _lstSegmentosMT.Add(branch2);
+                    continue;
+                }
+                // if switch or recloser
+                if (branch.Contains("ctr"))
+                {
+                    branch2 = branch.Replace("Line.ctr", "");
+                    _lstSegmentosMT.Add(branch2);
+                    continue;
+                }
+                // LV line segment
+                if (branch.Contains("sbt"))
+                {
+                    branch2 = branch.Replace("Line.sbt_", "");
+                    _lstSegmentosBT.Add(branch2);
+                    continue;
+                }
+                if (branch.Contains("rbt"))
+                {
+                    branch2 = branch.Replace("Line.rbt_", "");
+                    _lstRamais.Add(branch2);
+                    continue;
+                }
+                /* //DEBUG
+                if (branch.Contains("e"))
+                {
+                    continue;
+                }*/
+
+            }
+            return true;
+        }
+
+        dynamic GetMeter(string recloser)
+        {
+            //Obs: need this
+            _oDSS._DSSObj.ActiveCircuit.SetActiveClass("energymeter");
+
+            dynamic med = _oDSS._DSSObj.ActiveCircuit.Meters;
+
+            //search recloser meter
+            int iEM = med.First;
+
+            while (iEM != 0)
+            {
+                if (med.Name.Equals(recloser))
+                {
+                    break;
+                }
+                iEM = med.Next;
+            }
+            return med;
         }
 
         private bool RunQueriesDB()
@@ -391,30 +467,42 @@ namespace ExecutorOpenDSS.MainClasses
             return _par._parGUI._pathRecursosPerm + _nomeArqGeradorMT;
         }
 
+        private List<string> Get_ClosedSwitches()
+        {
+
+
+            _lstReclosers = new List<string>();
+
+            // Obs: avoids collaterals effects
+            _oDSS._DSSObj.ActiveCircuit.SetActiveClass("line");
+
+            // as recloser are still modelled as switches, its necessary do look in Lines
+            dynamic lines = _oDSS._DSSObj.ActiveCircuit.Lines;
+
+            int iLines = lines.First;
+
+            while (iLines != 0)
+            {
+                string nome = lines.Name;
+
+                //TODO // lines.Name.Contains("ctrr") &&
+                // ctrr means recloser in Cemig feeders & is 3 phase & TODO is closed 
+                if ((lines.Phases == 3) && (lines.IsSwitch))
+                {
+                    _lstReclosers.Add(nome);
+                }
+                iLines = lines.Next;
+            }
+            return _lstReclosers;
+        }
+
         private bool PutEnergyMetersOnReclosers()
         {
             // CTRR44079 CTRR44105 CTRR45585
 
             // TODO
             //Reclosers recloser = _oDSS._DSSObj.ActiveCircuit.Reclosers;
-
-            // as recloser are still modelled as switches, its necessary do look in Lines
-            Lines lines = _oDSS._DSSObj.ActiveCircuit.Lines;
-
-            _lstReclosers = new List<string>();
-
-            int iLines = lines.First;
-            while (iLines != 0)
-            {
-                string nome = lines.Name;
-
-                // ctrr means recloser in Cemig feeders & is 3 phase & TODO is closed
-                if (lines.Name.Contains("ctrr") && lines.Phases == 3)
-                {
-                    _lstReclosers.Add(nome);
-                }
-                iLines = lines.Next;
-            }
+            _lstReclosers = Get_ClosedSwitches();
 
             // Put EnergyMeters
             foreach (string recloser in _lstReclosers)
@@ -523,96 +611,6 @@ namespace ExecutorOpenDSS.MainClasses
             return true;
         }
 
-        /*
-        // TODO funcao de CemigFeeder.cs
-        private static string AddAposAndCommasForSQL(List<string> lst)
-        {
-            string retString;
-
-            // inicializacao 
-            retString = "'";
-
-            // para cada alimentador da lista
-            foreach (string alim in lst)
-            {
-                retString += alim;
-
-                if (string.Equals(alim, lst.Last()))
-                {
-                    retString += "'";
-                }
-                else
-                {
-                    retString += "','";
-                }
-            }
-            return retString;
-        }*/
-
-        //
-        private bool Get_MVandLVLines_CodIDs(string recloser)
-        {
-            Meters med = _oDSS._DSSObj.ActiveCircuit.Meters;
-
-            //search recloser meter
-            int iEM = med.First;
-
-            while (iEM != 0)
-            {
-                if (med.Name.Equals(recloser))
-                {
-                    break;
-                }
-                iEM = med.Next;
-            }
-            // Get MV, LV segments below the recloser 
-
-            string[] allBranchs = med.AllBranchesInZone;
-
-            _lstSegmentosMT = new List<string>();
-            _lstSegmentosBT = new List<string>();
-            _lstRamais = new List<string>();
-
-            // extratifica segmentos MT e BT e ramais. 
-            foreach (string branch in allBranchs)
-            {
-                string branch2;
-                // MV line segment
-                if (branch.Contains("smt"))
-                {
-                    branch2 = branch.Replace("Line.smt_", "");
-                    _lstSegmentosMT.Add(branch2);
-                    continue;
-                }
-                // if switch or recloser
-                if (branch.Contains("ctr"))
-                {
-                    branch2 = branch.Replace("Line.ctr", "");
-                    _lstSegmentosMT.Add(branch2);
-                    continue;
-                }
-                // LV line segment
-                if (branch.Contains("sbt"))
-                {
-                    branch2 = branch.Replace("Line.sbt_", "");
-                    _lstSegmentosBT.Add(branch2);
-                    continue;
-                }
-                if (branch.Contains("rbt"))
-                {
-                    branch2 = branch.Replace("Line.rbt_", "");
-                    _lstRamais.Add(branch2);
-                    continue;
-                }
-                /* //DEBUG
-                if (branch.Contains("e"))
-                {
-                    continue;
-                }*/
-
-            }
-            return true;
-        }
     }
 }
 

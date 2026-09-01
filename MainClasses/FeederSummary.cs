@@ -1,9 +1,8 @@
-﻿//#define ENGINE
-#if ENGINE
+﻿/* #if ENGINE
 using OpenDSSengine;
 #else
 using dss_sharp;
-#endif
+#endif*/ 
 
 using ExecutorOpenDSS.AuxClasses;
 using ExecutorOpenDSS.MainClasses;
@@ -18,6 +17,7 @@ namespace ExecutorOpenDSS
         private List<string> _lst_Results = new List<string> { "CodAlim\tnTrafo\tnVRB\tnCAP\tCAP_KVAr\tMVLoads\tMVLoads_kW\tLVLoads\tLVLoads_kW" +
             "\tnPV-MV\tPV-MV_kVA\tnPV-LV_PV\tPV-LV_kVA" +
             "\tnGerMV\tGerMV_kVA\tGerLV\tGerLV_kVA\t"};
+        private DailyFlow _daily;
 
         public FeederSummary(GeneralParameters paramGerais)
         {
@@ -47,7 +47,7 @@ namespace ExecutorOpenDSS
                 _paramGerais.SetNomeAlimAtual(nomeAlim);
 
                 // Carrega arquivos DSS so MT
-                DailyFlow _daily = new DailyFlow(_paramGerais, false);
+                _daily = new DailyFlow(_paramGerais, false);
 
                 _daily.LoadDSSObj();
 
@@ -84,6 +84,8 @@ namespace ExecutorOpenDSS
 
                 _lst_Results.Add(txt);
 
+                _paramGerais._mWindow.ExibeMsgDisplay(nomeAlim + " processado.");
+
                 // TODO saves results
                 //SavesResults2File();
 
@@ -92,12 +94,15 @@ namespace ExecutorOpenDSS
             SavesResults2File();     
         }
 
-        private List<double> Count_Loads(Loads loads)
+        private List<double> Count_Loads(dynamic loads)
         {
             double LV_count = 0.0;
             double MV_count = 0.0;
             double LV_kw = 0.0;
             double MV_kw = 0.0;
+
+            // Obs: 
+            _daily._oDSS._DSSObj.ActiveCircuit.SetActiveClass("load");
 
             int iter = loads.First;
 
@@ -135,7 +140,7 @@ namespace ExecutorOpenDSS
             TxtFile.GravaListArquivoTXT(_lst_Results, _paramGerais.GetNomeCompArqResumoAlim(), _paramGerais._mWindow);
         }
 
-        private List<double> Sum_CapacitorsCap(Capacitors caps)
+        private List<double> Sum_CapacitorsCap(dynamic caps)
         {
             int numCap = caps.Count;
 
@@ -146,12 +151,14 @@ namespace ExecutorOpenDSS
 
             double capKVAr = 0.0;
 
+            //Obs:
+            _daily._oDSS._DSSObj.ActiveCircuit.SetActiveClass("capacitor");
+
             int iter = caps.First;
 
             // para cada carga
             while (iter != 0)
             {
-
                 capKVAr += caps.kvar;
 
                 // itera
@@ -161,7 +168,7 @@ namespace ExecutorOpenDSS
             return new List<double> { numCap, capKVAr };
         }
 
-        private List<double> Sum_GeneratorCap(Generators gen)
+        private List<double> Sum_GeneratorCap(dynamic gen)
         {
             //retorno
             if (gen.Count == 0)
@@ -175,6 +182,9 @@ namespace ExecutorOpenDSS
             double MV_kVA = 0.0;
             double LV_count = 0.0;
             double MV_count = 0.0;
+
+            //Obs: 
+            _daily._oDSS._DSSObj.ActiveCircuit.SetActiveClass("generator");
 
             int iter = gen.First;
 
@@ -202,7 +212,7 @@ namespace ExecutorOpenDSS
             return ret;
         }
 
-        private List<double> Sum_PVSystemCap(PVSystems pv, Text cl)
+        private List<double> Sum_PVSystemCap(dynamic pv, dynamic cl)
         {
             int numPVSystem = pv.Count;
 
@@ -216,6 +226,9 @@ namespace ExecutorOpenDSS
             double PV_MV_count = 0.0;
             double PV_LV_kVA = 0.0;
             double PV_LV_count = 0.0;
+
+            //Obs: 
+            _daily._oDSS._DSSObj.ActiveCircuit.SetActiveClass("PVSystem");
 
             int iter = pv.First;
 

@@ -1,9 +1,8 @@
-﻿//#define ENGINE
-#if ENGINE
+﻿/* #if ENGINE
 using OpenDSSengine;
 #else
 using dss_sharp;
-#endif
+#endif*/
 
 using ExecutorOpenDSS.AuxClasses;
 using System;
@@ -203,8 +202,8 @@ namespace ExecutorOpenDSS.MainClasses
         // verifica se excedeu a geracao maxima
         private bool ExcedeuGeracaoMaxima()
         {
-            //MAXENERGIA alim igual 40.000.000 kWh/mes 
-            double MAXENERGIA = 40000000;
+            //MAXENERGIA alim igual 80.000.000 kWh/mes 
+            double MAXENERGIA = 80000000;
 
             // condicao de erro no fluxo diario 
             if (Math.Abs(GetEnergia()) > MAXENERGIA)
@@ -217,8 +216,8 @@ namespace ExecutorOpenDSS.MainClasses
         // verifica se excedeu a geracao maxima
         private bool ExcedeuRequisitoMaximo()
         {
-            //MAXREQUISITO alim igual 100.000 kWh 
-            double MAXREQUISITO = 100000;
+            //MAXREQUISITO alim igual 200.000 kWh 
+            double MAXREQUISITO = 200000;
 
             // condicao de erro no fluxo diario 
             if (Math.Abs(GetMaxKW()) > MAXREQUISITO)
@@ -238,10 +237,12 @@ namespace ExecutorOpenDSS.MainClasses
         }
 
         // Get Feeder losses
-        public bool GetPerdasAlim(Circuit DSSCircuit)
+        public bool GetPerdasAlim(dynamic DSSCircuit)
         {
             // DEBUG
             //string[] registersNames = DSSCircuit.Meters.RegisterNames;
+            dynamic m = DSSCircuit.Meters;
+
 
             // %%% Valor maximo de requisito e perdas
             _energyMeter.MaxkW = DSSCircuit.Meters.RegisterValues[2];
@@ -258,18 +259,22 @@ namespace ExecutorOpenDSS.MainClasses
             // 34.5 kV line losses
             //_energyMeter.MTLineLosses34KV = lossesMap["34.5 kV Line Loss"];
 
+            // TODO codigo falha em outros niveis de tensao  
             // LV line Losses
             _energyMeter.BTLineLosses = _lossesMap["0.22 kV Line Loss"] + _lossesMap["0.24 kV Line Loss"];
 
+            // TODO codigo falha em outros niveis de tensao  
             // MV line losses
             _energyMeter.MTLineLosses = _lossesMap["13.8 kV Line Loss"] + _lossesMap["22 kV Line Loss"] + _lossesMap["34.5 kV Line Loss"];
 
-            // Trafo 34.5 
-            _energyMeter.TransformerAllLosses34KV = _lossesMap["34.5 kV Load Loss"] + _lossesMap["34.5 kV No Load Loss"];
+            //// Trafo 34.5 
+            //_energyMeter.TransformerAllLosses34KV = _lossesMap["34.5 kV Load Loss"] + _lossesMap["34.5 kV No Load Loss"];
 
-            // perdas em transformadores de 13.8kV/220/127V
-            // OBS: subtrai as perdas nos trafos de 34.5KV 
-            _energyMeter.TransformerLosses = DSSCircuit.Meters.RegisterValues[23] - _energyMeter.TransformerAllLosses34KV;
+            // TODO caso queira-se segregar perdas 34.5kV e 13.8kV...
+            //// perdas em transformadores de 13.8kV/220/127V
+            //// OBS: subtrai as perdas nos trafos de 34.5KV 
+            //_energyMeter.TransformerLosses = DSSCircuit.Meters.RegisterValues[23] - _energyMeter.TransformerAllLosses34KV;          
+            _energyMeter.TransformerLosses = DSSCircuit.Meters.RegisterValues[23];
 
             // Reg 19 NoLoadLosseskWh
             _energyMeter.NoLoadLosseskWh = DSSCircuit.Meters.RegisterValues[18];
@@ -280,7 +285,7 @@ namespace ExecutorOpenDSS.MainClasses
             _energyMeter.lineLossesZeroMode = DSSCircuit.Meters.RegisterValues[25];
             // lineLossesoneTwoPhase = DSSCircuit.Meters.RegisterValues[27];
 
-            //            
+            // TODO codigo falha em outros niveis de tensao            
             _energyMeter.MTEnergy = _lossesMap["13.8 kV Load Energy"] + _lossesMap["22 kV Load Energy"] + _lossesMap["34.5 kV Load Energy"];
             _energyMeter.BTEnergy = _lossesMap["0.22 kV Load Energy"] + _lossesMap["0.24 kV Load Energy"];
 
@@ -295,9 +300,10 @@ namespace ExecutorOpenDSS.MainClasses
         }
 
         // obtem energia gerada por GDs
-        private void GetGDEnergy(Circuit DSSCircuit)
+        private void GetGDEnergy(dynamic DSSCircuit)
         {
-            //int debug = DSSCircuit.Generators.Count;
+            // Obs: necessario setar classe ativa 
+            DSSCircuit.SetActiveClass("generator");
 
             int iterGer = DSSCircuit.Generators.First;
 
@@ -310,8 +316,11 @@ namespace ExecutorOpenDSS.MainClasses
         }
 
         // obtem energia gerada por GDs
-        private void GetPVSystemsEnergy(Circuit DSSCircuit)
+        private void GetPVSystemsEnergy(dynamic DSSCircuit)
         {
+            // Obs: necessario setar classe ativa 
+            DSSCircuit.SetActiveClass("PVSystem");
+
             int iterPVSystem = DSSCircuit.PVSystems.First;
 
             while (iterPVSystem != 0)
@@ -323,7 +332,7 @@ namespace ExecutorOpenDSS.MainClasses
             }
         }
 
-        private void SetLossesMap(Circuit DSSCircuit)
+        private void SetLossesMap(dynamic DSSCircuit)
         {
             string[] registersNames = DSSCircuit.Meters.RegisterNames;
 

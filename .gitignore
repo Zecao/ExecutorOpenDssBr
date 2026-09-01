@@ -1,1 +1,6 @@
-Lib/dss_capi.dll
+Lib/
+.vs/
+bin/
+obj/
+*.user
+packages/

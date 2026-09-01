@@ -1,9 +1,8 @@
-﻿//#define ENGINE
-#if ENGINE
+﻿/* #if ENGINE
 using OpenDSSengine;
 #else
 using dss_sharp;
-#endif
+#endif */
 
 using System;
 using System.Collections.Generic;
@@ -13,12 +12,12 @@ namespace ExecutorOpenDSS.MainClasses
 {
     class IsolatedLoads
     {
-        private readonly Circuit _circuit;
+        private readonly dynamic _circuit;
         private readonly GeneralParameters _param;
         readonly List<string> _lstCargasIsoladas;
 
         // construtor
-        public IsolatedLoads(Circuit cir, GeneralParameters paramGerais)
+        public IsolatedLoads(dynamic cir, GeneralParameters paramGerais)
         {
             // preenche variaveis da classe
             _circuit = cir;

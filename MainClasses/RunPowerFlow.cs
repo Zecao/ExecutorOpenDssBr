@@ -1,8 +1,8 @@
-﻿//#define ENGINE
-#if ENGINE
+﻿/* #if ENGINE
+using OpenDSSengine;
 #else
 using dss_sharp;
-#endif
+#endif */
 
 using ExecutorOpenDSS.MainClasses;
 using System;
@@ -46,6 +46,8 @@ namespace ExecutorOpenDSS
             // 
             RecloserTracer recloser = new RecloserTracer(_paramGerais);
 
+            ConsumersInSwitch consSw = new ConsumersInSwitch(_paramGerais);
+
             //Roda Fluxo para cada alimentador
             foreach (string nomeAlim in _lstFeeders)
             {
@@ -61,16 +63,15 @@ namespace ExecutorOpenDSS
                 //cria objeto fluxo diario
                 _fluxoDiario = new DailyFlow(_paramGerais);
                 
-                /* OLDCODE12
-                // TODO testar
-                bool ret = _fluxoDiario.LoadStringListwithDSSCommands();
-                */
-
                 //solves snap PF first
                 Snap();
 
-                // 
-                bool ret = recloser.TraceAllReclosers(_fluxoDiario._oDSS);
+
+                //
+                bool ret = consSw.GetClientsBelowSwitches(_fluxoDiario._oDSS);
+
+                // TODO 
+                //bool ret = recloser.TraceAllReclosers(_fluxoDiario._oDSS);
 
                 if (ret)
                 {
@@ -184,7 +185,10 @@ namespace ExecutorOpenDSS
         private void Snap()
         {
             //Verifica se foi solicitado o cancelamento.
-            if (_paramGerais._mWindow._cancelarExecucao) { return; }
+            if (_paramGerais._mWindow._cancelarExecucao) 
+            { 
+                return; 
+            }
 
             _fluxoDiario.ExecutaFluxoSnap();
 
@@ -292,10 +296,45 @@ namespace ExecutorOpenDSS
                 _paramGerais.SetNomeAlimAtual(nomeAlim);
 
                 //cria objeto fluxo diario
-                _fluxoDiario = new DailyFlow(_paramGerais);
+                _fluxoDiario = new DailyFlow(_paramGerais);               
 
                 // Executa fluxo diário openDSS
                 _fluxoDiario.ExecutaFluxoDiario();
+            }
+        }
+
+        // Run hourly Power Flow
+        public void ExecutesHourlyPowerFlow()
+        {
+            //Limpa arquivos
+            _paramGerais.DeletaArqResultados();
+
+            // cria arquivo e preenche Cabecalho, caso modo _calcDRPDRC
+            if (_paramGerais._parGUI._expanderPar._calcDRPDRC)
+            {
+                // Cria arquivo cabecalho
+                VoltageLevelAnalysis.CriaArqCabecalho(_paramGerais);
+            }
+
+            //Roda o fluxo para cada alimentador
+            foreach (string nomeAlim in _lstFeeders)
+            {
+                //Verifica se foi solicitado o cancelamento.
+                if (_paramGerais._mWindow._cancelarExecucao)
+                {
+                    return;
+                }
+
+                // atribui nomeAlim
+                _paramGerais.SetNomeAlimAtual(nomeAlim);
+
+                //cria objeto fluxo diario
+                _fluxoDiario = new DailyFlow(_paramGerais);
+
+                string hora = _paramGerais._parGUI._hora;
+
+                // Executa fluxo horario openDSS
+                _fluxoDiario.ExecutaFluxoDiario(0,true,true,hora);
             }
         }
 
@@ -663,7 +702,7 @@ namespace ExecutorOpenDSS
             string alimTmp = _paramGerais.GetNomeAlimAtual();
 
             //informa usuario convergencia
-            _paramGerais._mWindow.ExibeMsgDisplay(_fluxoDiario.GetMsgConvergencia(null, alimTmp));
+            _paramGerais._mWindow.ExibeMsgDisplay(_fluxoDiario.GetMsgConvergencia(alimTmp));
 
             // retorno
             return _fluxoDiario._resFluxo.GetMaxKW();

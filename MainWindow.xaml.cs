@@ -1,5 +1,4 @@
-﻿#define no_reconf
-using ExecutorOpenDSS.Interfaces;
+﻿using ExecutorOpenDSS.Interfaces;
 using ExecutorOpenDSS.MainClasses;
 using System;
 using System.Globalization;
@@ -146,7 +145,7 @@ namespace ExecutorOpenDSS
                 //Executa o fluxo diário
                 case "Hourly":
 
-                    executaFluxoObj.ExecutesDailyPowerFlow();
+                    executaFluxoObj.ExecutesHourlyPowerFlow();
                     break;
 
                 //Executa o fluxo mensal
@@ -178,6 +177,10 @@ namespace ExecutorOpenDSS
         //Como a interface está em outro processo, é necessário utilizar um Dispatcher
         private void ReabilitaInterface()
         {
+            //TODO
+            //Habilita a interface
+            //StatusUI(true);
+
             SetButtonDelegate setar = new SetButtonDelegate(SetButton);
             _mainWindowDispatcher.BeginInvoke(setar);
         }
@@ -458,7 +461,7 @@ namespace ExecutorOpenDSS
             incrementoAjusteTextBox.IsEnabled = status;
             loadMultAltTextBox.IsEnabled = status;
             horaTextBox.IsEnabled = status;
-            //AllowFormsCheckBox.IsEnabled = status; //TODO
+            AllowFormsCheckBox.IsEnabled = status; //TODO
 
             CancelaButton.IsEnabled = !status;
         }
@@ -691,38 +694,44 @@ namespace ExecutorOpenDSS
             // data final para calculo do tempo de execucao
             _inicio = DateTime.Now;
 
+            //Desabilita a interface
+            StatusUI(false);
+
+            ExibeMsgDisplay("Início reconfiguração...");
+
             // grava configuracoes
             Write_XMLConfigurationFile();
 
-            // Roda worker_ExecutaFluxo em background
-            Task.Run((Action)Worker_NormallyOpenSwitchAnalisys);
+            // Roda Worker_NormallyOpenSwitchAnalisys em background
+            Task.Run((Action)Worker_Reconfiguration);
+
         }
 
         // Executa NormallyOpenSwitchAnalisys
-        void Worker_NormallyOpenSwitchAnalisys()
-        {
+        void Worker_Reconfiguration()
+        {           
+            //Mensagem de Início
+            ExibeMsgDisplay("Início análise chaves NAs");
+
+            // instancia classe 
+            new BranchExchangeClass(_paramGerais);
+
             // Fim 
-            ExibeMsgDisplay("Não implementado!");
-            /*
-             *  //Mensagem de Início
-                ExibeMsgDisplay("Início análise chaves NAs");
+            ExibeMsgDisplay("Fim análise chaves NAs");
 
-                // instancia classe AnaliseChavesNAs
-                new NOSwitchAnalysis(_paramGerais);
-
-                // Fim 
-                ExibeMsgDisplay("Fim análise chaves NAs");
-
-
-            */
             // Finaliza processo
             FinalizaProcesso(false);
+
+            ReabilitaInterface();
         }
 
         private void CargaReligadores_Click(object sender, RoutedEventArgs e)
         {
             // data final para calculo do tempo de execucao
             _inicio = DateTime.Now;
+
+            //Desabilita a interface
+            StatusUI(false);
 
             ExibeMsgDisplay("Início criação arquivos .csv das cargas dos religadores...");
 
@@ -733,7 +742,7 @@ namespace ExecutorOpenDSS
             Task.Run((Action)Worker_CargaReligadores);
         }
 
-        // Executa Fluxo potencia
+        // Worker CargaReligadores
         private void Worker_CargaReligadores()
         {
             // instancia classe ExecutaFluxo
@@ -745,7 +754,6 @@ namespace ExecutorOpenDSS
             //Finalização do processo
             FinalizaProcesso(false);
 
-            // Reabilita interface
             ReabilitaInterface();
         }
 
@@ -758,17 +766,17 @@ namespace ExecutorOpenDSS
             // grava configuracoes
             Write_XMLConfigurationFile();
 
-            // Roda worker_ExecutaFluxo em background
+            // Roda Worker_ExecutaAnaliseLoops em background
             Task.Run((Action)Worker_ExecutaAnaliseLoops);
         }
 
-        // Executa Analise de Loops
+        // TODO Executa Analise de Loops
         private void Worker_ExecutaAnaliseLoops()
         {
             //Mensagem de Início
             ExibeMsgDisplay("Início Analise Loops");
 
-            // instancia classe AnaliseChavesNAs
+            // instancia classe 
             new LoopAnalysis(_paramGerais);
 
             // Fim 
@@ -791,7 +799,7 @@ namespace ExecutorOpenDSS
             Task.Run((Action)Worker_ComparaManobras);
         }
 
-        // Executa Fluxo potencia
+        // 
         void Worker_ComparaManobras()
         {
             //Mensagem de Início
@@ -806,19 +814,19 @@ namespace ExecutorOpenDSS
             // Fim 
             ExibeMsgDisplay("Comparação Manobras");
 
-            // TODO Reabilita interface
-            //ReabilitaInterface();
-
             // Finaliza processo
             FinalizaProcesso(false);
         }
 
         private void PlaceCapacitors_Click(object sender, RoutedEventArgs e)
         {
+            //Desabilita a interface
+            StatusUI(false);
+
             // grava configuracoes
             Write_XMLConfigurationFile();
 
-            // Roda worker_ComparaManobras em background
+            // Roda Worker_PlaceCapacitors em background
             Task.Run((Action)Worker_PlaceCapacitors);
         }
 
@@ -830,35 +838,49 @@ namespace ExecutorOpenDSS
             //Mensagem de Início
             ExibeMsgDisplay("Alocação de Banco de Capacitores");
 
-            // instancia classe AnaliseChavesNAs
+            // instancia classe 
             new PlaceCapacitors(_paramGerais);
 
             // Fim 
             ExibeMsgDisplay("Fim alocação Banco de Capacitores.");
-        }
 
-        private void Worker_ResumoAlim()
-        {
-            // data final para calculo do tempo de execucao
-            _inicio = DateTime.Now;
-
-            //Mensagem de Início
-            ExibeMsgDisplay("Início de Resumo de Alimentadores");
-
-            // instancia classe AnaliseChavesNAs
-            new FeederSummary(_paramGerais);
-
-            // Fim 
-            ExibeMsgDisplay("Fim Resumo de Alimentadores.");
+            //TODO
+            ReabilitaInterface();
         }
 
         private void ResumoAlim_Click(object sender, RoutedEventArgs e)
         {
+            // data final para calculo do tempo de execucao
+            _inicio = DateTime.Now;
+
             // grava configuracoes
             Write_XMLConfigurationFile();
 
-            // Roda worker_ComparaManobras em background
+            //Desabilita a interface
+            StatusUI(false);
+
+            // Roda Worker_ResumoAlim em background
             Task.Run((Action)Worker_ResumoAlim);
+
+            /* // OLD CODE
+            // Reabilita interface
+            ReabilitaInterface();
+            */
+        }
+
+        private void Worker_ResumoAlim()
+        {
+            //Mensagem de Início
+            ExibeMsgDisplay("Início de Resumo de Alimentadores");
+
+            // instancia classe
+            new FeederSummary(_paramGerais);
+
+            // Fim 
+            ExibeMsgDisplay("Fim Resumo de Alimentadores.");
+
+            //TODO
+            ReabilitaInterface();
         }
     }
 }

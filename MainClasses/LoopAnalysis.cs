@@ -23,11 +23,39 @@ namespace ExecutorOpenDSS.MainClasses
             // analisa cada alimentador
             foreach (string nomeAlim in alimentadores)
             {
-                AnaliseLoopsPvt(nomeAlim);
+                //AnaliseLoopsPvt(nomeAlim);
+
+                Add_iMag_Transformer(nomeAlim);
             }
 
             // Grava Log // TODO
             //paramGerais._mWindow.GravaLog();
+        }
+
+        //TODO
+        private void Add_iMag_Transformer(string nomeAlim)
+        {
+            // atribui nomeAlim
+            _paramGerais.SetNomeAlimAtual(nomeAlim);
+
+            // Carrega arquivos DSS so MT
+            _fluxoSoMT = new DailyFlow(_paramGerais, true);
+
+            bool ret = _fluxoSoMT.ExecutaFluxoSnap();
+
+            // SE executou fluxo snap
+            if (ret)
+            {
+                // verifica cancelamento usuario 
+                if (_paramGerais._mWindow._cancelarExecucao)
+                {
+                    return;
+                }
+
+                //
+                AnaliseLoops2();
+            }
+
         }
 
         private void AnaliseLoopsPvt(string nomeAlim)

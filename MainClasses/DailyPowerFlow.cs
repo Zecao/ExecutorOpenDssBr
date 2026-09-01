@@ -1,13 +1,15 @@
-//#define ENGINE
-#if ENGINE
-using OpenDSSengine;
+/* #if ENGINE
+using DSS = OpenDSSengine;
 #else
-using dss_sharp;
-#endif
+using DSS = dss_sharp;
+#endif*/
 
+using ExecutorOpenDSS.Engine;
 using ExecutorOpenDSS.AuxClasses;
+using System;
 using System.Collections.Generic;
 using System.IO;
+
 
 namespace ExecutorOpenDSS.MainClasses
 {
@@ -453,15 +455,26 @@ namespace ExecutorOpenDSS.MainClasses
         public bool LoadDSSObj()
         {
             //condicao de retorno
-            if (_lstCommandsDSS.Count < 2)
+            if (_lstCommandsDSS.Count < 10)
             {
+                _paramGerais._mWindow.ExibeMsgDisplay("Erro alim. " + _paramGerais.GetNomeAlimAtual());
                 return false;
             }
 
             // carrega objeto OpenDSS
             foreach (string comando in _lstCommandsDSS)
             {
-                _oDSS._DSSObj.Text.Command = comando;
+                try
+                {
+                    _oDSS._DSSObj.Text.Command = comando;
+                }
+                catch (dss_sharp.DSSException e)
+                {
+                    _paramGerais._mWindow.ExibeMsgDisplay(e.Message);
+
+                    return false;
+                }
+
             }
             return true;
         }
@@ -495,11 +508,11 @@ namespace ExecutorOpenDSS.MainClasses
             //informa usuario convergencia
             if (ret)
             {
-                _paramGerais._mWindow.ExibeMsgDisplay(GetMsgConvergencia(null, _nomeAlim));
-            }
+                _paramGerais._mWindow.ExibeMsgDisplay(GetMsgConvergencia(_nomeAlim));
 
-            //Plota perdas na tela
-            _paramGerais._mWindow.ExibeMsgDisplay(_resFluxo.GetResultadoFluxoToConsole(_paramGerais.GetNomeAlimAtual(), _oDSS, _tipoDiaCrv));
+                //Plota perdas na tela
+                _paramGerais._mWindow.ExibeMsgDisplay(_resFluxo.GetResultadoFluxoToConsole(_paramGerais.GetNomeAlimAtual(), _oDSS, _tipoDiaCrv));
+            }
 
             return ret;
         }
@@ -508,8 +521,8 @@ namespace ExecutorOpenDSS.MainClasses
         private bool ExecutaFluxoSnapPvt()
         {
             // Interfaces
-            Circuit DSSCircuit = _oDSS._DSSObj.ActiveCircuit;
-            Solution DSSSolution = _oDSS._DSSObj.ActiveCircuit.Solution;
+            dynamic DSSCircuit = _oDSS._DSSObj.ActiveCircuit;
+            dynamic DSSSolution = _oDSS._DSSObj.ActiveCircuit.Solution;
 
             // realiza ajuste das cargas 
             double loadMult = _paramGerais.GetLoadMultFromXlsxFile();
@@ -522,26 +535,28 @@ namespace ExecutorOpenDSS.MainClasses
                 DSSCircuit.Vsources.pu = double.Parse(_paramGerais._parGUI._tensaoSaidaBarUsuario);
             }
 
-            // OLD CODE
-            // seta algorithm Normal ou Newton
-            //_oDSS._DSSText.Command = "Set Algorithm = " + _paramGerais._AlgoritmoFluxo;
-
             // seta modo snap.
             _oDSS._DSSObj.Text.Command = "Set mode=snap";
 
-#if ENGINE
-            DSSSolution.Solve();
-#else
-            try
+            if (EngineConfig.OpenDSSengine)
             {
                 DSSSolution.Solve();
             }
-            catch (DSSException e)
+            else 
             {
-                _paramGerais._mWindow.ExibeMsgDisplay(e.Message);
-                return false;
+//#if ! ENGINE // OLD CODE
+                try
+                {
+                    // resolve circuito 
+                    DSSSolution.Solve();
+                }
+                catch (Exception e)
+                {
+                    _paramGerais._mWindow.ExibeMsgDisplay(e.Message);
+                    return false;
+                }
+//#endif
             }
-#endif
 
             if (DSSCircuit.Solution.Converged)
             {
@@ -587,6 +602,7 @@ namespace ExecutorOpenDSS.MainClasses
                 if (!ret)
                 {
                     _paramGerais._mWindow.ExibeMsgDisplay("Erro carregamento alimentador " + _nomeAlim);
+                    return false;
                 }
             }
 
@@ -597,7 +613,6 @@ namespace ExecutorOpenDSS.MainClasses
             }
             else
             {
-                // ExecutaFluxoDiario_SemRecarga
                 ret = ExecuteDailyPF_SemRecarga(hora, loadMult);
             }
 
@@ -615,8 +630,8 @@ namespace ExecutorOpenDSS.MainClasses
         private bool ExecuteDailyPF_SemRecarga(string hora, double loadMult = 0)
         {
             //% Interfaces
-            Circuit DSSCircuit = _oDSS._DSSObj.ActiveCircuit;
-            Solution DSSSolution = _oDSS.GetActiveCircuit().Solution;
+            dynamic DSSCircuit = _oDSS._DSSObj.ActiveCircuit;
+            dynamic DSSSolution = _oDSS.GetActiveCircuit().Solution;
 
             // TODO separar as funcoes Otimiza e FluxoMensal p/ nao precisar confiar neste IF
             //gets loadMult from excel file 
@@ -646,21 +661,25 @@ namespace ExecutorOpenDSS.MainClasses
                     break;
             }
 
-#if ENGINE
-            // resolve circuito 
-            DSSSolution.Solve();
-#else
-            try
+
+            if (EngineConfig.OpenDSSengine)
             {
-                // resolve circuito 
                 DSSSolution.Solve();
             }
-            catch (DSSException e)
+            else
             {
-                _paramGerais._mWindow.ExibeMsgDisplay(e.Message);
-                return false;
+            //  #if !ENGINE OLD CODE
+                try
+                {
+                    DSSSolution.Solve();
+                }
+                catch (Exception e)
+                {
+                    _paramGerais._mWindow.ExibeMsgDisplay(e.Message);
+                    return false;
+                }
+            // #endif
             }
-#endif
 
             // se nao convergiu, retorna
             if (!DSSCircuit.Solution.Converged)
@@ -675,17 +694,13 @@ namespace ExecutorOpenDSS.MainClasses
             // se valores EnergyMeter estao consistentes
             if (ret)
             {
+                _paramGerais._mWindow.ExibeMsgDisplay(GetMsgConvergencia(_nomeAlim));
+
                 // verifica saida e grava perdas em arquivo OU alimentador que nao tenha convergido 
                 GravaPerdasArquivo();
 
                 // verifica geracao de relatorios
                 GeraRelatorios();
-            }
-
-            //informa usuario convergencia
-            if (ret)
-            {
-                _paramGerais._mWindow.ExibeMsgDisplay(GetMsgConvergencia(null, _nomeAlim));
             }
             return ret;
         }
@@ -711,26 +726,33 @@ namespace ExecutorOpenDSS.MainClasses
 
             for (int i = 0; i < 24; i++)
             {
-#if ENGINE
-                _oDSS.GetActiveCircuit().Solution.Solve();
-#else
-                try
+
+                if (EngineConfig.OpenDSSengine)
                 {
-                    // resolve circuito 
                     _oDSS.GetActiveCircuit().Solution.Solve();
                 }
-                catch (DSSException e)
+                else
                 {
-                    _paramGerais._mWindow.ExibeMsgDisplay(e.Message);
-                    return false;
+                //#if ! ENGINE // OLD CODE
+                    try
+                    {
+                        _oDSS.GetActiveCircuit().Solution.Solve();
+                    }
+                    catch (Exception e)
+                    {
+                        _paramGerais._mWindow.ExibeMsgDisplay(e.Message);
+                        return false;
+                    }
+                //#endif
                 }
-#endif
 
                 // se nao convergiu, retorna
                 if (!_oDSS.GetActiveCircuit().Solution.Converged)
                 {
                     return false;
                 }
+                // DEBUG
+                GetValoresEnergyMeter(loadMult);
 
                 // Counts no. of taps
                 ret = CountsNoTaps_VR(_VRB_tapPerhour);
@@ -751,7 +773,7 @@ namespace ExecutorOpenDSS.MainClasses
             //informa usuario convergencia
             if (ret)
             {
-                _paramGerais._mWindow.ExibeMsgDisplay(GetMsgConvergencia(null, _nomeAlim));
+                _paramGerais._mWindow.ExibeMsgDisplay(GetMsgConvergencia(_nomeAlim));
             }
             return ret;
         }
@@ -843,7 +865,7 @@ namespace ExecutorOpenDSS.MainClasses
         // TODO criar interface
         public void IteraSobreLine()
         {
-            Circuit dSSCircuit = _oDSS.GetActiveCircuit();
+            dynamic dSSCircuit = _oDSS.GetActiveCircuit();
 
             //DEBUG
             int debug = dSSCircuit.Lines.First;
@@ -851,16 +873,25 @@ namespace ExecutorOpenDSS.MainClasses
             do
             {
                 string nome = dSSCircuit.Lines.Name;
-
                 string lineCode = dSSCircuit.Lines.LineCode;
-
                 int phases = dSSCircuit.Lines.Phases;
 
-#if ENGINE
-                //TODO
-#else
-                bool isSwitch = dSSCircuit.Lines.IsSwitch;
-#endif
+
+                if (EngineConfig.OpenDSSengine)
+                {
+                    //TODO
+                    bool isSwitch = false;
+                }
+                else 
+                {
+                    // #if ! ENGINE OLD CODE
+
+                    // TODO nao esta funcionando no AltDSS
+                    //bool isSwitch = dSSCircuit.Lines.IsSwitch;
+
+
+                    // #endif
+                }
 
                 /*
                 double rho = dSSCircuit.Lines.Rho;
@@ -874,7 +905,7 @@ namespace ExecutorOpenDSS.MainClasses
         }
 
         // TODO criar interface
-        private void IteraSobreLineCode(Circuit dSSCircuit)
+        private void IteraSobreLineCode(dynamic dSSCircuit)
         {
             //DEBUG
             //int debug = dSSCircuit.LineCodes.First;
@@ -892,21 +923,12 @@ namespace ExecutorOpenDSS.MainClasses
         }
 
         // get mensagem convergencia 
-        public string GetMsgConvergencia(string hora, string nomeAlim)
+        public string GetMsgConvergencia(string nomeAlim)
         {
-            string str;
-
-            if (hora != null)
-            {
-                str = nomeAlim + " Hour: " + Add1toHour(hora) + " -> Solução Convergiu";
-            }
-            else
-            {
-                str = nomeAlim + " -> Solução Convergiu";
-            }
-            return str;
+            return nomeAlim + " -> Solução Convergiu";
         }
 
+        // OLD CODE manter
         //adiciona 1hora a string hora
         private static string Add1toHour(string hora)
         {
@@ -948,12 +970,14 @@ namespace ExecutorOpenDSS.MainClasses
         private void CalculaDRPDRC()
         {
             // Interfaces
-            Circuit DSSCircuit = _oDSS._DSSObj.ActiveCircuit;
-            Text DSSText = _oDSS._DSSObj.Text;
+            dynamic DSSCircuit = _oDSS._DSSObj.ActiveCircuit;
+            dynamic DSSText = _oDSS._DSSObj.Text;
 
             // se convergiu 
             if (DSSCircuit.Solution.Converged)
             {
+                _paramGerais._mWindow.ExibeMsgDisplay("Cálculo de DRP e DRC.");
+
                 // cria objeto indice tensao
                 VoltageLevelAnalysis indTensao = new VoltageLevelAnalysis(DSSCircuit, DSSText);
 
@@ -963,8 +987,8 @@ namespace ExecutorOpenDSS.MainClasses
                 // grava em arquivo
                 indTensao.ImprimeNumClientesDRPDRC(_paramGerais);
 
-                //
-                indTensao.ImprimeBarrasDRPDRC(_paramGerais);
+                // TODO comentado p/ performance
+                //indTensao.ImprimeBarrasDRPDRC(_paramGerais);
             }
         }
 
@@ -973,8 +997,8 @@ namespace ExecutorOpenDSS.MainClasses
         public List<string> GetBarrasDRPDRC()
         {
             // Interfaces
-            Circuit DSSCircuit = _oDSS._DSSObj.ActiveCircuit;
-            Text DSSText = _oDSS._DSSObj.Text;
+            dynamic DSSCircuit = _oDSS._DSSObj.ActiveCircuit;
+            dynamic DSSText = _oDSS._DSSObj.Text;
 
             // se convergiu 
             if (DSSCircuit.Solution.Converged)
@@ -1080,7 +1104,7 @@ namespace ExecutorOpenDSS.MainClasses
                 "CABBT808"
             };
 
-            Text textDSS = _oDSS._DSSObj.Text;
+            dynamic textDSS = _oDSS._DSSObj.Text;
 
             List<string> resRmatrix = new List<string>();
             List<string> resXmatrix = new List<string>();
@@ -1130,7 +1154,7 @@ namespace ExecutorOpenDSS.MainClasses
                 "CABBT808"
             };
 
-            Text textDSS = _oDSS._DSSObj.Text;
+            dynamic textDSS = _oDSS._DSSObj.Text;
 
             List<string> resRmatrix = new List<string>();
             List<string> resXmatrix = new List<string>();
@@ -1149,6 +1173,40 @@ namespace ExecutorOpenDSS.MainClasses
             TxtFile.GravaListArquivoTXT(resRmatrix, _paramGerais.GetArqRmatrix(), _paramGerais._mWindow);
 
             TxtFile.GravaListArquivoTXT(resXmatrix, _paramGerais.GetArqXmatrix(), _paramGerais._mWindow);
+        }
+
+        // OBS: altered to direct access to member 
+        // verifica se eh linha chave
+        public bool IsChave(dynamic dssText, string aresta, dynamic dSSCircuit)
+        {
+            bool ehChave = false;
+
+            if (EngineConfig.OpenDSSengine)
+            {
+                dssText.Command = "? line." + aresta + ".Switch";
+
+                string debug = dssText.Result;
+
+                if (dssText.Result.Equals("True")) // TODO 
+                {
+                    return ehChave = true;
+                }
+            }
+            else 
+            {
+                //#if ! ENGINE // OLD CODE
+                //ehChave = dSSCircuit.Lines.IsSwitch;
+                //#endif
+
+                dssText.Command = "? line." + aresta + ".Switch";
+                string debug = dssText.Result;
+
+                if (dssText.Result.Equals("Yes")) // TODO AltDSS passou a retornar "Yes"
+                {
+                    return ehChave = true;
+                }
+            }
+            return ehChave;
         }
     }
 }

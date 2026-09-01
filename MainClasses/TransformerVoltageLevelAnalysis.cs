@@ -1,9 +1,8 @@
-﻿//#define ENGINE
-#if ENGINE
+﻿/* #if ENGINE
 using OpenDSSengine;
 #else
 using dss_sharp;
-#endif
+#endif */
 
 using System;
 using System.Collections.Generic;
@@ -13,14 +12,14 @@ namespace ExecutorOpenDSS.MainClasses
 {
     class TransformerVoltageLevelAnalysis
     {
-        private readonly Circuit _circuit;
-        private readonly Transformers _trafosDSS;
-        private readonly Text _DSSText;
+        private readonly dynamic _circuit;
+        private readonly dynamic _trafosDSS;
+        private readonly dynamic _DSSText;
         private readonly Dictionary<string, double> _nivelTensaoBarra;
         private readonly GeneralParameters _param;
 
         //construtor 
-        public TransformerVoltageLevelAnalysis(Text txt, Circuit cir, GeneralParameters paramGerais)
+        public TransformerVoltageLevelAnalysis(dynamic txt, dynamic cir, GeneralParameters paramGerais)
         {
             _circuit = cir;
             _trafosDSS = cir.Transformers;
@@ -48,6 +47,9 @@ namespace ExecutorOpenDSS.MainClasses
         public void CalcTensaoBarraTrafos()
         {
             double nivelTensaoPU;
+
+            // Obs: necessario setar class ativa
+            _circuit.SetActiveClass("transformer");
 
             int iTrafo = _trafosDSS.First;
 
@@ -100,7 +102,7 @@ namespace ExecutorOpenDSS.MainClasses
             _circuit.SetActiveBus(nomeBarra);
 
             // obtem a barra, apos ativada
-            Bus barraDSS = _circuit.ActiveBus;
+            dynamic barraDSS = _circuit.ActiveBus;
 
             // DEBUG kvbase 
             //double kVbase = barraDSS.kVBase;

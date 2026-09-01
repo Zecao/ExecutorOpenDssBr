@@ -63,7 +63,7 @@ namespace ExecutorOpenDSS.MainClasses
             _mesNum = mes;
 
             //atualiza abreviatua mes
-            _mesAbrv3letras = TipoDiasMes.GetMesAbrv(mes);
+            _mesAbrv3letras = MyCalendar.GetMesAbrv(mes);
         }
 
         public int GetMes()
