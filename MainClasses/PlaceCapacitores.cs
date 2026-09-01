@@ -1,10 +1,4 @@
-﻿/* #if ENGINE
-using OpenDSSengine;
-#else
-using dss_sharp;
-#endif */
-
-using ExecutorOpenDSS.Engine;
+﻿using ExecutorOpenDSS.Engine;
 using System.Collections.Generic;
 using System.Linq;
 using ExecutorOpenDSS.AuxClasses;
@@ -177,17 +171,13 @@ namespace ExecutorOpenDSS.MainClasses
                 //disable capacitors, accordingly to the OpenDSSengine
                 if (EngineConfig.OpenDSSengine)
                 {
-                //#if ENGINE //OLD CODE
                     _daily._oDSS._DSSObj.Circuits[0].SetActiveElement(cName);
                     _daily._oDSS._DSSObj.Circuits[0].ActiveCktElement.Enabled = false;
-                //#endif
                 }
                 else 
                 {
-                //#if ! ENGINE
                     _daily._oDSS._DSSObj.Circuits.SetActiveElement(cName);
                     _daily._oDSS._DSSObj.Circuits.ActiveCktElement.Enabled = false;                    
-                //#endif
                 }
                 // capcont
                 capCont++;
@@ -224,14 +214,11 @@ namespace ExecutorOpenDSS.MainClasses
                 }
                 else
                 {
-                    //#if ! ENGINE OLD CODE
-
                     // TODO nao esta pegando o Switch corretamente
                     //isSwitch = DSSCircuit.Lines.IsSwitch;
 
                     dynamic dssText = _daily._oDSS._DSSObj.Text;
                     isSwitch = _daily.IsChave(dssText, nomeChave, DSSCircuit);
-                    //#endif
                 }
                 // gets the bus of 3 phase switches
                 if (isSwitch && phases == 3) //OLD CODE && !bus.Contains("#") -> skipa barra com # (representam lixo do Electric Office) 

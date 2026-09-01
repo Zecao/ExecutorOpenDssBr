@@ -1,10 +1,4 @@
-﻿/* #if ENGINE
-using OpenDSSengine;
-#else
-using dss_sharp;
-#endif */
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ExecutorOpenDSS.AuxClasses;
 using System;
 

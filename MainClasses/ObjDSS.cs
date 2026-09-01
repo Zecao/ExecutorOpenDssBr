@@ -1,9 +1,4 @@
-﻿/* #if ENGINE
-using OpenDSSengine;
-#else
-using dss_sharp;
-#endif */
-using ExecutorOpenDSS.Engine;
+﻿using ExecutorOpenDSS.Engine;
 
 namespace ExecutorOpenDSS.MainClasses
 {

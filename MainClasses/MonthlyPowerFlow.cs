@@ -1,11 +1,4 @@
-/* #if ENGINE
-using OpenDSSengine;
-#else
-using dss_sharp;
-#endif*/
-
 using System.Collections.Generic;
-//using Text = dss_sharp.Text;
 
 namespace ExecutorOpenDSS.MainClasses
 {

@@ -1,13 +1,8 @@
-/* #if ENGINE
-using DSS = OpenDSSengine;
-#else
-using DSS = dss_sharp;
-#endif*/
-
-using ExecutorOpenDSS.Engine;
 using ExecutorOpenDSS.AuxClasses;
+using ExecutorOpenDSS.Engine;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 
@@ -544,7 +539,6 @@ namespace ExecutorOpenDSS.MainClasses
             }
             else 
             {
-//#if ! ENGINE // OLD CODE
                 try
                 {
                     // resolve circuito 
@@ -555,7 +549,6 @@ namespace ExecutorOpenDSS.MainClasses
                     _paramGerais._mWindow.ExibeMsgDisplay(e.Message);
                     return false;
                 }
-//#endif
             }
 
             if (DSSCircuit.Solution.Converged)
@@ -668,7 +661,6 @@ namespace ExecutorOpenDSS.MainClasses
             }
             else
             {
-            //  #if !ENGINE OLD CODE
                 try
                 {
                     DSSSolution.Solve();
@@ -678,7 +670,6 @@ namespace ExecutorOpenDSS.MainClasses
                     _paramGerais._mWindow.ExibeMsgDisplay(e.Message);
                     return false;
                 }
-            // #endif
             }
 
             // se nao convergiu, retorna
@@ -733,7 +724,6 @@ namespace ExecutorOpenDSS.MainClasses
                 }
                 else
                 {
-                //#if ! ENGINE // OLD CODE
                     try
                     {
                         _oDSS.GetActiveCircuit().Solution.Solve();
@@ -743,7 +733,6 @@ namespace ExecutorOpenDSS.MainClasses
                         _paramGerais._mWindow.ExibeMsgDisplay(e.Message);
                         return false;
                     }
-                //#endif
                 }
 
                 // se nao convergiu, retorna
@@ -872,25 +861,23 @@ namespace ExecutorOpenDSS.MainClasses
 
             do
             {
-                string nome = dSSCircuit.Lines.Name;
+                string nomeChave = dSSCircuit.Lines.Name;
                 string lineCode = dSSCircuit.Lines.LineCode;
                 int phases = dSSCircuit.Lines.Phases;
 
-
+                bool isSwitch = false;
                 if (EngineConfig.OpenDSSengine)
                 {
                     //TODO
-                    bool isSwitch = false;
+                    isSwitch = false;
                 }
                 else 
                 {
-                    // #if ! ENGINE OLD CODE
-
                     // TODO nao esta funcionando no AltDSS
-                    //bool isSwitch = dSSCircuit.Lines.IsSwitch;
+                    //isSwitch = dSSCircuit.Lines.IsSwitch;
 
-
-                    // #endif
+                    dynamic dssText = _oDSS._DSSObj.Text;
+                    isSwitch = this.IsChave(dssText, nomeChave, dSSCircuit);
                 }
 
                 /*
@@ -1194,9 +1181,8 @@ namespace ExecutorOpenDSS.MainClasses
             }
             else 
             {
-                //#if ! ENGINE // OLD CODE
+                // TODO nao esta funcionando AltDSS
                 //ehChave = dSSCircuit.Lines.IsSwitch;
-                //#endif
 
                 dssText.Command = "? line." + aresta + ".Switch";
                 string debug = dssText.Result;

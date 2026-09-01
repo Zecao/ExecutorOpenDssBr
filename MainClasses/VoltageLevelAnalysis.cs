@@ -1,10 +1,4 @@
-﻿/* #if ENGINE
-using OpenDSSengine;
-#else
-using dss_sharp;
-#endif */
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using ExecutorOpenDSS.AuxClasses;
 using ExecutorOpenDSS.Engine;
@@ -232,8 +226,6 @@ namespace ExecutorOpenDSS.MainClasses
                 }
                 else 
                 {
-                // #if !ENGINE OLD CODE
-
                     // TODO testar 
                     numFases = _circuit.Loads.Phases;
 
@@ -245,8 +237,6 @@ namespace ExecutorOpenDSS.MainClasses
                         // TODO tratar discrepancia
                         throw new Exception();
                     }
-
-                // #endif
                 }
 
                 // nome Barra
