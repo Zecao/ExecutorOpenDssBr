@@ -1,4 +1,4 @@
-﻿//#define ENGINE //definido no properties do projeto
+﻿//#define ENGINE
 #if ENGINE
 using OpenDSSengine;
 #else
@@ -16,3 +16,4 @@ namespace ExecutorOpenDSS.Engine
 #endif
     }
 }
+// if (EngineConfig.OpenDSSengine)

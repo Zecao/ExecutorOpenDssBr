@@ -18,10 +18,16 @@ namespace ExecutorOpenDSS.MainClasses
             }
             else
             {
-                //Inicializa o servidor COM
-                _DSSObj = new dss_sharp.DSS();
-            }
+                try
+                {
+                    _DSSObj = dss_sharp.DSS.NewContext();
+                }
+                catch (dss_sharp.DSSException e)
+                {
+                    _paramGerais._mWindow.ExibeMsgDisplay(e.Message);
+                }
 
+            }
 
             // Inicializa servidor COM
             _DSSObj.Start(0);

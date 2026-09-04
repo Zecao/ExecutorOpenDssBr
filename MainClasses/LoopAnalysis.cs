@@ -46,7 +46,6 @@ namespace ExecutorOpenDSS.MainClasses
             // SE executou fluxo snap
             if (ret)
             {
-                // verifica cancelamento usuario 
                 if (_paramGerais._mWindow._cancelarExecucao)
                 {
                     return;
@@ -71,7 +70,6 @@ namespace ExecutorOpenDSS.MainClasses
             // SE executou fluxo snap
             if (ret)
             {
-                // verifica cancelamento usuario 
                 if (_paramGerais._mWindow._cancelarExecucao)
                 {
                     return;
